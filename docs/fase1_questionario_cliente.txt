@@ -1,0 +1,76 @@
+ALINHAMENTO DE ESCOPO E DISCOVERY
+
+Olá! O material enviado é um ótimo ponto de partida — as telas estão muito bem detalhadas e conseguimos visualizar com clareza a experiência que vocês desejam. Para garantirmos que o produto resolva exatamente o seu problema da melhor forma, precisamos alinhar os seguintes pontos:
+
+COMO OS PROCESSOS SE MOVEM (FLUXO DE TRABALHO)
+
+1. Quando um servidor precisa enviar um processo para outra unidade (ex: da COFIN para a AJUR), como essa decisão acontece?
+( ) a) O servidor escolhe livremente qualquer unidade de destino, como se fosse um encaminhamento de e-mail.
+( ) b) Existe um caminho predefinido — cada tipo de processo tem um roteiro fixo de unidades pelas quais deve passar.
+( ) c) Outro: ____________
+
+2. Sobre as etapas do processo (Aberto, Em Tramitação, Concluído, Arquivado): o que faz um processo mudar de etapa?
+( ) a) O próprio servidor muda manualmente ao arrastar o card no quadro.
+( ) b) O sistema muda automaticamente conforme o processo avança entre as unidades (ex: ao ser enviado, já vira "Em Tramitação").
+( ) c) Outro: ____________
+
+QUEM PODE FAZER O QUÊ (PERFIS DE ACESSO)
+
+3. Todos os usuários do sistema têm o mesmo nível de acesso, ou existem funções diferentes?
+( ) a) Todos veem e fazem as mesmas coisas — não há distinção de cargos no sistema.
+( ) b) Existem perfis diferentes (ex: servidor comum, chefe de unidade, administrador), e cada um tem acessos diferentes.
+( ) c) Outro: ____________
+
+4. Um servidor de uma unidade (ex: COFIN) pode ver e movimentar processos de outras unidades (ex: COGEP)?
+( ) a) Sim, todos podem ver e agir em qualquer processo, independentemente da unidade.
+( ) b) Não, cada servidor só vê e movimenta os processos da sua própria unidade.
+( ) c) Chefes/gestores podem ver todas as unidades, mas servidores comuns não.
+( ) d) Outro: ____________
+
+DOCUMENTOS E ASSINATURAS
+
+5. Como os documentos são incluídos nos processos? O sistema SETES.DOCS terá upload de arquivos?
+( ) a) Sim, o usuário poderá anexar arquivos (PDF, Word, imagens) diretamente no processo, e eles ficam salvos no sistema.
+( ) b) Os documentos ficam em outro sistema ou em pastas de rede; o SETES.DOCS apenas registra links ou referências.
+( ) c) O sistema não precisa guardar documentos; ele gerencia apenas o fluxo e as informações do processo.
+( ) d) Outro: ____________
+
+6. O recurso de "Documentos Assinados" que aparece no Perfil do usuário se refere a que tipo de assinatura?
+( ) a) Uma confirmação simples dentro do sistema, tipo "Estou ciente" ou "De acordo" (sem valor jurídico formal).
+( ) b) Assinatura digital com certificado (ex: ICP-Brasil, e-CPF), com validade jurídica plena.
+( ) c) Integração com um portal externo de assinatura que vocês já utilizam.
+( ) d) Outro: ____________
+
+COMUNICAÇÃO E ALERTAS
+
+7. Como os usuários devem ser avisados quando um processo novo chega para eles ou quando algo importante acontece?
+( ) a) Apenas dentro do próprio sistema (ícone de notificação no menu superior, como um sininho).
+( ) b) Além do sistema, também por e-mail.
+( ) c) Por e-mail e também por outros canais (ex: WhatsApp, SMS, notificação no celular).
+( ) d) Nenhum aviso externo — o usuário entra no sistema e vê o que está pendente no painel dele.
+( ) e) Outro: ____________
+
+ADMINISTRAÇÃO DO SISTEMA
+
+8. Quem será responsável por cadastrar usuários, unidades (COFIN, DIRAD, COGEP) e tipos de processo no sistema?
+( ) a) Uma equipe central de TI ou um administrador dedicado fará todos esses cadastros.
+( ) b) Cada chefe de unidade poderá cadastrar os usuários da sua própria unidade.
+( ) c) Os usuários e unidades serão importados automaticamente de outro sistema que vocês já usam.
+( ) d) Outro: ____________
+
+9. Como os usuários farão o acesso ao sistema?
+( ) a) Login e senha próprios do SETES.DOCS, com cadastro feito pelo administrador.
+( ) b) Usando o mesmo login de outros sistemas da organização (ex: gov.br, rede corporativa, Active Directory).
+( ) c) Outro: ____________
+
+REGRAS DO NEGÓCIO
+
+10. Um processo que foi concluído: o que acontece com ele depois?
+( ) a) O sistema automaticamente o move para "Arquivado" após um tempo definido (ex: 30 dias).
+( ) b) Um usuário com permissão precisa arquivar manualmente.
+( ) c) Não há etapa de arquivamento — os processos ficam em "Concluído" indefinidamente.
+( ) d) Outro: ____________
+
+---
+
+Agradecemos desde já pela atenção! Suas respostas nos ajudarão a montar um documento de requisitos muito mais preciso, evitando retrabalhos e garantindo que o sistema atenda exatamente ao que vocês precisam.
