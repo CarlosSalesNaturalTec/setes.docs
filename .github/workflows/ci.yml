@@ -6,6 +6,13 @@ on:
     branches: [main, develop]
 
 # Path filters por app + drift check dos tipos (task 10.2).
+# pull-requests:read é exigido pelo dorny/paths-filter para consultar a API
+# de arquivos alterados em eventos pull_request (o default do token no repo
+# é restritivo: só contents/metadata/packages).
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   changes:
     runs-on: ubuntu-latest
