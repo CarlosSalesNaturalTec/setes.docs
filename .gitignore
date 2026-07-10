@@ -21,7 +21,10 @@ infra/.terraform/
 crash.log
 *.tfvars
 !*.tfvars.example
-.terraform.lock.hcl
+backend.hcl
+!backend.hcl.example
+*.tfplan
+tfplan*.out
 
 # Secrets / local env
 .env

@@ -14,9 +14,9 @@ Stakeholders: equipe de desenvolvimento (monorepo TS+Python), operação/complia
 ## Goals / Non-Goals
 
 **Goals:**
-- Provisionar toda a topologia GCP em `southamerica-east1` com residência de dados garantida por org policy.
+- Provisionar toda a topologia GCP em `southamerica-east1`, com residência de dados garantida por convenção de módulo (org policy de região não aplicável no MVP — ver D7).
 - Estabelecer os dois serviços Cloud Run (web/api), o Cloud SQL privado, o bucket de documentos, os 3 segredos e as duas rotinas agendadas.
-- Definir o modelo de IAM de menor privilégio (6 service accounts) e as travas de governança (sem chaves de SA, região travada).
+- Definir o modelo de IAM de menor privilégio (6 service accounts); trava de "sem chaves de SA" via org policy não aplicável no MVP (ver D7).
 - Estabelecer o pipeline CI/CD (GitHub Actions + WIF) e a estrutura de monorepo com contrato OpenAPI→TS.
 - Deixar registrado o **contrato de idempotência** que as rotinas de negócio (US 2.5, US 10.3) deverão honrar.
 
@@ -30,7 +30,7 @@ Stakeholders: equipe de desenvolvimento (monorepo TS+Python), operação/complia
 ## Decisions
 
 ### D1 — Hospedagem: Cloud Run para os dois serviços
-**Escolha:** dois serviços Cloud Run independentes (`web` Next.js/App Router, `api` FastAPI). API com `min-instances=1`, `concurrency=80`; web com `min-instances=0–1`.
+**Escolha:** dois serviços Cloud Run independentes (`web` Next.js/App Router, `api` FastAPI). API com `min-instances=0` no MVP (`concurrency=80`); web com `min-instances=0–1`.
 **Por quê:** Next.js com App Router exige runtime servidor (Server Components/SSR), então Firebase Hosting sozinho não serve. Cloud Run dá scale-to-zero, pay-per-use e container próprio por serviço.
 **Alternativas consideradas:** App Engine (modelo mais antigo, scale-to-zero pior, menos controle de container — sem ganho); Firebase Hosting para o front (só estático/CDN, ainda cairia em Functions por baixo para o runtime — adiciona camada sem eliminar o problema).
 
@@ -81,15 +81,15 @@ Rodar 1× ou 10×, ou retomar após 3 dias de indisponibilidade, produz o mesmo 
 **Escolha:** região única `southamerica-east1` (Osasco/SP).
 **Verificação (2026-07):** disponibilidade confirmada na documentação oficial por serviço para Cloud Run + Jobs, Cloud SQL, Cloud Storage, Secret Manager (replicação user-managed regional), Cloud Tasks e Cloud Scheduler — **sem exceções**. Cloud Build e Artifact Registry também disponíveis.
 **Travas de residência (não bastam escolher a região):**
-1. Org policy `constraints/gcp.resourceLocations = in:southamerica-east1-locations` no projeto — bloqueia qualquer recurso fora da região na criação.
-2. Secret Manager com replicação **user-managed** fixada em `southamerica-east1` (o padrão "automatic" replica globalmente).
+1. ~~Org policy `constraints/gcp.resourceLocations = in:southamerica-east1-locations` no projeto~~ — **não aplicável no MVP**: exige `roles/orgpolicy.policyAdmin`, vinculável só em Organização/Pasta GCP; `setes-docs` é um projeto standalone (conta pessoal, sem Organização). Confirmado via `terraform apply` e `gcloud org-policies set-policy` (403 `orgpolicy.policies.create` — o papel não pôde nem ser concedido no projeto). Trava vira convenção de módulo: todo recurso no Terraform já é fixado em `var.region` (`southamerica-east1`); revisão de PR é a proteção contra desvio, não enforcement automático. Revisitar se o projeto migrar para dentro de uma Organização GCP.
+2. Secret Manager com replicação **user-managed** fixada em `southamerica-east1` (o padrão "automatic" replica globalmente) — esta trava não depende de org policy e segue ativa.
 **Por quê:** residência de dados exigida para órgão público + menor latência para Salvador/BA.
 
 ### D8 — CI/CD: GitHub Actions + Workload Identity Federation
 **Escolha:** GitHub Actions roda lint+test (pytest, Vitest), autentica no GCP via **Workload Identity Federation** (sem chave de SA), builda a imagem, publica no **Artifact Registry** e faz `gcloud run deploy`. Path filters do monorepo constroem `web`/`api` apenas quando o respectivo diretório muda.
 **Por quê:** mantém o pipeline onde os desenvolvedores já trabalham (branches `feature/*`, `develop`, `main`); WIF elimina chaves JSON de longa duração (postura de segurança valorizada por gov); menos peças móveis que Cloud Deploy.
 **Alternativas consideradas:** Cloud Build (nativo, mas duplica a lógica de teste fora do repo); GitHub Actions + Cloud Deploy (promoção dev→prod com aprovação — valioso quando houver governança formal de release; adiado, pois há só um ambiente no MVP).
-**Combina com:** org policy `iam.disableServiceAccountKeyCreation`, que proíbe chaves de SA e força WIF.
+**Combina com:** a intenção original era reforçar com a org policy `iam.disableServiceAccountKeyCreation`, mas ela não é aplicável no MVP (mesmo motivo de D7 — sem Organização GCP). WIF segue como a única barreira real contra chave JSON de SA: nenhum workflow usa/gera chave, mas nada no GCP bloqueia automaticamente a criação manual de uma.
 
 ### D9 — Monorepo: híbrido TS/Python + infra/
 **Escolha:**
@@ -179,11 +179,11 @@ As tabelas (`processo`, `unidade`, `tramitacao`, `documento`, etc.) e suas FKs v
 - **[Sem ambiente de staging]** Um único projeto de produção significa que testes de integração não têm um espelho seguro. → Mitigação: testes de integração em CI contra recursos efêmeros/descartáveis (ex.: Postgres em container no runner), Playwright em fluxos críticos, e deploy com revisão gradual do Cloud Run (traffic splitting) para validar antes de 100%.
 - **[env var de segredo resolvida no deploy]** Rotação de segredo exige nova revisão do serviço. → Mitigação aceita no MVP; upgrade para montagem como volume documentado em D4.
 - **[maxAttempts=1 e falha transitória do provedor]** Uma indisponibilidade momentânea do SaaS descarta o e-mail (sem retry), por decisão de produto (US 5.2 Cen.3). → Mitigação: a falha fica registrada em "Logs do Sistema" e a notificação interna do sininho não é afetada; reenvio, se necessário, é ação manual do Administrador.
-- **[Custo de cold start com min-instances=1]** Manter a `api` aquecida tem custo fixo pequeno mesmo sem tráfego. → Trade-off aceito: latência previsível para servidor público vale o custo baixo do MVP.
-- **[Org policy de location muito estrita]** `resourceLocations` pode bloquear serviços globais legítimos (ex.: Artifact Registry multirregião). → Mitigação: validar a policy contra a lista de serviços na aplicação do Terraform; ajustar allowlist se um serviço global necessário for bloqueado.
+- **[Cold start com min-instances=0]** No MVP a `api` roda com `min-instances=0` para custo zero em ocioso; a primeira requisição após período ocioso paga o cold start do Cloud Run. → Trade-off aceito: volume de tráfego do MVP não justifica manter instância aquecida; revisitar `min-instances=1` se a latência da primeira requisição incomodar em produção.
+- **[Org policies de governança não aplicáveis no MVP]** `gcp.resourceLocations` e `iam.disableServiceAccountKeyCreation` exigem `roles/orgpolicy.policyAdmin`, vinculável só em Organização/Pasta GCP; `setes-docs` não tem Organização por trás (conta pessoal). Sem elas, região e chaves de SA dependem de convenção/revisão, não de enforcement automático da plataforma. → Mitigação: controles diretos que não dependem de org policy seguem ativos (Cloud SQL sem IP público, bucket sem acesso público, replicação de segredo fixada na região, nenhum módulo Terraform referencia outra região); revisitar se o projeto migrar para dentro de uma Organização GCP.
 
 ## Open Questions
 
 - Provedor de e-mail definitivo: SendGrid vs Mailgun (ambos atendem; decidir na implementação conforme contratação/custo do órgão).
 - Extensões PostgreSQL a habilitar na baseline (ex.: `pgcrypto` para o identificador anonimizado irreversível da US 10.3) — confirmar na primeira migration de negócio.
-- Estratégia de state do Terraform: bucket GCS dedicado no mesmo projeto (assumido) vs. projeto separado de infra-management.
+- ~~Estratégia de state do Terraform~~ — **Resolvido:** bucket dedicado no mesmo projeto (`gs://setes-docs-tfstate`, versionado, mesma região).

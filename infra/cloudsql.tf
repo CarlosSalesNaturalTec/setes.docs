@@ -11,7 +11,8 @@ resource "google_sql_database_instance" "postgres" {
 
   settings {
     tier              = var.db_tier
-    availability_type = "ZONAL" # MVP; REGIONAL (HA) é upgrade futuro.
+    edition           = "ENTERPRISE" # GCP passou a exigir isso p/ usar tier db-custom-* (não ENTERPRISE_PLUS)
+    availability_type = "ZONAL"      # MVP; REGIONAL (HA) é upgrade futuro.
     disk_autoresize   = true
 
     ip_configuration {

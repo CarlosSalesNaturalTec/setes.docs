@@ -11,7 +11,8 @@ locals {
 }
 
 # ---------------------------------------------------------------------------
-# api — min-instances=1, concurrency=80, Direct VPC egress, secrets como env var
+# api — min-instances=0 (MVP: custo zero em ocioso), concurrency=80,
+# Direct VPC egress, secrets como env var
 # ---------------------------------------------------------------------------
 resource "google_cloud_run_v2_service" "api" {
   name     = "api"
@@ -24,7 +25,7 @@ resource "google_cloud_run_v2_service" "api" {
     service_account = google_service_account.sa["sa-api"].email
 
     scaling {
-      min_instance_count = 1 # instância aquecida (spec: API aquecida)
+      min_instance_count = 0 # MVP: sem instância aquecida (custo zero em ocioso)
       max_instance_count = var.api_max_instances
     }
 
