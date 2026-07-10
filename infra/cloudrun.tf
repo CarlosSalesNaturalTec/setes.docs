@@ -8,9 +8,16 @@ locals {
   # Placeholder até o primeiro deploy do pipeline.
   placeholder_image = "us-docker.pkg.dev/cloudrun/container/hello"
   image_base        = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.images.repository_id}"
-  # Audience OIDC dos endpoints internos (task 7.2) — string fixa, não a URL do
-  # serviço, para não depender de self-reference nem mudar se a URL mudar.
-  oidc_audience = "setes-docs-internal-tasks"
+  # Audience OIDC dos endpoints internos (task 7.2). PRECISA ser a URL canônica
+  # do próprio serviço `api` -- o Cloud Run, no nível de plataforma (antes do
+  # request chegar no container), já exige que o `aud` do token OIDC bata com
+  # essa URL para autorizar a invocação (serviço não é --allow-unauthenticated);
+  # uma string customizada é rejeitada ali, antes até de app/security/oidc.py
+  # rodar. Não dá pra referenciar `google_cloud_run_v2_service.api.uri` aqui
+  # (self-reference), então fixamos o valor observado via `terraform output
+  # api_url` -- estável entre applies (hash determinístico por projeto/serviço/
+  # região). Se o serviço for recriado do zero, atualizar este valor.
+  oidc_audience = "https://api-2j5ojmtaiq-rj.a.run.app"
 }
 
 # ---------------------------------------------------------------------------
