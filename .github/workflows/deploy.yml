@@ -60,7 +60,8 @@ jobs:
             --image "$IMAGE" \
             --region "$REGION" \
             --service-account "${{ vars.JOBS_SA_EMAIL }}" \
-            --set-secrets "DATABASE_URL=db-password:latest" \
+            --set-env-vars "DB_HOST=${{ vars.CLOUDSQL_PRIVATE_IP }},DB_PORT=5432,DB_USER=app,DB_NAME=setes" \
+            --set-secrets "DB_PASSWORD=db-password:latest" \
             --network setes-vpc --subnet setes-subnet --vpc-egress private-ranges-only \
             --command alembic --args "upgrade,head" \
             --quiet
