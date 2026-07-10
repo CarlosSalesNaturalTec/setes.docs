@@ -9,6 +9,7 @@ Rotas do bootstrap:
 from __future__ import annotations
 
 import logging
+import sys
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, status
@@ -19,6 +20,10 @@ from app.schemas import AckResponse, EmailTaskPayload, HealthResponse
 from app.security.oidc import require_tasks_invoker
 
 # "Logs do Sistema" — em produção vai para Cloud Logging (stdout estruturado).
+# Sem isso, logger.info/error não tem handler e é descartado silenciosamente
+# (só o root logger de última instância pega WARNING+, então nem "email.falha"
+# aparecia de forma confiável). Mesma config usada em app/jobs/entrypoint.py.
+logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 logger = logging.getLogger("setes.api")
 
 app = FastAPI(title="SETES.DOCS API", version="0.0.0")
