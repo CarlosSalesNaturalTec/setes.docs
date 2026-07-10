@@ -1,20 +1,68 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Projeto: SETES.DOCS — sistema de gestão de processos administrativos com 
+  workflow roteirizado, assinatura digital ICP-Brasil e consulta pública.
+  Cliente: órgão da administração pública (Bahia).
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+  Stack:
+    Frontend: Next.js (TypeScript, App Router), Tailwind
+    Backend: Python 3.12, FastAPI, SQLAlchemy 2.x + Alembic (migrations)
+    Banco: PostgreSQL (Cloud SQL)
+    Infra: GCP — Cloud Run (front e back), Cloud Storage (documentos anexados),
+      Secret Manager (credenciais, chaves de assinatura), Cloud Scheduler +
+      Cloud Run Jobs (arquivamento automático, anonimização LGPD trimestral),
+      Pub/Sub ou Cloud Tasks (envio assíncrono de e-mails)
+    Autenticação: própria (login/senha), JWT, sem SSO externo no MVP
+    Contrato frontend-backend: OpenAPI gerado pelo FastAPI, tipos TS gerados
+      via openapi-typescript no front
+
+  Linguagem de código: português brasileiro para nomes de entidades e regras
+  de negócio (Processo, Unidade, Tramitação, Despacho, Roteiro), inglês para
+  termos técnicos genéricos de infraestrutura (Repository, Service, Router).
+  Comentários e docstrings em português.
+
+  Padrão de branches: feature/<nome-do-change>, develop, main
+  Merge: --no-ff obrigatório
+  Testes: pytest + pytest-asyncio (FastAPI), Vitest + React Testing Library
+    (Next.js), Playwright para fluxos críticos (login, despacho, assinatura,
+    consulta pública)
+
+  Conformidade obrigatória em todo change que toque dados pessoais ou
+  documentos: LGPD (Lei 13.709/2018) e, quando aplicável, MP 2.200-2/2001 e
+  normas ICP-Brasil. Histórico de tramitação é imutável — nunca modelar como
+  UPDATE, sempre como INSERT de novo evento.
+
+rules:
+  proposal:
+    - 'Indicar de qual change anterior este depende (ex.: "requer identidade-e-estrutura-organizacional arquivado")'
+    - Identificar tabelas PostgreSQL novas ou afetadas, com FKs relevantes
+    - Indicar se o change exige novo segredo no Secret Manager ou novo bucket no Cloud Storage
+    - Se envolver dados pessoais (CPF/CNPJ, nome de interessado), declarar explicitamente o tratamento LGPD (coleta, retenção, anonimização)
+
+  specs:
+    - Usar formato Dado/Quando/Então para todos os cenários, no mesmo padrão
+      do PRD original (evitar reescrever critérios de aceite já definidos —
+      referenciar a US correspondente do PRD quando existir)
+    - Estados e transições de processo (Aberto, Em Tramitação, Concluído,
+      Arquivado) devem ser modelados como máquina de estados explícita, nunca
+      como campo de texto livre
+    - Toda regra de visibilidade por unidade/perfil deve ter cenário de
+      "acesso negado" explícito, não só o caminho feliz
+
+  design:
+    - Incluir diagrama de sequência para fluxos com 3+ etapas ou que
+      atravessem front, back e job assíncrono
+    - Para rotinas automáticas (Cloud Scheduler / Cloud Run Jobs), documentar
+      gatilho, janela de execução e comportamento de retomada após falha
+      (idempotência)
+    - Para endpoints públicos (consulta pública, canal LGPD), documentar
+      explicitamente rate limiting e ausência de autenticação
+    - Migrations Alembic descritas separadamente do design de API (schema
+      antes de endpoint)
+
+  tasks:
+    - Tarefas atômicas (máximo 2h cada), com critério de aceite por tarefa
+    - Separar tarefas de migration/schema das tarefas de endpoint/UI
+    - Toda tarefa que toque histórico de tramitação ou dados pessoais deve
+      incluir tarefa de teste automatizado correspondente (não é opcional)
