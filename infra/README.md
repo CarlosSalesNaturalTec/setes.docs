@@ -44,8 +44,11 @@ Padrão: `10 × 5 = 50 < 100`. O app respeita `pool_size=5, max_overflow=0` (ver
 
 ## Notas de verificação (residência / segurança)
 
-- `constraints/gcp.resourceLocations = in:southamerica-east1-locations` bloqueia recursos fora da região.
-- `constraints/iam.disableServiceAccountKeyCreation` bloqueia chaves JSON de SA.
+- ~~`constraints/gcp.resourceLocations`~~ / ~~`constraints/iam.disableServiceAccountKeyCreation`~~ — **não aplicáveis no MVP**: exigem `roles/orgpolicy.policyAdmin`, vinculável só em Organização/Pasta GCP; `setes-docs` não tem Organização por trás. Ver `org_policies.tf` e `openspec/changes/bootstrap-infraestrutura/design.md` (D7).
 - Secret Manager com replicação user-managed fixada na região.
 - Cloud SQL sem IPv4 público (`ipv4_enabled = false`).
 - Bucket com `public_access_prevention = enforced` e uniform access.
+
+### Auditoria manual (task 11.2, 2026-07-10)
+
+Sem as org policies automáticas, a residência/governança foi auditada manualmente contra o estado real do projeto `setes-docs`: nenhuma das 6 service accounts (`sa-web/api/jobs/scheduler/tasks-invoker/deploy`) tem papel primitivo ou chave `USER_MANAGED`; segredos, bucket e Cloud SQL confirmados sem acesso público e replicados/criados só em `southamerica-east1`. Achado: a service account padrão do Compute Engine (`PROJECT_NUMBER-compute@developer.gserviceaccount.com`, criada automaticamente pelo GCP, não usada por este projeto) tinha `roles/editor` — removido. Reexecutar esta checagem manual a cada mudança relevante de IAM, já que não há enforcement automático de plataforma.
