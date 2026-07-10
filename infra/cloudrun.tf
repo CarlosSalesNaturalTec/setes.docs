@@ -8,6 +8,9 @@ locals {
   # Placeholder até o primeiro deploy do pipeline.
   placeholder_image = "us-docker.pkg.dev/cloudrun/container/hello"
   image_base        = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.images.repository_id}"
+  # Audience OIDC dos endpoints internos (task 7.2) — string fixa, não a URL do
+  # serviço, para não depender de self-reference nem mudar se a URL mudar.
+  oidc_audience = "setes-docs-internal-tasks"
 }
 
 # ---------------------------------------------------------------------------
@@ -63,6 +66,14 @@ resource "google_cloud_run_v2_service" "api" {
       env {
         name  = "TASKS_INVOKER_SA_EMAIL"
         value = google_service_account.sa["sa-tasks-invoker"].email
+      }
+      # Audience esperada no token OIDC do endpoint /internal/tasks/* (task 7.2).
+      # String fixa, não a URL do serviço (evita self-reference no Terraform e
+      # fica estável mesmo se a URL do Cloud Run mudar). Quem enfileira a tarefa
+      # no Cloud Tasks deve setar o mesmo valor em oidc_token.audience.
+      env {
+        name  = "OIDC_AUDIENCE"
+        value = local.oidc_audience
       }
       env {
         name  = "EMAIL_FROM"
