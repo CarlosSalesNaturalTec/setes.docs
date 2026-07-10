@@ -35,8 +35,8 @@ export interface paths {
          * @description Processa uma tarefa de e-mail entregue pelo Cloud Tasks.
          *
          *     Contrato de falha (US 5.2 Cen.3): em QUALQUER falha de entrega, registra em
-         *     log e retorna 200 (ACK). A fila usa maxAttempts=1, ent�o n�o h� redespacho.
-         *     Nunca propaga exce��o � isso faria o Cloud Tasks tratar como retryable.
+         *     log e retorna 200 (ACK). A fila usa maxAttempts=1, então não há redespacho.
+         *     Nunca propaga exceção — isso faria o Cloud Tasks tratar como retryable.
          */
         post: operations["process_email_task_internal_tasks_email_post"];
         delete?: never;

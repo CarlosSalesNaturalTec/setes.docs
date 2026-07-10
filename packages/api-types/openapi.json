@@ -155,7 +155,7 @@
     },
     "/internal/tasks/email": {
       "post": {
-        "description": "Processa uma tarefa de e-mail entregue pelo Cloud Tasks.\n\nContrato de falha (US 5.2 Cen.3): em QUALQUER falha de entrega, registra em\nlog e retorna 200 (ACK). A fila usa maxAttempts=1, ent�o n�o h� redespacho.\nNunca propaga exce��o � isso faria o Cloud Tasks tratar como retryable.",
+        "description": "Processa uma tarefa de e-mail entregue pelo Cloud Tasks.\n\nContrato de falha (US 5.2 Cen.3): em QUALQUER falha de entrega, registra em\nlog e retorna 200 (ACK). A fila usa maxAttempts=1, então não há redespacho.\nNunca propaga exceção — isso faria o Cloud Tasks tratar como retryable.",
         "operationId": "process_email_task_internal_tasks_email_post",
         "parameters": [
           {
