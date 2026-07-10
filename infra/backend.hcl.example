@@ -1,0 +1,2 @@
+# Copie para backend.hcl e ajuste. Use com: terraform init -backend-config=backend.hcl
+bucket = "setes-docs-tfstate"

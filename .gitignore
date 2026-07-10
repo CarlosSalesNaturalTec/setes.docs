@@ -1,2 +1,30 @@
 .agent/
 .claude/
+
+# Node / pnpm
+node_modules/
+.next/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Terraform
+infra/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+!*.tfvars.example
+.terraform.lock.hcl
+
+# Secrets / local env
+.env
+.env.*
+!.env.example
+

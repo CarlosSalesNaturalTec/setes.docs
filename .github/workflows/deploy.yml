@@ -1,0 +1,100 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+# WIF: sem chave JSON (task 10.1/10.3, D8).
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  REGION: southamerica-east1
+  AR: ${{ vars.GCP_PROJECT_ID }}/setes-images
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            api:
+              - 'apps/api/**'
+            web:
+              - 'apps/web/**'
+              - 'packages/**'
+
+  deploy-api:
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.DEPLOY_SA_EMAIL }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+      - name: Build & push api
+        run: |
+          IMAGE="${REGION}-docker.pkg.dev/${AR}/api:${GITHUB_SHA}"
+          docker build -t "$IMAGE" apps/api
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+      # Migrations num passo dedicado, ANTES do deploy do serviço (task 9.2).
+      # Executa como Cloud Run Job efêmero para conectar ao IP privado do Cloud SQL.
+      - name: Run DB migrations (alembic upgrade head)
+        run: |
+          gcloud run jobs deploy migrate \
+            --image "$IMAGE" \
+            --region "$REGION" \
+            --service-account "${{ vars.JOBS_SA_EMAIL }}" \
+            --set-secrets "DATABASE_URL=db-password:latest" \
+            --network setes-vpc --subnet setes-subnet --vpc-egress private-ranges-only \
+            --command alembic --args "upgrade,head" \
+            --quiet
+          gcloud run jobs execute migrate --region "$REGION" --wait --quiet
+      - name: Deploy api
+        run: |
+          gcloud run deploy api \
+            --image "$IMAGE" \
+            --region "$REGION" \
+            --quiet
+
+  deploy-web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.DEPLOY_SA_EMAIL }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+      - name: Build & push web
+        run: |
+          IMAGE="${REGION}-docker.pkg.dev/${AR}/web:${GITHUB_SHA}"
+          docker build -t "$IMAGE" -f apps/web/Dockerfile .
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+      - name: Deploy web
+        run: |
+          gcloud run deploy web \
+            --image "$IMAGE" \
+            --region "$REGION" \
+            --quiet

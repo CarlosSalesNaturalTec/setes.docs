@@ -1,0 +1,8 @@
+packages:
+  - apps/web
+  - packages/*
+
+# Não executar scripts de build de dependências no install (não necessários p/ gen:types).
+allowBuilds:
+  esbuild: false
+  sharp: false
