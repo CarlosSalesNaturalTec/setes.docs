@@ -1,0 +1,11 @@
+{
+  "name": "@setes/api-types",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Tipos TypeScript gerados do contrato OpenAPI do apps/api (FastAPI). Não editar à mão.",
+  "type": "module",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts"
+  }
+}

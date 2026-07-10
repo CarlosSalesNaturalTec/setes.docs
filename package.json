@@ -1,0 +1,16 @@
+{
+  "name": "setes-docs",
+  "version": "0.0.0",
+  "private": true,
+  "description": "SETES.DOCS — monorepo poliglota (Next.js web + FastAPI api + infra Terraform)",
+  "packageManager": "pnpm@11.11.0",
+  "scripts": {
+    "dev": "pnpm --filter @setes/web dev",
+    "build": "pnpm --filter @setes/web build",
+    "gen:types": "node scripts/gen-types.mjs",
+    "gen:types:check": "node scripts/gen-types.mjs --check"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.4.0"
+  }
+}

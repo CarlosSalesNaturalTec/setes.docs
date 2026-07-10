@@ -7,9 +7,9 @@ O sistema SHALL ser provisionado em um único projeto GCP de produção, com tod
 - **WHEN** qualquer recurso regional (Cloud Run, Cloud SQL, Cloud Storage, Cloud Tasks, Cloud Run Job) é provisionado
 - **THEN** o recurso é criado na região `southamerica-east1`
 
-#### Scenario: Acesso negado — criação de recurso fora da região
-- **WHEN** um recurso é solicitado em uma região diferente de `southamerica-east1`
-- **THEN** a org policy `gcp.resourceLocations` bloqueia a criação e a operação falha
+#### Scenario: Residência de região garantida por convenção de módulo (MVP)
+- **WHEN** um recurso é provisionado pelo Terraform deste repositório
+- **THEN** o módulo referencia `var.region` (`southamerica-east1`) para todo recurso regional — não há bloqueio automático via org policy `gcp.resourceLocations` no MVP, pois o projeto `setes-docs` não pertence a uma Organização GCP (exigência de `roles/orgpolicy.policyAdmin`, vinculável só em Organização/Pasta); a garantia é de revisão de PR, não de enforcement da plataforma. Revisitar se o projeto migrar para dentro de uma Organização.
 
 #### Scenario: Segredos com replicação fixada no Brasil
 - **WHEN** um segredo é criado no Secret Manager
@@ -22,9 +22,9 @@ O sistema SHALL executar o frontend (Next.js) e o backend (FastAPI) como dois se
 - **WHEN** uma requisição de health check é feita ao serviço `api` ou `web` após o deploy
 - **THEN** o serviço responde com status HTTP 200
 
-#### Scenario: API mantém instância aquecida
+#### Scenario: API roda com custo zero em ocioso no MVP
 - **WHEN** o serviço `api` está provisionado
-- **THEN** ele mantém `min-instances=1`, evitando cold start na primeira requisição do horário de operação
+- **THEN** ele mantém `min-instances=0`, aceitando cold start na primeira requisição após período ocioso em troca de custo zero sem tráfego
 
 ### Requirement: Governança de identidade sem chaves de longa duração
 O sistema SHALL impedir a criação de chaves de service account de longa duração, forçando autenticação federada (Workload Identity Federation) no pipeline de CI/CD.
@@ -33,6 +33,6 @@ O sistema SHALL impedir a criação de chaves de service account de longa duraç
 - **WHEN** o pipeline do GitHub Actions realiza deploy no Cloud Run
 - **THEN** ele autentica via Workload Identity Federation, sem usar arquivo de chave JSON de service account
 
-#### Scenario: Acesso negado — criação de chave de service account
-- **WHEN** uma chave JSON de service account é solicitada em qualquer service account do projeto
-- **THEN** a org policy `iam.disableServiceAccountKeyCreation` bloqueia a operação
+#### Scenario: Ausência de chaves de SA garantida por não uso, não por policy (MVP)
+- **WHEN** o pipeline de deploy e todo o Terraform deste repositório são executados
+- **THEN** nenhum arquivo de chave JSON de service account é gerado ou referenciado — mas a criação manual de uma chave não é bloqueada automaticamente no MVP, pois a org policy `iam.disableServiceAccountKeyCreation` exige `roles/orgpolicy.policyAdmin`, vinculável só em Organização/Pasta GCP, e `setes-docs` não pertence a uma Organização. Revisitar se o projeto migrar para dentro de uma Organização.

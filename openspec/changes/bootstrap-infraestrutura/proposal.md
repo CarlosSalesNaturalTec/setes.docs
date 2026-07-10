@@ -5,7 +5,7 @@ O SETES.DOCS ainda não possui nenhuma infraestrutura provisionada. Antes de abr
 ## What Changes
 
 - Provisionar **um único projeto GCP de produção** na região **`southamerica-east1`** (Osasco/SP) — sem ambiente de staging separado no MVP.
-- **Cloud Run × 2**: serviço `web` (Next.js/App Router) e serviço `api` (FastAPI). API com `min-instances=1`.
+- **Cloud Run × 2**: serviço `web` (Next.js/App Router) e serviço `api` (FastAPI). API com `min-instances=0` no MVP (custo zero em ocioso; aceita cold start na primeira requisição).
 - **Cloud SQL for PostgreSQL** com **IP privado** (sem IP público), acessado pela API via **Direct VPC egress**. Instância vazia — nenhuma tabela de negócio é criada aqui (schema vem em changes futuros via Alembic).
 - **Cloud Storage**: um bucket único para documentos anexados, com estrutura de prefixo por processo, versionamento e soft-delete nativo como rede de segurança.
 - **Secret Manager**: 3 segredos novos — `db-password`, `jwt-signing-key`, `sendgrid-api-key` — com replicação fixada em `southamerica-east1`.
@@ -14,7 +14,7 @@ O SETES.DOCS ainda não possui nenhuma infraestrutura provisionada. Antes de abr
 - **CI/CD**: GitHub Actions autenticando via **Workload Identity Federation** (sem chaves de service account) → Artifact Registry → deploy no Cloud Run.
 - **Estrutura de monorepo**: `apps/web`, `apps/api`, `packages/api-types` (tipos TS gerados do OpenAPI) e `infra/` (Terraform).
 - **IAM**: 6 service accounts dedicadas, princípio de menor privilégio, roles concedidos no nível do recurso.
-- **Org policies** de governança: `gcp.resourceLocations` (trava a região) e `iam.disableServiceAccountKeyCreation` (força WIF).
+- **Org policies** de governança: `gcp.resourceLocations` (trava a região) e `iam.disableServiceAccountKeyCreation` (força WIF) — **não aplicadas no MVP**: exigem `roles/orgpolicy.policyAdmin`, que só é vinculável dentro de uma Organização GCP, e o projeto `setes-docs` foi criado sob conta pessoal, sem Organização por trás. Mitigado parcialmente por controles diretos (Cloud SQL sem IP público, bucket sem acesso público, todos os módulos fixados em `southamerica-east1`); revisitar se o projeto migrar para uma Organização.
 - **Fora de escopo (não muda):** assinatura digital ICP-Brasil (Épico 4 — condicionado a Discovery Técnico, movido para Fase 2); ambiente de staging; qualquer schema/tabela de negócio.
 
 ## Capabilities
