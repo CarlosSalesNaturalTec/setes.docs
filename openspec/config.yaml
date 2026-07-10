@@ -22,7 +22,7 @@ context: |
   termos técnicos genéricos de infraestrutura (Repository, Service, Router).
   Comentários e docstrings em português.
 
-  Padrão de branches: feature/<nome-do-change>, develop, main
+  Padrão de branches: feature/<nome-do-change>, main (GitHub Flow — sem staging; validação pré-produção via traffic splitting do Cloud Run, não via branch)
   Merge: --no-ff obrigatório
   Testes: pytest + pytest-asyncio (FastAPI), Vitest + React Testing Library
     (Next.js), Playwright para fluxos críticos (login, despacho, assinatura,
