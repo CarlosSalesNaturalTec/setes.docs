@@ -184,6 +184,6 @@ As tabelas (`processo`, `unidade`, `tramitacao`, `documento`, etc.) e suas FKs v
 
 ## Open Questions
 
-- Provedor de e-mail definitivo: SendGrid vs Mailgun (ambos atendem; decidir na implementação conforme contratação/custo do órgão).
+- ~~Provedor de e-mail definitivo~~ — **Resolvido:** SendGrid (conta free, single sender `naturalbahia@gmail.com`, `docs/emailConfig.md`). **Achado da validação (task 11.1):** esse remetente não é confiável para destinatários Gmail/Google Workspace — o Gmail aplica DMARC `p=reject` em `@gmail.com` enviado por infraestrutura de terceiros (SendGrid), causando descarte silencioso ("Delivered" no SendGrid, mas nunca chega) ou rate-limit (421, "isn't aligned with SPF/DKIM"). Funcionou para um destinatário `.gov.br`. Antes do change de negócio que implementa o envio real (US 5.2) depender de entrega para Gmail/Outlook, configurar Domain Authentication no SendGrid (SPF/DKIM/DMARC) com um domínio próprio do órgão — não dá pra resolver isso mantendo o remetente como um Gmail pessoal.
 - Extensões PostgreSQL a habilitar na baseline (ex.: `pgcrypto` para o identificador anonimizado irreversível da US 10.3) — confirmar na primeira migration de negócio.
 - ~~Estratégia de state do Terraform~~ — **Resolvido:** bucket dedicado no mesmo projeto (`gs://setes-docs-tfstate`, versionado, mesma região).
