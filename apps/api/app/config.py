@@ -7,6 +7,7 @@ pelo Cloud Run como variáveis de ambiente apontando para o Secret Manager (D4).
 from __future__ import annotations
 
 from functools import lru_cache
+from urllib.parse import quote_plus
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -22,10 +23,23 @@ class Settings(BaseSettings):
     # Audience esperada no token OIDC (normalmente a URL do próprio serviço `api`).
     oidc_audience: str = Field(default="", alias="OIDC_AUDIENCE")
 
-    # Banco -------------------------------------------------------------------
-    database_url: str = Field(default="", alias="DATABASE_URL")
+    # Banco ---------------------------------------------------------------------
+    # `db_password` vem do secret `db-password` (só a senha, task 3.3); as demais
+    # peças são env vars simples. A URL completa é montada em `database_url`.
+    db_host: str = Field(default="", alias="DB_HOST")
+    db_port: int = Field(default=5432, alias="DB_PORT")
+    db_user: str = Field(default="app", alias="DB_USER")
+    db_name: str = Field(default="setes", alias="DB_NAME")
+    db_password: str = Field(default="", alias="DB_PASSWORD")
     db_pool_size: int = Field(default=5, alias="DB_POOL_SIZE")
     db_max_overflow: int = Field(default=0, alias="DB_MAX_OVERFLOW")
+
+    @property
+    def database_url(self) -> str:
+        return (
+            f"postgresql+psycopg://{self.db_user}:{quote_plus(self.db_password)}"
+            f"@{self.db_host}:{self.db_port}/{self.db_name}"
+        )
 
     # E-mail SaaS -------------------------------------------------------------
     sendgrid_api_key: str = Field(default="", alias="SENDGRID_API_KEY")

@@ -69,9 +69,27 @@ resource "google_cloud_run_v2_service" "api" {
         value = var.email_provider_from
       }
 
-      # Segredos injetados como env var apontando para `latest` (D4).
+      # Conexão com o Cloud SQL: peças simples + senha do secret (D4). A app monta
+      # a URL completa (app/config.py) — DATABASE_URL sozinho não existe, pois o
+      # secret db-password guarda só a senha, não uma URL de conexão.
       env {
-        name = "DATABASE_URL"
+        name  = "DB_HOST"
+        value = google_sql_database_instance.postgres.private_ip_address
+      }
+      env {
+        name  = "DB_PORT"
+        value = "5432"
+      }
+      env {
+        name  = "DB_USER"
+        value = google_sql_user.app.name
+      }
+      env {
+        name  = "DB_NAME"
+        value = google_sql_database.app.name
+      }
+      env {
+        name = "DB_PASSWORD"
         value_source {
           secret_key_ref {
             secret  = google_secret_manager_secret.secrets["db-password"].secret_id
