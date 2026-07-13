@@ -9,9 +9,11 @@ em infra/cloudrun.tf (max-instances) e aqui.
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import Iterator
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import get_settings
 
@@ -27,3 +29,17 @@ def get_engine() -> Engine:
         pool_recycle=1800,
         future=True,
     )
+
+
+@lru_cache
+def get_session_factory() -> sessionmaker[Session]:
+    return sessionmaker(bind=get_engine(), autoflush=False, expire_on_commit=False)
+
+
+def get_db() -> Iterator[Session]:
+    """Dependência FastAPI: uma sessão por requisição, fechada ao final."""
+    session = get_session_factory()()
+    try:
+        yield session
+    finally:
+        session.close()

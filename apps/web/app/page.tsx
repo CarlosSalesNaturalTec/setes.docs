@@ -1,15 +1,35 @@
-import { apiHealthPath } from "@/lib/api";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+import { useAuth } from "@/components/auth-provider";
+import { api } from "@/lib/api";
 
 export default function Home() {
+  const router = useRouter();
+  const { usuario, carregando } = useAuth();
+
+  useEffect(() => {
+    if (carregando) return;
+    if (usuario) {
+      router.replace("/perfil");
+      return;
+    }
+    void (async () => {
+      try {
+        const status = await api.setupStatus();
+        router.replace(status.inicializado ? "/login" : "/setup");
+      } catch {
+        router.replace("/login");
+      }
+    })();
+  }, [carregando, usuario, router]);
+
   return (
     <main className="mx-auto max-w-2xl p-8">
       <h1 className="text-2xl font-semibold">SETES.DOCS</h1>
-      <p className="mt-2 text-gray-600">
-        Bootstrap da infraestrutura concluído. Frontend Next.js no ar.
-      </p>
-      <p className="mt-4 text-sm text-gray-500">
-        Contrato da API (health): <code>{apiHealthPath}</code>
-      </p>
+      <p className="mt-2 text-gray-600">Carregando…</p>
     </main>
   );
 }

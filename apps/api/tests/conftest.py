@@ -4,10 +4,27 @@ from __future__ import annotations
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import text
 
 from app import main
 from app.config import Settings, get_settings
+from app.db.session import get_engine, get_session_factory
+from app.rate_limit import limiter
 from app.security import oidc
+
+_TABELAS_NEGOCIO = (
+    "sessao",
+    "token_autenticacao",
+    "senha_historico",
+    "log_seguranca",
+    "roteiro_etapa",
+    "roteiro",
+    "tipo_processo",
+    "unidade_gestor",
+    "usuario",
+    "unidade",
+    "sistema_config",
+)
 
 
 @pytest.fixture
@@ -21,10 +38,25 @@ def settings() -> Settings:
 
 @pytest.fixture
 def client(settings: Settings):
+    limiter.reset()  # contador de rate limit (D6) é em memória do processo — isola entre testes
     main.app.dependency_overrides[get_settings] = lambda: settings
     with TestClient(main.app) as c:
         yield c
     main.app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def db():
+    """Sessão contra o Postgres real de desenvolvimento (docker), truncada após o teste."""
+    session = get_session_factory()()
+    try:
+        yield session
+    finally:
+        session.rollback()
+        session.close()
+        with get_engine().begin() as conn:
+            conn.execute(text(f"TRUNCATE {', '.join(_TABELAS_NEGOCIO)} RESTART IDENTITY CASCADE"))
+            conn.execute(text("INSERT INTO sistema_config (id, inicializado) VALUES (1, false)"))
 
 
 @pytest.fixture

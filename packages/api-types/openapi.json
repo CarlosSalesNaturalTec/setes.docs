@@ -17,6 +17,150 @@
         "title": "AckResponse",
         "type": "object"
       },
+      "AtualizarRoteiroRequest": {
+        "properties": {
+          "unidade_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unidade Ids",
+            "type": "array"
+          }
+        },
+        "title": "AtualizarRoteiroRequest",
+        "type": "object"
+      },
+      "CadastroUnidadeRequest": {
+        "properties": {
+          "gestor_responsavel_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gestor Responsavel Id"
+          },
+          "nome": {
+            "minLength": 1,
+            "title": "Nome",
+            "type": "string"
+          },
+          "sigla": {
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Sigla",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nome",
+          "sigla"
+        ],
+        "title": "CadastroUnidadeRequest",
+        "type": "object"
+      },
+      "CadastroUsuarioRequest": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "perfil": {
+            "enum": [
+              "servidor",
+              "gestor",
+              "administrador"
+            ],
+            "title": "Perfil",
+            "type": "string"
+          },
+          "unidade_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unidade Id"
+          }
+        },
+        "required": [
+          "nome",
+          "email",
+          "perfil"
+        ],
+        "title": "CadastroUsuarioRequest",
+        "type": "object"
+      },
+      "CriarTipoProcessoRequest": {
+        "properties": {
+          "nome": {
+            "minLength": 1,
+            "title": "Nome",
+            "type": "string"
+          },
+          "unidade_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unidade Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "nome"
+        ],
+        "title": "CriarTipoProcessoRequest",
+        "type": "object"
+      },
+      "EditarUnidadeRequest": {
+        "properties": {
+          "gestor_responsavel_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gestor Responsavel Id"
+          },
+          "nome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nome"
+          },
+          "sigla": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sigla"
+          }
+        },
+        "title": "EditarUnidadeRequest",
+        "type": "object"
+      },
       "EmailTaskPayload": {
         "description": "Corpo da tarefa enfileirada no Cloud Tasks e entregue ao endpoint interno.",
         "properties": {
@@ -45,6 +189,24 @@
           "event_id"
         ],
         "title": "EmailTaskPayload",
+        "type": "object"
+      },
+      "EtapaRoteiroResponse": {
+        "properties": {
+          "ordem": {
+            "title": "Ordem",
+            "type": "integer"
+          },
+          "unidade_id": {
+            "title": "Unidade Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "unidade_id",
+          "ordem"
+        ],
+        "title": "EtapaRoteiroResponse",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -82,6 +244,502 @@
           "service"
         ],
         "title": "HealthResponse",
+        "type": "object"
+      },
+      "ListaUsuariosResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/UsuarioResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size"
+        ],
+        "title": "ListaUsuariosResponse",
+        "type": "object"
+      },
+      "LoginRequest": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          },
+          "senha": {
+            "title": "Senha",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "senha"
+        ],
+        "title": "LoginRequest",
+        "type": "object"
+      },
+      "LoginResponse": {
+        "properties": {
+          "exp": {
+            "format": "date-time",
+            "title": "Exp",
+            "type": "string"
+          },
+          "token": {
+            "title": "Token",
+            "type": "string"
+          },
+          "usuario": {
+            "$ref": "#/components/schemas/UsuarioResumo"
+          }
+        },
+        "required": [
+          "token",
+          "exp",
+          "usuario"
+        ],
+        "title": "LoginResponse",
+        "type": "object"
+      },
+      "MeResponse": {
+        "properties": {
+          "exp": {
+            "format": "date-time",
+            "title": "Exp",
+            "type": "string"
+          },
+          "usuario": {
+            "$ref": "#/components/schemas/UsuarioResumo"
+          }
+        },
+        "required": [
+          "usuario",
+          "exp"
+        ],
+        "title": "MeResponse",
+        "type": "object"
+      },
+      "MensagemResponse": {
+        "properties": {
+          "mensagem": {
+            "title": "Mensagem",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mensagem"
+        ],
+        "title": "MensagemResponse",
+        "type": "object"
+      },
+      "MeuPerfilResponse": {
+        "description": "US 1.5 — dados cadastrais + histórico. `processos`/`documentos_assinados`\nficam sempre vazios neste change (as tabelas `processo`/`documento` são do\nÉpico 2/3); os campos de mensagem cobrem o estado vazio (Cen.2).",
+        "properties": {
+          "documentos_assinados": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Documentos Assinados",
+            "type": "array"
+          },
+          "mensagem_documentos": {
+            "default": "Nenhum documento assinado",
+            "title": "Mensagem Documentos",
+            "type": "string"
+          },
+          "mensagem_processos": {
+            "default": "Nenhum processo registrado",
+            "title": "Mensagem Processos",
+            "type": "string"
+          },
+          "processos": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Processos",
+            "type": "array"
+          },
+          "usuario": {
+            "$ref": "#/components/schemas/UsuarioResponse"
+          }
+        },
+        "required": [
+          "usuario"
+        ],
+        "title": "MeuPerfilResponse",
+        "type": "object"
+      },
+      "PrimeiroAcessoRequest": {
+        "properties": {
+          "senha": {
+            "title": "Senha",
+            "type": "string"
+          }
+        },
+        "required": [
+          "senha"
+        ],
+        "title": "PrimeiroAcessoRequest",
+        "type": "object"
+      },
+      "RecuperarSenhaRequest": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "RecuperarSenhaRequest",
+        "type": "object"
+      },
+      "RedefinirSenhaRequest": {
+        "properties": {
+          "senha": {
+            "title": "Senha",
+            "type": "string"
+          }
+        },
+        "required": [
+          "senha"
+        ],
+        "title": "RedefinirSenhaRequest",
+        "type": "object"
+      },
+      "RoteiroResponse": {
+        "properties": {
+          "etapas": {
+            "items": {
+              "$ref": "#/components/schemas/EtapaRoteiroResponse"
+            },
+            "title": "Etapas",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "vigente": {
+            "title": "Vigente",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "vigente",
+          "etapas"
+        ],
+        "title": "RoteiroResponse",
+        "type": "object"
+      },
+      "SetupAdministrador": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          },
+          "nome": {
+            "minLength": 1,
+            "title": "Nome",
+            "type": "string"
+          },
+          "senha": {
+            "title": "Senha",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nome",
+          "email",
+          "senha"
+        ],
+        "title": "SetupAdministrador",
+        "type": "object"
+      },
+      "SetupRequest": {
+        "properties": {
+          "administrador": {
+            "$ref": "#/components/schemas/SetupAdministrador"
+          },
+          "unidade": {
+            "$ref": "#/components/schemas/SetupUnidade"
+          }
+        },
+        "required": [
+          "administrador",
+          "unidade"
+        ],
+        "title": "SetupRequest",
+        "type": "object"
+      },
+      "SetupResponse": {
+        "properties": {
+          "unidade_id": {
+            "title": "Unidade Id",
+            "type": "string"
+          },
+          "usuario_id": {
+            "title": "Usuario Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "usuario_id",
+          "unidade_id"
+        ],
+        "title": "SetupResponse",
+        "type": "object"
+      },
+      "SetupStatusResponse": {
+        "properties": {
+          "inicializado": {
+            "title": "Inicializado",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "inicializado"
+        ],
+        "title": "SetupStatusResponse",
+        "type": "object"
+      },
+      "SetupUnidade": {
+        "properties": {
+          "nome": {
+            "minLength": 1,
+            "title": "Nome",
+            "type": "string"
+          },
+          "sigla": {
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Sigla",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nome",
+          "sigla"
+        ],
+        "title": "SetupUnidade",
+        "type": "object"
+      },
+      "TipoProcessoResponse": {
+        "properties": {
+          "ativo": {
+            "title": "Ativo",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "roteiro": {
+            "$ref": "#/components/schemas/RoteiroResponse"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "ativo",
+          "roteiro"
+        ],
+        "title": "TipoProcessoResponse",
+        "type": "object"
+      },
+      "TransferirUnidadeRequest": {
+        "properties": {
+          "unidade_id": {
+            "title": "Unidade Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "unidade_id"
+        ],
+        "title": "TransferirUnidadeRequest",
+        "type": "object"
+      },
+      "TrocarSenhaRequest": {
+        "properties": {
+          "nova_senha": {
+            "minLength": 1,
+            "title": "Nova Senha",
+            "type": "string"
+          },
+          "senha_atual": {
+            "title": "Senha Atual",
+            "type": "string"
+          }
+        },
+        "required": [
+          "senha_atual",
+          "nova_senha"
+        ],
+        "title": "TrocarSenhaRequest",
+        "type": "object"
+      },
+      "UnidadeResponse": {
+        "properties": {
+          "ativo": {
+            "title": "Ativo",
+            "type": "boolean"
+          },
+          "gestor_responsavel_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gestor Responsavel Id"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "sigla": {
+            "title": "Sigla",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "sigla",
+          "ativo",
+          "gestor_responsavel_id"
+        ],
+        "title": "UnidadeResponse",
+        "type": "object"
+      },
+      "UnidadesGeridasRequest": {
+        "properties": {
+          "unidade_ids": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Unidade Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "unidade_ids"
+        ],
+        "title": "UnidadesGeridasRequest",
+        "type": "object"
+      },
+      "UsuarioResponse": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "perfil": {
+            "title": "Perfil",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "unidade_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unidade Id"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "email",
+          "perfil",
+          "status",
+          "unidade_id"
+        ],
+        "title": "UsuarioResponse",
+        "type": "object"
+      },
+      "UsuarioResumo": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "perfil": {
+            "title": "Perfil",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "email",
+          "perfil",
+          "status"
+        ],
+        "title": "UsuarioResumo",
         "type": "object"
       },
       "ValidationError": {
@@ -132,6 +790,413 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/admin/usuarios/{usuario_id}/resetar-senha": {
+      "post": {
+        "description": "PRD US 1.10 — invalida a senha atual, envia link de redefinição, audita.",
+        "operationId": "resetar_senha_admin_admin_usuarios__usuario_id__resetar_senha_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "usuario_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Usuario Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Resetar Senha Admin",
+        "tags": [
+          "usuarios"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "login_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Login",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "logout_auth_logout_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Logout",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "me_auth_me_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Me",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/primeiro-acesso/{token}": {
+      "post": {
+        "description": "PRD US 1.6 Cen.1 — senha aceita, usuário é autenticado e status vira Ativo.",
+        "operationId": "primeiro_acesso_auth_primeiro_acesso__token__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrimeiroAcessoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Primeiro Acesso",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/recuperar-senha": {
+      "post": {
+        "description": "PRD US 1.3 Cen.3/Cen.5 — nunca revela se o e-mail está cadastrado.",
+        "operationId": "recuperar_senha_auth_recuperar_senha_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecuperarSenhaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Recuperar Senha",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/redefinir-senha/{token}": {
+      "post": {
+        "description": "Zera bloqueio/tentativas na mesma transação (US 1.3 Cen.2c — desbloqueio automático).",
+        "operationId": "redefinir_senha_auth_redefinir_senha__token__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedefinirSenhaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Redefinir Senha",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/trocar-senha": {
+      "post": {
+        "description": "PRD US 1.7 — exige senha atual correta; impede reuso das últimas 6 senhas.",
+        "operationId": "trocar_senha_auth_trocar_senha_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrocarSenhaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MensagemResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Trocar Senha",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/health": {
       "get": {
         "operationId": "health_health_get",
@@ -210,6 +1275,871 @@
         "summary": "Process Email Task",
         "tags": [
           "internal"
+        ]
+      }
+    },
+    "/setup": {
+      "post": {
+        "operationId": "inicializar_sistema_setup_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Inicializar Sistema",
+        "tags": [
+          "setup"
+        ]
+      }
+    },
+    "/setup/status": {
+      "get": {
+        "operationId": "status_inicializacao_setup_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupStatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Status Inicializacao",
+        "tags": [
+          "setup"
+        ]
+      }
+    },
+    "/tipos-processo": {
+      "get": {
+        "description": "Catálogo de tipos de processo com o roteiro vigente de cada um.",
+        "operationId": "listar_tipos_processo_tipos_processo_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TipoProcessoResponse"
+                  },
+                  "title": "Response Listar Tipos Processo Tipos Processo Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Listar Tipos Processo",
+        "tags": [
+          "tipos-processo"
+        ]
+      },
+      "post": {
+        "operationId": "criar_tipo_processo_tipos_processo_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarTipoProcessoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoProcessoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Criar Tipo Processo",
+        "tags": [
+          "tipos-processo"
+        ]
+      }
+    },
+    "/tipos-processo/{tipo_processo_id}/roteiro": {
+      "put": {
+        "description": "US 8.2 Cen.2 — cria nova versão vigente; a anterior fica congelada\n(`vigente=false`) e suas `roteiro_etapa` nunca são alteradas — processos já\ncriados sob ela mantêm o roteiro do momento de sua criação.",
+        "operationId": "atualizar_roteiro_tipos_processo__tipo_processo_id__roteiro_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tipo_processo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tipo Processo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizarRoteiroRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoteiroResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Atualizar Roteiro",
+        "tags": [
+          "tipos-processo"
+        ]
+      }
+    },
+    "/unidades": {
+      "get": {
+        "description": "Catálogo de unidades — usado pelos formulários de cadastro/CRUD do frontend.",
+        "operationId": "listar_unidades_unidades_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UnidadeResponse"
+                  },
+                  "title": "Response Listar Unidades Unidades Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Listar Unidades",
+        "tags": [
+          "unidades"
+        ]
+      },
+      "post": {
+        "operationId": "cadastrar_unidade_unidades_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CadastroUnidadeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnidadeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cadastrar Unidade",
+        "tags": [
+          "unidades"
+        ]
+      }
+    },
+    "/unidades/{unidade_id}": {
+      "patch": {
+        "operationId": "editar_unidade_unidades__unidade_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "unidade_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Unidade Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditarUnidadeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnidadeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Editar Unidade",
+        "tags": [
+          "unidades"
+        ]
+      }
+    },
+    "/unidades/{unidade_id}/desativar": {
+      "post": {
+        "operationId": "desativar_unidade_unidades__unidade_id__desativar_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "unidade_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Unidade Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnidadeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Desativar Unidade",
+        "tags": [
+          "unidades"
+        ]
+      }
+    },
+    "/usuarios": {
+      "get": {
+        "description": "Administrador lista todos; Gestor só lista usuários das unidades que gerencia.",
+        "operationId": "listar_usuarios_usuarios_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaUsuariosResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Listar Usuarios",
+        "tags": [
+          "usuarios"
+        ]
+      },
+      "post": {
+        "description": "PRD US 1.1 (Administrador) e US 1.2 (Gestor, restrito à própria unidade/perfil Servidor).",
+        "operationId": "cadastrar_usuario_usuarios_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CadastroUsuarioRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cadastrar Usuario",
+        "tags": [
+          "usuarios"
+        ]
+      }
+    },
+    "/usuarios/me/perfil": {
+      "get": {
+        "description": "US 1.5 — sempre os dados do próprio token (`get_current_user`); não há\nparâmetro de ID manipulável, então não existe rota que permita ver o\nperfil de terceiros (US 1.5 Cen.2 / task 10.2).",
+        "operationId": "meu_perfil_usuarios_me_perfil_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeuPerfilResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Meu Perfil",
+        "tags": [
+          "usuarios"
+        ]
+      }
+    },
+    "/usuarios/{usuario_id}/unidade": {
+      "patch": {
+        "description": "US 8.6 — vínculo 1:1 Servidor↔unidade. O PATCH sempre *substitui* o\nvínculo (nunca adiciona), então o cenário de \"vínculo duplo\" (Cen.2) é\nestruturalmente impossível: não existe operação que preserve o vínculo\nanterior e crie um segundo — `unidade_id` é uma FK escalar.",
+        "operationId": "transferir_unidade_usuarios__usuario_id__unidade_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "usuario_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Usuario Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferirUnidadeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Transferir Unidade",
+        "tags": [
+          "usuarios"
+        ]
+      }
+    },
+    "/usuarios/{usuario_id}/unidades-geridas": {
+      "get": {
+        "operationId": "obter_unidades_geridas_usuarios__usuario_id__unidades_geridas_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "usuario_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Usuario Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Response Obter Unidades Geridas Usuarios  Usuario Id  Unidades Geridas Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Obter Unidades Geridas",
+        "tags": [
+          "usuarios"
+        ]
+      },
+      "put": {
+        "description": "US 8.6b — conjunto de unidades geridas por um Gestor (N:N).",
+        "operationId": "definir_unidades_geridas_usuarios__usuario_id__unidades_geridas_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "usuario_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Usuario Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnidadesGeridasRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Response Definir Unidades Geridas Usuarios  Usuario Id  Unidades Geridas Put",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Definir Unidades Geridas",
+        "tags": [
+          "usuarios"
         ]
       }
     }

@@ -1,7 +1,4 @@
-"""Ambiente Alembic. Conexão via DATABASE_URL (IP privado do Cloud SQL).
-
-Baseline sem tabela de negócio — o schema vem em changes futuros.
-"""
+"""Ambiente Alembic. Conexão via DATABASE_URL (IP privado do Cloud SQL)."""
 
 from __future__ import annotations
 
@@ -11,6 +8,8 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from app.config import get_settings
+from app.db import models  # noqa: F401 — registra os modelos em Base.metadata
+from app.db.base import Base
 
 config = context.config
 
@@ -20,8 +19,7 @@ if config.config_file_name is not None:
 # URL resolvida do ambiente (não commitada no alembic.ini).
 config.set_main_option("sqlalchemy.url", get_settings().database_url)
 
-# Sem metadata de negócio nesta baseline.
-target_metadata = None
+target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:

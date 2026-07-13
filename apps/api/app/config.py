@@ -48,6 +48,24 @@ class Settings(BaseSettings):
     # Auth --------------------------------------------------------------------
     jwt_signing_key: str = Field(default="", alias="JWT_SIGNING_KEY")
 
+    # Cloud Tasks — fila `emails` provisionada no bootstrap (D10).
+    cloud_tasks_location: str = Field(default="southamerica-east1", alias="CLOUD_TASKS_LOCATION")
+    cloud_tasks_queue: str = Field(default="emails", alias="CLOUD_TASKS_QUEUE")
+
+    # URL do frontend Next.js — usada para montar os links enviados por e-mail
+    # (primeiro acesso, recuperação de senha, reset por Administrador).
+    frontend_base_url: str = Field(default="http://localhost:3000", alias="FRONTEND_BASE_URL")
+
+    # CORS — o frontend chama a API a partir de uma origem diferente (dev:
+    # localhost:3000 -> localhost:8000; prod: domínios distintos no Cloud Run).
+    cors_allowed_origins_raw: str = Field(
+        default="http://localhost:3000,http://127.0.0.1:3000", alias="CORS_ALLOWED_ORIGINS"
+    )
+
+    @property
+    def cors_allowed_origins(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_allowed_origins_raw.split(",") if origin.strip()]
+
 
 @lru_cache
 def get_settings() -> Settings:

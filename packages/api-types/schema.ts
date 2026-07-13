@@ -4,6 +4,157 @@
  */
 
 export interface paths {
+    "/admin/usuarios/{usuario_id}/resetar-senha": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resetar Senha Admin
+         * @description PRD US 1.10 — invalida a senha atual, envia link de redefinição, audita.
+         */
+        post: operations["resetar_senha_admin_admin_usuarios__usuario_id__resetar_senha_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Login */
+        post: operations["login_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Logout */
+        post: operations["logout_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Me */
+        get: operations["me_auth_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/primeiro-acesso/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Primeiro Acesso
+         * @description PRD US 1.6 Cen.1 — senha aceita, usuário é autenticado e status vira Ativo.
+         */
+        post: operations["primeiro_acesso_auth_primeiro_acesso__token__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/recuperar-senha": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Recuperar Senha
+         * @description PRD US 1.3 Cen.3/Cen.5 — nunca revela se o e-mail está cadastrado.
+         */
+        post: operations["recuperar_senha_auth_recuperar_senha_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/redefinir-senha/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Redefinir Senha
+         * @description Zera bloqueio/tentativas na mesma transação (US 1.3 Cen.2c — desbloqueio automático).
+         */
+        post: operations["redefinir_senha_auth_redefinir_senha__token__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/trocar-senha": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Trocar Senha
+         * @description PRD US 1.7 — exige senha atual correta; impede reuso das últimas 6 senhas.
+         */
+        post: operations["trocar_senha_auth_trocar_senha_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -45,6 +196,228 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Inicializar Sistema */
+        post: operations["inicializar_sistema_setup_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/setup/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status Inicializacao */
+        get: operations["status_inicializacao_setup_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tipos-processo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Tipos Processo
+         * @description Catálogo de tipos de processo com o roteiro vigente de cada um.
+         */
+        get: operations["listar_tipos_processo_tipos_processo_get"];
+        put?: never;
+        /** Criar Tipo Processo */
+        post: operations["criar_tipo_processo_tipos_processo_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tipos-processo/{tipo_processo_id}/roteiro": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Atualizar Roteiro
+         * @description US 8.2 Cen.2 — cria nova versão vigente; a anterior fica congelada
+         *     (`vigente=false`) e suas `roteiro_etapa` nunca são alteradas — processos já
+         *     criados sob ela mantêm o roteiro do momento de sua criação.
+         */
+        put: operations["atualizar_roteiro_tipos_processo__tipo_processo_id__roteiro_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/unidades": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Unidades
+         * @description Catálogo de unidades — usado pelos formulários de cadastro/CRUD do frontend.
+         */
+        get: operations["listar_unidades_unidades_get"];
+        put?: never;
+        /** Cadastrar Unidade */
+        post: operations["cadastrar_unidade_unidades_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/unidades/{unidade_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Editar Unidade */
+        patch: operations["editar_unidade_unidades__unidade_id__patch"];
+        trace?: never;
+    };
+    "/unidades/{unidade_id}/desativar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Desativar Unidade */
+        post: operations["desativar_unidade_unidades__unidade_id__desativar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/usuarios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Usuarios
+         * @description Administrador lista todos; Gestor só lista usuários das unidades que gerencia.
+         */
+        get: operations["listar_usuarios_usuarios_get"];
+        put?: never;
+        /**
+         * Cadastrar Usuario
+         * @description PRD US 1.1 (Administrador) e US 1.2 (Gestor, restrito à própria unidade/perfil Servidor).
+         */
+        post: operations["cadastrar_usuario_usuarios_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/usuarios/me/perfil": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Meu Perfil
+         * @description US 1.5 — sempre os dados do próprio token (`get_current_user`); não há
+         *     parâmetro de ID manipulável, então não existe rota que permita ver o
+         *     perfil de terceiros (US 1.5 Cen.2 / task 10.2).
+         */
+        get: operations["meu_perfil_usuarios_me_perfil_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/usuarios/{usuario_id}/unidade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Transferir Unidade
+         * @description US 8.6 — vínculo 1:1 Servidor↔unidade. O PATCH sempre *substitui* o
+         *     vínculo (nunca adiciona), então o cenário de "vínculo duplo" (Cen.2) é
+         *     estruturalmente impossível: não existe operação que preserve o vínculo
+         *     anterior e crie um segundo — `unidade_id` é uma FK escalar.
+         */
+        patch: operations["transferir_unidade_usuarios__usuario_id__unidade_patch"];
+        trace?: never;
+    };
+    "/usuarios/{usuario_id}/unidades-geridas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obter Unidades Geridas */
+        get: operations["obter_unidades_geridas_usuarios__usuario_id__unidades_geridas_get"];
+        /**
+         * Definir Unidades Geridas
+         * @description US 8.6b — conjunto de unidades geridas por um Gestor (N:N).
+         */
+        put: operations["definir_unidades_geridas_usuarios__usuario_id__unidades_geridas_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -56,6 +429,50 @@ export interface components {
              * @example acked
              */
             status: string;
+        };
+        /** AtualizarRoteiroRequest */
+        AtualizarRoteiroRequest: {
+            /** Unidade Ids */
+            unidade_ids?: string[];
+        };
+        /** CadastroUnidadeRequest */
+        CadastroUnidadeRequest: {
+            /** Gestor Responsavel Id */
+            gestor_responsavel_id?: string | null;
+            /** Nome */
+            nome: string;
+            /** Sigla */
+            sigla: string;
+        };
+        /** CadastroUsuarioRequest */
+        CadastroUsuarioRequest: {
+            /** Email */
+            email: string;
+            /** Nome */
+            nome: string;
+            /**
+             * Perfil
+             * @enum {string}
+             */
+            perfil: "servidor" | "gestor" | "administrador";
+            /** Unidade Id */
+            unidade_id?: string | null;
+        };
+        /** CriarTipoProcessoRequest */
+        CriarTipoProcessoRequest: {
+            /** Nome */
+            nome: string;
+            /** Unidade Ids */
+            unidade_ids?: string[];
+        };
+        /** EditarUnidadeRequest */
+        EditarUnidadeRequest: {
+            /** Gestor Responsavel Id */
+            gestor_responsavel_id?: string | null;
+            /** Nome */
+            nome?: string | null;
+            /** Sigla */
+            sigla?: string | null;
         };
         /**
          * EmailTaskPayload
@@ -74,6 +491,13 @@ export interface components {
              */
             to: string;
         };
+        /** EtapaRoteiroResponse */
+        EtapaRoteiroResponse: {
+            /** Ordem */
+            ordem: number;
+            /** Unidade Id */
+            unidade_id: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -90,6 +514,210 @@ export interface components {
              * Status
              * @example ok
              */
+            status: string;
+        };
+        /** ListaUsuariosResponse */
+        ListaUsuariosResponse: {
+            /** Items */
+            items: components["schemas"]["UsuarioResponse"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /** LoginRequest */
+        LoginRequest: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Senha */
+            senha: string;
+        };
+        /** LoginResponse */
+        LoginResponse: {
+            /**
+             * Exp
+             * Format: date-time
+             */
+            exp: string;
+            /** Token */
+            token: string;
+            usuario: components["schemas"]["UsuarioResumo"];
+        };
+        /** MeResponse */
+        MeResponse: {
+            /**
+             * Exp
+             * Format: date-time
+             */
+            exp: string;
+            usuario: components["schemas"]["UsuarioResumo"];
+        };
+        /** MensagemResponse */
+        MensagemResponse: {
+            /** Mensagem */
+            mensagem: string;
+        };
+        /**
+         * MeuPerfilResponse
+         * @description US 1.5 — dados cadastrais + histórico. `processos`/`documentos_assinados`
+         *     ficam sempre vazios neste change (as tabelas `processo`/`documento` são do
+         *     Épico 2/3); os campos de mensagem cobrem o estado vazio (Cen.2).
+         */
+        MeuPerfilResponse: {
+            /** Documentos Assinados */
+            documentos_assinados?: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Mensagem Documentos
+             * @default Nenhum documento assinado
+             */
+            mensagem_documentos: string;
+            /**
+             * Mensagem Processos
+             * @default Nenhum processo registrado
+             */
+            mensagem_processos: string;
+            /** Processos */
+            processos?: {
+                [key: string]: unknown;
+            }[];
+            usuario: components["schemas"]["UsuarioResponse"];
+        };
+        /** PrimeiroAcessoRequest */
+        PrimeiroAcessoRequest: {
+            /** Senha */
+            senha: string;
+        };
+        /** RecuperarSenhaRequest */
+        RecuperarSenhaRequest: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+        };
+        /** RedefinirSenhaRequest */
+        RedefinirSenhaRequest: {
+            /** Senha */
+            senha: string;
+        };
+        /** RoteiroResponse */
+        RoteiroResponse: {
+            /** Etapas */
+            etapas: components["schemas"]["EtapaRoteiroResponse"][];
+            /** Id */
+            id: string;
+            /** Vigente */
+            vigente: boolean;
+        };
+        /** SetupAdministrador */
+        SetupAdministrador: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Nome */
+            nome: string;
+            /** Senha */
+            senha: string;
+        };
+        /** SetupRequest */
+        SetupRequest: {
+            administrador: components["schemas"]["SetupAdministrador"];
+            unidade: components["schemas"]["SetupUnidade"];
+        };
+        /** SetupResponse */
+        SetupResponse: {
+            /** Unidade Id */
+            unidade_id: string;
+            /** Usuario Id */
+            usuario_id: string;
+        };
+        /** SetupStatusResponse */
+        SetupStatusResponse: {
+            /** Inicializado */
+            inicializado: boolean;
+        };
+        /** SetupUnidade */
+        SetupUnidade: {
+            /** Nome */
+            nome: string;
+            /** Sigla */
+            sigla: string;
+        };
+        /** TipoProcessoResponse */
+        TipoProcessoResponse: {
+            /** Ativo */
+            ativo: boolean;
+            /** Id */
+            id: string;
+            /** Nome */
+            nome: string;
+            roteiro: components["schemas"]["RoteiroResponse"];
+        };
+        /** TransferirUnidadeRequest */
+        TransferirUnidadeRequest: {
+            /** Unidade Id */
+            unidade_id: string;
+        };
+        /** TrocarSenhaRequest */
+        TrocarSenhaRequest: {
+            /** Nova Senha */
+            nova_senha: string;
+            /** Senha Atual */
+            senha_atual: string;
+        };
+        /** UnidadeResponse */
+        UnidadeResponse: {
+            /** Ativo */
+            ativo: boolean;
+            /** Gestor Responsavel Id */
+            gestor_responsavel_id: string | null;
+            /** Id */
+            id: string;
+            /** Nome */
+            nome: string;
+            /** Sigla */
+            sigla: string;
+        };
+        /** UnidadesGeridasRequest */
+        UnidadesGeridasRequest: {
+            /** Unidade Ids */
+            unidade_ids: string[];
+        };
+        /** UsuarioResponse */
+        UsuarioResponse: {
+            /** Email */
+            email: string;
+            /** Id */
+            id: string;
+            /** Nome */
+            nome: string;
+            /** Perfil */
+            perfil: string;
+            /** Status */
+            status: string;
+            /** Unidade Id */
+            unidade_id: string | null;
+        };
+        /** UsuarioResumo */
+        UsuarioResumo: {
+            /** Email */
+            email: string;
+            /** Id */
+            id: string;
+            /** Nome */
+            nome: string;
+            /** Perfil */
+            perfil: string;
+            /** Status */
             status: string;
         };
         /** ValidationError */
@@ -114,6 +742,272 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    resetar_senha_admin_admin_usuarios__usuario_id__resetar_senha_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                usuario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    login_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logout_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    me_auth_me_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    primeiro_acesso_auth_primeiro_acesso__token__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrimeiroAcessoRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recuperar_senha_auth_recuperar_senha_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecuperarSenhaRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    redefinir_senha_auth_redefinir_senha__token__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RedefinirSenhaRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    trocar_senha_auth_trocar_senha_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TrocarSenhaRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MensagemResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     health_health_get: {
         parameters: {
             query?: never;
@@ -156,6 +1050,505 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AckResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    inicializar_sistema_setup_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetupRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    status_inicializacao_setup_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupStatusResponse"];
+                };
+            };
+        };
+    };
+    listar_tipos_processo_tipos_processo_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TipoProcessoResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    criar_tipo_processo_tipos_processo_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarTipoProcessoRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TipoProcessoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    atualizar_roteiro_tipos_processo__tipo_processo_id__roteiro_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                tipo_processo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarRoteiroRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoteiroResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_unidades_unidades_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnidadeResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cadastrar_unidade_unidades_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CadastroUnidadeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnidadeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    editar_unidade_unidades__unidade_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                unidade_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditarUnidadeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnidadeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    desativar_unidade_unidades__unidade_id__desativar_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                unidade_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnidadeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_usuarios_usuarios_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaUsuariosResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cadastrar_usuario_usuarios_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CadastroUsuarioRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    meu_perfil_usuarios_me_perfil_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeuPerfilResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    transferir_unidade_usuarios__usuario_id__unidade_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                usuario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferirUnidadeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obter_unidades_geridas_usuarios__usuario_id__unidades_geridas_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                usuario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    definir_unidades_geridas_usuarios__usuario_id__unidades_geridas_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                usuario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnidadesGeridasRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string[];
                 };
             };
             /** @description Validation Error */
