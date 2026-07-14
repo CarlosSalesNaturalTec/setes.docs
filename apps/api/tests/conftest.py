@@ -7,6 +7,9 @@ from fastapi.testclient import TestClient
 
 from app import main
 from app.config import Settings, get_settings
+from app.db.dev_reset import resetar_banco
+from app.db.session import get_engine, get_session_factory
+from app.rate_limit import limiter
 from app.security import oidc
 
 
@@ -21,10 +24,23 @@ def settings() -> Settings:
 
 @pytest.fixture
 def client(settings: Settings):
+    limiter.reset()  # contador de rate limit (D6) é em memória do processo — isola entre testes
     main.app.dependency_overrides[get_settings] = lambda: settings
     with TestClient(main.app) as c:
         yield c
     main.app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def db():
+    """Sessão contra o Postgres real de desenvolvimento (docker), truncada após o teste."""
+    session = get_session_factory()()
+    try:
+        yield session
+    finally:
+        session.rollback()
+        session.close()
+        resetar_banco(get_engine())
 
 
 @pytest.fixture

@@ -13,9 +13,15 @@ import sys
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, status
+from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.config import Settings, get_settings
 from app.email.provider import EmailDeliveryError, EmailMessage, send_email
+from app.rate_limit import limiter
+from app.routers import auth, dev_tools, setup, tipos_processo, unidades, usuarios
 from app.schemas import AckResponse, EmailTaskPayload, HealthResponse
 from app.security.oidc import require_tasks_invoker
 
@@ -27,6 +33,26 @@ logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 logger = logging.getLogger("setes.api")
 
 app = FastAPI(title="SETES.DOCS API", version="0.0.0")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=get_settings().cors_allowed_origins,
+    allow_credentials=False,  # sessão é via Bearer token (D1), não cookies
+    allow_methods=["*"],
+    allow_headers=["*"],
+    # O frontend lê o JWT renovado (sliding window, D1) neste header a cada
+    # chamada autenticada — sem expor, o fetch() do browser não o enxerga.
+    expose_headers=["X-Renewed-Token"],
+)
+
+app.include_router(setup.router)
+app.include_router(auth.router)
+app.include_router(usuarios.router)
+app.include_router(unidades.router)
+app.include_router(tipos_processo.router)
+app.include_router(dev_tools.router)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["infra"])

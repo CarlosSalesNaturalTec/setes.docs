@@ -40,12 +40,37 @@ jobs:
     defaults:
       run:
         working-directory: apps/api
+    # A suíte pytest usa Postgres real (fixture `db`, tests/conftest.py) — não
+    # sqlite/mocks. Service container efêmero só para o job.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: senha
+          POSTGRES_DB: setes
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: app
+      DB_PASSWORD: senha
+      DB_NAME: setes
+      JWT_SIGNING_KEY: ci-test-signing-key
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
         uses: astral-sh/setup-uv@v5
       - name: Sync deps
         run: uv sync --extra dev
+      - name: Run migrations
+        run: uv run alembic upgrade head
       - name: Lint
         run: uv run ruff check .
       - name: Test
