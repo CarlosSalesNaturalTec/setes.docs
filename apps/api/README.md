@@ -93,3 +93,6 @@ produção — cada endpoint responde 404 quando sua flag está desligada.
 ```bash
 cd apps/web && pnpm test:e2e
 ```
+
+<!-- no-op: valida deploy-api via WIF após correcao-pipeline-deploy-wif -->
+
