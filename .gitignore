@@ -1,5 +1,4 @@
 .agent/
-.claude/
 
 # Node / pnpm
 node_modules/
