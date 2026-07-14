@@ -72,6 +72,26 @@ Path-filtered: `api` job (ruff + pytest) runs only on `apps/api/**` changes; `we
 (typecheck + vitest) only on `apps/web/**`; `types-drift` runs whenever the API changes
 and fails if `packages/api-types` wasn't regenerated.
 
+## Environment (GCP VM)
+
+This repo runs on a dedicated Compute Engine VM (Ubuntu 24.04, `us-central1-a`, no
+external IP — egress via Cloud NAT). Other unrelated projects may be running
+concurrently on the same VM, each in its own tmux session — don't assume exclusive use
+of the machine, and check for port conflicts (e.g. local Postgres, dev servers) before
+binding.
+
+Pre-installed at the VM level — don't reinstall or re-provision these:
+- Docker + `docker-compose-v2`, enabled — this is what backs the `db` pytest fixture
+  described above
+- Node.js 22 LTS, Python 3.12, `gh` (already authenticated)
+- Playwright OS-level dependencies (`playwright install-deps` already run) — when
+  setting up Playwright for this repo, run `npx playwright install chromium firefox webkit`
+  **without** `--with-deps`; the system libraries are already present
+
+Not shared / per-checkout: Playwright's browser *binaries* are cached per project
+(tied to the `@playwright/test` version in this repo's `package.json`), so they still
+need to be installed once per checkout with the command above.
+
 ## Architecture
 
 ### Auth & sessions
