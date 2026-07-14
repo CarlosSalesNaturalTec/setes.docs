@@ -172,6 +172,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/internal/dev/emails": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar Emails */
+        get: operations["listar_emails_internal_dev_emails_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/internal/dev/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resetar */
+        post: operations["resetar_internal_dev_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/internal/tasks/email": {
         parameters: {
             query?: never;
@@ -464,6 +498,17 @@ export interface components {
             nome: string;
             /** Unidade Ids */
             unidade_ids?: string[];
+        };
+        /** DevEmailItem */
+        DevEmailItem: {
+            /** Body */
+            body: string;
+            /** Event Id */
+            event_id: string;
+            /** Subject */
+            subject: string;
+            /** To */
+            to: string;
         };
         /** EditarUnidadeRequest */
         EditarUnidadeRequest: {
@@ -1025,6 +1070,55 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HealthResponse"];
                 };
+            };
+        };
+    };
+    listar_emails_internal_dev_emails_get: {
+        parameters: {
+            query?: {
+                to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DevEmailItem"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resetar_internal_dev_reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

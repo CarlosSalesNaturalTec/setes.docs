@@ -29,6 +29,8 @@ class EnqueueConfig:
     queue: str
     target_url: str  # https://.../internal/tasks/email
     oidc_service_account_email: str
+    # Dev/E2E only (Settings.dev_email_inbox) — ver `_DEV_INBOX` abaixo.
+    dev_inbox: bool = False
 
 
 def config_from_settings(settings: Settings) -> EnqueueConfig:
@@ -38,12 +40,37 @@ def config_from_settings(settings: Settings) -> EnqueueConfig:
         queue=settings.cloud_tasks_queue,
         target_url=f"{settings.oidc_audience}/internal/tasks/email",
         oidc_service_account_email=settings.tasks_invoker_sa_email,
+        dev_inbox=settings.dev_email_inbox,
     )
 
 
 def _task_id(event_id: str) -> str:
     """Cloud Tasks só aceita `[A-Za-z0-9_-]` no nome da task."""
     return event_id.replace(":", "-")
+
+
+# Caixa de entrada de desenvolvimento (Settings.dev_email_inbox) — usada pelos
+# testes Playwright para ler o link de primeiro acesso/recuperação de senha
+# sem um provedor de e-mail real nem credenciais do Cloud Tasks localmente.
+# Processo único (uvicorn --reload roda num só worker em dev); não precisa de
+# sincronização entre processos.
+_DEV_INBOX: list[dict] = []
+
+
+def _dev_inbox_registrar(message: EmailMessage, *, event_id: str) -> None:
+    _DEV_INBOX.append(
+        {"to": message.to, "subject": message.subject, "body": message.body, "event_id": event_id}
+    )
+
+
+def dev_inbox_listar(*, to: str | None = None) -> list[dict]:
+    if to is None:
+        return list(_DEV_INBOX)
+    return [item for item in _DEV_INBOX if item["to"] == to]
+
+
+def dev_inbox_limpar() -> None:
+    _DEV_INBOX.clear()
 
 
 def enqueue_email(
@@ -54,9 +81,15 @@ def enqueue_email(
     client: tasks_v2.CloudTasksClient | None = None,
 ) -> str:
     """Cria a Cloud Task apontando para `/internal/tasks/email`. Retorna o nome da task."""
+    task_id = _task_id(event_id)
+
+    if config.dev_inbox:
+        _dev_inbox_registrar(message, event_id=event_id)
+        return f"dev-inbox/tasks/{task_id}"
+
     client = client or tasks_v2.CloudTasksClient()
     queue_path = client.queue_path(config.project_id, config.location, config.queue)
-    task_name = f"{queue_path}/tasks/{_task_id(event_id)}"
+    task_name = f"{queue_path}/tasks/{task_id}"
 
     body = json.dumps(
         {

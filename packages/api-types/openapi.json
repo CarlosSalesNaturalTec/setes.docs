@@ -122,6 +122,34 @@
         "title": "CriarTipoProcessoRequest",
         "type": "object"
       },
+      "DevEmailItem": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          },
+          "to": {
+            "title": "To",
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "subject",
+          "body",
+          "event_id"
+        ],
+        "title": "DevEmailItem",
+        "type": "object"
+      },
       "EditarUnidadeRequest": {
         "properties": {
           "gestor_responsavel_id": {
@@ -1215,6 +1243,73 @@
         "summary": "Health",
         "tags": [
           "infra"
+        ]
+      }
+    },
+    "/internal/dev/emails": {
+      "get": {
+        "operationId": "listar_emails_internal_dev_emails_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DevEmailItem"
+                  },
+                  "title": "Response Listar Emails Internal Dev Emails Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Listar Emails",
+        "tags": [
+          "dev"
+        ]
+      }
+    },
+    "/internal/dev/reset": {
+      "post": {
+        "operationId": "resetar_internal_dev_reset_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Resetar",
+        "tags": [
+          "dev"
         ]
       }
     },

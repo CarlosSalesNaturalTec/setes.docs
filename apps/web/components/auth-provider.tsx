@@ -14,6 +14,9 @@ interface AuthContextValue {
   login: (email: string, senha: string) => Promise<void>;
   logout: () => Promise<void>;
   recarregar: () => Promise<void>;
+  /** Estabelece a sessão a partir de uma LoginResponse já obtida fora de
+   * `login()` (ex.: primeiro acesso) — evita duplicar a chamada de rede. */
+  definirSessao: (usuario: Usuario, token: string) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -52,6 +55,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUsuario(resp.usuario);
   }, []);
 
+  const definirSessao = useCallback((usuarioResp: Usuario, tokenResp: string) => {
+    setToken(tokenResp);
+    setUsuario(usuarioResp);
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await api.logout();
@@ -63,8 +71,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ usuario, token, carregando, login, logout, recarregar: carregarUsuario }),
-    [usuario, token, carregando, login, logout, carregarUsuario],
+    () => ({ usuario, token, carregando, login, logout, recarregar: carregarUsuario, definirSessao }),
+    [usuario, token, carregando, login, logout, carregarUsuario, definirSessao],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

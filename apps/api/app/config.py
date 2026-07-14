@@ -56,6 +56,20 @@ class Settings(BaseSettings):
     # (primeiro acesso, recuperação de senha, reset por Administrador).
     frontend_base_url: str = Field(default="http://localhost:3000", alias="FRONTEND_BASE_URL")
 
+    # Dev/E2E only: quando habilitado, enqueue_email (D10) não chama o Cloud
+    # Tasks real — grava a mensagem numa caixa de entrada em memória, exposta
+    # via GET /internal/dev/emails. Nunca deve ser habilitado em produção
+    # (não é setado pelo Cloud Run/Secret Manager); usado pelos testes
+    # Playwright para obter o link de primeiro acesso/recuperação de senha
+    # sem depender de um provedor de e-mail real.
+    dev_email_inbox: bool = Field(default=False, alias="DEV_EMAIL_INBOX")
+
+    # Dev/E2E only: habilita POST /internal/dev/reset, que trunca as tabelas
+    # de negócio e reseeda `sistema_config` (mesmo reset usado pela fixture
+    # `db` do pytest). Roda antes da suíte Playwright (task 12.x) para
+    # garantir "banco limpo" entre execuções. Nunca setado em produção.
+    dev_db_reset: bool = Field(default=False, alias="DEV_DB_RESET")
+
     # CORS — o frontend chama a API a partir de uma origem diferente (dev:
     # localhost:3000 -> localhost:8000; prod: domínios distintos no Cloud Run).
     cors_allowed_origins_raw: str = Field(

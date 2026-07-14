@@ -6,6 +6,11 @@ node_modules/
 .next/
 *.tsbuildinfo
 
+# Playwright
+apps/web/test-results/
+apps/web/playwright-report/
+apps/web/blob-report/
+
 # Python
 __pycache__/
 *.pyc

@@ -90,21 +90,21 @@
 
 - [x] 11.1 Página `/setup` — formulário de inicialização (Administrador root + primeira unidade), oculta automaticamente se `GET /setup/status` retornar `true`
 - [x] 11.2 Página `/login` — formulário de login, tratamento de bloqueio/conta desativada, link "Esqueci minha senha"
-- [ ] 11.3 Página `/primeiro-acesso/[token]` e `/redefinir-senha/[token]` — criação de senha com validação de complexidade no client, tratamento de link expirado/usado
-- [ ] 11.4 Componente de sessão: timer de inatividade com modal de aviso 2 min antes do timeout (US 1.8 Cen.2b), sliding refresh a cada requisição autenticada bem-sucedida
+- [x] 11.3 Página `/primeiro-acesso/[token]` e `/redefinir-senha/[token]` — criação de senha com validação de complexidade no client, tratamento de link expirado/usado
+- [x] 11.4 Componente de sessão: timer de inatividade com modal de aviso 2 min antes do timeout (US 1.8 Cen.2b), sliding refresh a cada requisição autenticada bem-sucedida
 - [x] 11.5 Página `/perfil` ("Meu Perfil") — dados cadastrais + seções de histórico com estado vazio
 - [x] 11.6 Páginas administrativas `/admin/usuarios` (listagem/cadastro/transferência/unidades geridas), `/admin/unidades` (CRUD), `/admin/tipos-processo` (CRUD + editor de roteiro) — visíveis conforme perfil do usuário logado
 - [x] 11.7 Gerar tipos TS via `openapi-typescript` a partir do OpenAPI atualizado da API (`pnpm gen:types`) e consumir nas páginas acima — aceite: nenhum tipo `any` nos payloads de request/response dessas páginas
-- [ ] 11.8 Testes Vitest + React Testing Library dos formulários de login, primeiro acesso e troca de senha (validação client-side, mensagens de erro)
+- [x] 11.8 Testes Vitest + React Testing Library dos formulários de login, primeiro acesso e troca de senha (validação client-side, mensagens de erro)
 
 ## 12. Testes end-to-end (Playwright)
 
-- [ ] 12.1 Fluxo crítico: setup inicial → login do Administrador root — aceite: roda contra ambiente local com banco limpo
-- [ ] 12.2 Fluxo crítico: Administrador cadastra usuário → e-mail de primeiro acesso (mock do provedor) → usuário ativa conta → login
-- [ ] 12.3 Fluxo crítico: 3 tentativas de login incorretas → bloqueio → recuperação de senha → desbloqueio automático
-- [ ] 12.4 Fluxo crítico: Administrador cadastra unidade e tipo de processo com roteiro; Gestor tenta as mesmas ações e recebe acesso negado
+- [x] 12.1 Fluxo crítico: setup inicial → login do Administrador root — aceite: roda contra ambiente local com banco limpo
+- [x] 12.2 Fluxo crítico: Administrador cadastra usuário → e-mail de primeiro acesso (mock do provedor) → usuário ativa conta → login
+- [x] 12.3 Fluxo crítico: 3 tentativas de login incorretas → bloqueio → recuperação de senha → desbloqueio automático
+- [x] 12.4 Fluxo crítico: Administrador cadastra unidade e tipo de processo com roteiro; Gestor tenta as mesmas ações e recebe acesso negado
 
 ## 13. Documentação e fechamento
 
-- [ ] 13.1 Atualizar `apps/api/README.md` com as novas variáveis/rotas de autenticação e o comando de geração de tipos TS, se necessário
-- [ ] 13.2 Rodar `openspec verify` (ou `/opsx:verify`) comparando specs/design/tasks com a implementação antes de arquivar o change
+- [x] 13.1 Atualizar `apps/api/README.md` com as novas variáveis/rotas de autenticação e o comando de geração de tipos TS, se necessário
+- [x] 13.2 Rodar `openspec verify` (ou `/opsx:verify`) comparando specs/design/tasks com a implementação antes de arquivar o change

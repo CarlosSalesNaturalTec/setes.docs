@@ -1,0 +1,33 @@
+"""Reset de banco para desenvolvimento/E2E e testes automatizados.
+
+Trunca as tabelas de negócio (nunca as de infraestrutura do Alembic) e
+reseeda o singleton `sistema_config` como não inicializado — mesmo estado
+usado pela fixture `db` do pytest (`tests/conftest.py`) e pelo endpoint de
+dev `POST /internal/dev/reset` (Settings.dev_db_reset) consumido pelos
+testes Playwright (task 12.x) antes de cada execução da suíte.
+"""
+
+from __future__ import annotations
+
+from sqlalchemy import text
+from sqlalchemy.engine import Engine
+
+TABELAS_NEGOCIO = (
+    "sessao",
+    "token_autenticacao",
+    "senha_historico",
+    "log_seguranca",
+    "roteiro_etapa",
+    "roteiro",
+    "tipo_processo",
+    "unidade_gestor",
+    "usuario",
+    "unidade",
+    "sistema_config",
+)
+
+
+def resetar_banco(engine: Engine) -> None:
+    with engine.begin() as conn:
+        conn.execute(text(f"TRUNCATE {', '.join(TABELAS_NEGOCIO)} RESTART IDENTITY CASCADE"))
+        conn.execute(text("INSERT INTO sistema_config (id, inicializado) VALUES (1, false)"))

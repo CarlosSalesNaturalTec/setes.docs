@@ -63,7 +63,7 @@ def test_obter_unidades_geridas(client, db):
     cofin = Unidade(nome="COFIN", sigla="COFIN", ativo=True)
     db.add(cofin)
     db.commit()
-    admin = _usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin@example.com")
+    _usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin@example.com")
     gestor = _usuario(db, perfil=PerfilUsuario.GESTOR, email="gestor@example.com")
     db.add(UnidadeGestor(gestor_id=gestor.id, unidade_id=cofin.id))
     db.commit()
