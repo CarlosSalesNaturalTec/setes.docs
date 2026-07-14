@@ -66,3 +66,6 @@ rules:
     - Separar tarefas de migration/schema das tarefas de endpoint/UI
     - Toda tarefa que toque histórico de tramitação ou dados pessoais deve
       incluir tarefa de teste automatizado correspondente (não é opcional)
+    - Toda tarefa que implemente ou altere login, despacho, assinatura ou
+      consulta pública deve incluir tarefa de teste E2E via Playwright
+      correspondente (não é opcional)
