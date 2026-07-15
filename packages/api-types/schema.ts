@@ -378,6 +378,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/publico/processos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Pesquisar Processos
+         * @description US 7.2 — pesquisa paginada (20/página); sigilosos sempre excluídos.
+         */
+        get: operations["pesquisar_processos_publico_processos_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/publico/processos/{numero}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Consultar Processo
+         * @description US 7.1 — consulta por número exato; sigiloso = "não encontrado" (Cen.4).
+         */
+        get: operations["consultar_processo_publico_processos__numero__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/setup": {
         parameters: {
             query?: never;
@@ -846,6 +886,11 @@ export interface components {
             /** Tipo Participacao */
             tipo_participacao?: ("requerente" | "representado" | "terceiro") | null;
         };
+        /** InteressadoPublicoResponse */
+        InteressadoPublicoResponse: {
+            /** Nome */
+            nome: string;
+        };
         /** InteressadoResponse */
         InteressadoResponse: {
             /** Documento */
@@ -858,6 +903,24 @@ export interface components {
             tipo_documento: string | null;
             /** Tipo Participacao */
             tipo_participacao: string | null;
+        };
+        /** ItemPesquisaPublicaResponse */
+        ItemPesquisaPublicaResponse: {
+            /** Assunto */
+            assunto: string;
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+            /** Numero */
+            numero: string;
+            /** Status */
+            status: string;
+            /** Tipo Processo */
+            tipo_processo: string;
+            /** Unidade Atual */
+            unidade_atual: string;
         };
         /** KanbanResponse */
         KanbanResponse: {
@@ -946,10 +1009,62 @@ export interface components {
             }[];
             usuario: components["schemas"]["UsuarioResponse"];
         };
+        /** MovimentacaoPublicaResponse */
+        MovimentacaoPublicaResponse: {
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+            /** Status Resultante */
+            status_resultante: string;
+            /** Unidade Destino */
+            unidade_destino: string | null;
+            /** Unidade Origem */
+            unidade_origem: string | null;
+        };
+        /** PesquisaPublicaResponse */
+        PesquisaPublicaResponse: {
+            /** Items */
+            items: components["schemas"]["ItemPesquisaPublicaResponse"][];
+            /** Mensagem Vazio */
+            mensagem_vazio?: string | null;
+            /** Page */
+            page: number;
+            /**
+             * Page Size
+             * @default 20
+             */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
         /** PrimeiroAcessoRequest */
         PrimeiroAcessoRequest: {
             /** Senha */
             senha: string;
+        };
+        /** ProcessoPublicoResponse */
+        ProcessoPublicoResponse: {
+            /** Assunto */
+            assunto: string;
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+            /** Historico */
+            historico?: components["schemas"]["MovimentacaoPublicaResponse"][];
+            /** Interessados */
+            interessados?: components["schemas"]["InteressadoPublicoResponse"][];
+            /** Numero */
+            numero: string;
+            /** Status */
+            status: string;
+            /** Tipo Processo */
+            tipo_processo: string;
+            /** Unidade Atual */
+            unidade_atual: string;
         };
         /**
          * ProcessoResponse
@@ -1820,6 +1935,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProcessoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pesquisar_processos_publico_processos_get: {
+        parameters: {
+            query?: {
+                assunto?: string | null;
+                tipo_processo?: string | null;
+                data_inicio?: string | null;
+                data_fim?: string | null;
+                pagina?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PesquisaPublicaResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    consultar_processo_publico_processos__numero__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                numero: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessoPublicoResponse"];
                 };
             };
             /** @description Validation Error */

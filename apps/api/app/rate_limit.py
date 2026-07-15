@@ -14,3 +14,8 @@ from slowapi.util import get_remote_address
 limiter = Limiter(key_func=get_remote_address)
 
 RATE_LIMIT_AUTH_PUBLICO = "10/minute"
+# Épico 7 (D4) — endpoints públicos de consulta (`/publico/*`), 60/min/IP.
+RATE_LIMIT_CONSULTA_PUBLICA = "60/minute"
+MSG_RATE_LIMIT_CONSULTA_PUBLICA = (
+    "Muitas consultas realizadas. Aguarde alguns instantes e tente novamente."
+)
