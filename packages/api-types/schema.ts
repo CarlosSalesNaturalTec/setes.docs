@@ -388,6 +388,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/sistema-config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obter Sistema Config */
+        get: operations["obter_sistema_config_sistema_config_get"];
+        /**
+         * Atualizar Sistema Config
+         * @description US 8.5 Cen.1/3 — só afeta conclusões futuras (o congelamento em
+         *     `services/processo.py` já garante a não-retroatividade).
+         */
+        put: operations["atualizar_sistema_config_sistema_config_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/tipos-processo": {
         parameters: {
             query?: never;
@@ -598,6 +620,14 @@ export interface components {
             /** Unidade Ids */
             unidade_ids?: string[];
         };
+        /** AtualizarSistemaConfigRequest */
+        AtualizarSistemaConfigRequest: {
+            /**
+             * Prazo Arquivamento Dias
+             * @example 60
+             */
+            prazo_arquivamento_dias: number;
+        };
         /** CadastroUnidadeRequest */
         CadastroUnidadeRequest: {
             /** Gestor Responsavel Id */
@@ -737,7 +767,7 @@ export interface components {
             /** Motivo */
             motivo: string | null;
             /** Responsavel Id */
-            responsavel_id: string;
+            responsavel_id: string | null;
             /** Status Resultante */
             status_resultante: string;
             /** Tipo Evento */
@@ -994,6 +1024,14 @@ export interface components {
             nome: string;
             /** Sigla */
             sigla: string;
+        };
+        /** SistemaConfigResponse */
+        SistemaConfigResponse: {
+            /**
+             * Prazo Arquivamento Dias
+             * @example 30
+             */
+            prazo_arquivamento_dias: number;
         };
         /** TipoProcessoResponse */
         TipoProcessoResponse: {
@@ -1750,6 +1788,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SetupStatusResponse"];
+                };
+            };
+        };
+    };
+    obter_sistema_config_sistema_config_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SistemaConfigResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    atualizar_sistema_config_sistema_config_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarSistemaConfigRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SistemaConfigResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -57,8 +57,8 @@ class TipoEventoLog(str, enum.Enum):
 
 
 class StatusProcesso(str, enum.Enum):
-    """Máquina de estados do processo (D4). `ARQUIVADO` existe no enum, mas
-    nenhuma transição o alcança neste change — só a rotina do Change B."""
+    """Máquina de estados do processo (D4). `ARQUIVADO` só é alcançado pela
+    rotina automática de arquivamento (change arquivamento-automatico)."""
 
     ABERTO = "aberto"
     EM_TRAMITACAO = "em_tramitacao"
@@ -73,6 +73,8 @@ class TipoEventoTramitacao(str, enum.Enum):
     DESPACHO = "despacho"
     DEVOLUCAO = "devolucao"
     CONCLUSAO = "conclusao"
+    # Change B1 (US 2.5) — evento de sistema, sem responsável humano (D3).
+    ARQUIVAMENTO_AUTOMATICO = "arquivamento_automatico"
 
 
 class TipoDocumentoInteressado(str, enum.Enum):
@@ -286,6 +288,9 @@ class SistemaConfig(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     inicializado: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    # Fatia mínima da US 8.5 (change arquivamento-automatico) — demais
+    # parâmetros operacionais ficam para a tela de configurações completa.
+    prazo_arquivamento_dias: Mapped[int] = mapped_column(Integer, nullable=False, default=30)
 
 
 def _enum_col(enum_cls, name):
@@ -343,6 +348,8 @@ class Processo(Base):
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
     concluido_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # Congelado na conclusão (US 2.5 Cen.2, D1) — NULL enquanto não concluído.
+    arquivar_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     interessados: Mapped[list["ProcessoInteressado"]] = relationship(
         "ProcessoInteressado", back_populates="processo"
@@ -390,8 +397,11 @@ class Tramitacao(Base):
     unidade_destino_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("unidade.id"), nullable=True
     )
-    responsavel_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("usuario.id"), nullable=False
+    # Nullable apenas para o evento de sistema `arquivamento_automatico` — CHECK
+    # `ck_tramitacao_responsavel` (migration 0004, D3) preserva a obrigatoriedade
+    # para os demais eventos (despacho/devolução/conclusão).
+    responsavel_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("usuario.id"), nullable=True
     )
     status_resultante: Mapped[StatusProcesso] = mapped_column(
         _enum_col(StatusProcesso, "status_processo"), nullable=False

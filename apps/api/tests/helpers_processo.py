@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import uuid
+from datetime import date, datetime
 
 from sqlalchemy.orm import Session
 
 from app.db.models import (
     PerfilUsuario,
+    Processo,
     Roteiro,
     RoteiroEtapa,
+    StatusProcesso,
     StatusUsuario,
     TipoProcesso,
     Unidade,
@@ -17,6 +20,7 @@ from app.db.models import (
     Usuario,
 )
 from app.security.senha import hash_senha
+from app.services.roteiros import obter_roteiro_vigente
 
 SENHA = "SenhaForte1"
 
@@ -70,6 +74,39 @@ def tipo_com_roteiro(db: Session, *unidades: Unidade, nome: str = "Licitação")
         db.add(RoteiroEtapa(roteiro_id=roteiro.id, unidade_id=u.id, ordem=ordem))
     db.commit()
     return tipo
+
+
+def processo_concluido(
+    db: Session,
+    *,
+    unidade: Unidade,
+    criador: Usuario,
+    tipo: TipoProcesso,
+    concluido_em: datetime,
+    arquivar_em: datetime,
+    status: StatusProcesso = StatusProcesso.CONCLUIDO,
+) -> Processo:
+    """Cria um processo diretamente já `Concluído`, com `arquivar_em` sob
+    controle do teste (arquivamento não passa pelo fluxo HTTP de despacho)."""
+    roteiro = obter_roteiro_vigente(db, tipo.id)
+    processo = Processo(
+        numero=f"2026/{uuid.uuid4().int % 999999:06d}",
+        assunto="Processo de teste",
+        tipo_processo_id=tipo.id,
+        roteiro_id=roteiro.id,
+        status=status,
+        unidade_atual_id=unidade.id,
+        unidade_origem_id=unidade.id,
+        ordem_atual=0,
+        prazo_dias=30,
+        prazo_em=date.today(),
+        criado_por_id=criador.id,
+        concluido_em=concluido_em,
+        arquivar_em=arquivar_em,
+    )
+    db.add(processo)
+    db.commit()
+    return processo
 
 
 def tipo_sem_roteiro(db: Session, nome: str = "SemRoteiro") -> TipoProcesso:

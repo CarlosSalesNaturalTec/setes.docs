@@ -21,7 +21,16 @@ from slowapi.middleware import SlowAPIMiddleware
 from app.config import Settings, get_settings
 from app.email.provider import EmailDeliveryError, EmailMessage, send_email
 from app.rate_limit import limiter
-from app.routers import auth, dev_tools, processos, setup, tipos_processo, unidades, usuarios
+from app.routers import (
+    auth,
+    dev_tools,
+    processos,
+    setup,
+    sistema_config,
+    tipos_processo,
+    unidades,
+    usuarios,
+)
 from app.schemas import AckResponse, EmailTaskPayload, HealthResponse
 from app.security.oidc import require_tasks_invoker
 
@@ -53,6 +62,7 @@ app.include_router(usuarios.router)
 app.include_router(unidades.router)
 app.include_router(tipos_processo.router)
 app.include_router(processos.router)
+app.include_router(sistema_config.router)
 app.include_router(dev_tools.router)
 
 
