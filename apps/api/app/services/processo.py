@@ -18,6 +18,7 @@ from app.db.models import (
     MotivoDevolucao,
     Processo,
     ProcessoInteressado,
+    SistemaConfig,
     StatusProcesso,
     TipoDocumentoInteressado,
     TipoEventoTramitacao,
@@ -155,6 +156,11 @@ def despachar(db: Session, *, processo: Processo, responsavel: Usuario, confirma
         validar_transicao(processo.status, StatusProcesso.CONCLUIDO)
         processo.status = StatusProcesso.CONCLUIDO
         processo.concluido_em = datetime.now(timezone.utc)
+        # Congelamento do prazo de arquivamento (US 2.5 Cen.2, D1): o prazo
+        # vigente em sistema_config é lido e fixado como instante absoluto —
+        # alterações futuras do parâmetro global não retroagem sobre este processo.
+        config = db.get(SistemaConfig, 1)
+        processo.arquivar_em = processo.concluido_em + timedelta(days=config.prazo_arquivamento_dias)
         db.add(
             Tramitacao(
                 processo_id=processo.id,

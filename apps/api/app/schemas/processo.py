@@ -141,7 +141,9 @@ class EventoHistoricoResponse(BaseModel):
     tipo_evento: str
     unidade_origem_id: str | None
     unidade_destino_id: str | None
-    responsavel_id: str
+    # Nullable: o evento de sistema `arquivamento_automatico` não tem responsável
+    # humano (D3, change arquivamento-automatico).
+    responsavel_id: str | None
     status_resultante: str
     motivo: str | None
     justificativa: str | None
@@ -156,7 +158,7 @@ class EventoHistoricoResponse(BaseModel):
             unidade_destino_id=(
                 str(evento.unidade_destino_id) if evento.unidade_destino_id else None
             ),
-            responsavel_id=str(evento.responsavel_id),
+            responsavel_id=str(evento.responsavel_id) if evento.responsavel_id else None,
             status_resultante=evento.status_resultante.value,
             motivo=evento.motivo.value if evento.motivo else None,
             justificativa=evento.justificativa,
