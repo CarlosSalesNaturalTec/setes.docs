@@ -13,6 +13,10 @@ from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
 TABELAS_NEGOCIO = (
+    "tramitacao",
+    "processo_interessado",
+    "processo",
+    "processo_contador_ano",
     "sessao",
     "token_autenticacao",
     "senha_historico",

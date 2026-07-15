@@ -50,9 +50,10 @@ class ListaUsuariosResponse(BaseModel):
 
 
 class MeuPerfilResponse(BaseModel):
-    """US 1.5 — dados cadastrais + histórico. `processos`/`documentos_assinados`
-    ficam sempre vazios neste change (as tabelas `processo`/`documento` são do
-    Épico 2/3); os campos de mensagem cobrem o estado vazio (Cen.2)."""
+    """US 1.5 — dados cadastrais + histórico de atuação. `processos` passa a
+    listar os processos em que o usuário atuou (número, assunto, data e tipo de
+    ação — US 1.5 Cen.1); `documentos_assinados` segue vazio até o Épico 3/4.
+    As mensagens cobrem os estados vazios (Cen.2)."""
 
     usuario: UsuarioResponse
     processos: list[dict] = Field(default_factory=list)

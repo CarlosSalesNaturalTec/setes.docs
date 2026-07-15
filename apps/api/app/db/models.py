@@ -9,14 +9,16 @@ from __future__ import annotations
 
 import enum
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import (
     Boolean,
+    Date,
     DateTime,
     ForeignKey,
     Integer,
     String,
+    Text,
     UniqueConstraint,
     func,
 )
@@ -49,6 +51,45 @@ class TipoEventoLog(str, enum.Enum):
     LOGIN_BLOQUEADO = "login_bloqueado"
     RESET_SENHA_ADMIN = "reset_senha_admin"
     LOGIN_FALHA = "login_falha"
+    # Épico 2 (D1) — capacidade da numeração de processos AAAA/NNNNNN.
+    EXPANSAO_NUMERO_PROCESSO = "expansao_numero_processo"
+    ALERTA_CAPACIDADE = "alerta_capacidade"
+
+
+class StatusProcesso(str, enum.Enum):
+    """Máquina de estados do processo (D4). `ARQUIVADO` existe no enum, mas
+    nenhuma transição o alcança neste change — só a rotina do Change B."""
+
+    ABERTO = "aberto"
+    EM_TRAMITACAO = "em_tramitacao"
+    CONCLUIDO = "concluido"
+    ARQUIVADO = "arquivado"
+
+
+class TipoEventoTramitacao(str, enum.Enum):
+    """Eventos do histórico imutável (D4). A criação do processo NÃO é evento
+    de tramitação — a autoria vive em `Processo.criado_por_id`/`criado_em`."""
+
+    DESPACHO = "despacho"
+    DEVOLUCAO = "devolucao"
+    CONCLUSAO = "conclusao"
+
+
+class TipoDocumentoInteressado(str, enum.Enum):
+    CPF = "cpf"
+    CNPJ = "cnpj"
+
+
+class TipoParticipacaoInteressado(str, enum.Enum):
+    REQUERENTE = "requerente"
+    REPRESENTADO = "representado"
+    TERCEIRO = "terceiro"
+
+
+class MotivoDevolucao(str, enum.Enum):
+    DOCUMENTACAO_INSUFICIENTE = "documentacao_insuficiente"
+    CORRECAO_DADOS = "correcao_dados"
+    DILIGENCIA_COMPLEMENTAR = "diligencia_complementar"
 
 
 def _uuid_pk() -> Mapped[uuid.UUID]:
@@ -245,3 +286,120 @@ class SistemaConfig(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     inicializado: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+
+def _enum_col(enum_cls, name):
+    """Coluna enum nativa no padrão do projeto (values_callable + native_enum)."""
+    return SAEnum(
+        enum_cls,
+        name=name,
+        native_enum=True,
+        values_callable=lambda ec: [e.value for e in ec],
+    )
+
+
+class ProcessoContadorAno(Base):
+    """Suporte à geração atômica do número por ano (D1). Uma linha por ano;
+    `ultimo_sequencial` incrementado via upsert na mesma transação do processo."""
+
+    __tablename__ = "processo_contador_ano"
+
+    ano: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)
+    ultimo_sequencial: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class Processo(Base):
+    __tablename__ = "processo"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    numero: Mapped[str] = mapped_column(String(20), nullable=False, unique=True)
+    assunto: Mapped[str] = mapped_column(String(500), nullable=False)
+    tipo_processo_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("tipo_processo.id"), nullable=False
+    )
+    # Snapshot do roteiro vigente na criação (D2) — FK permanente, sem cópia de etapas.
+    roteiro_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("roteiro.id"), nullable=False
+    )
+    status: Mapped[StatusProcesso] = mapped_column(
+        _enum_col(StatusProcesso, "status_processo"),
+        nullable=False,
+        default=StatusProcesso.ABERTO,
+    )
+    unidade_atual_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("unidade.id"), nullable=False
+    )
+    unidade_origem_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("unidade.id"), nullable=False
+    )
+    # Ordinal (roteiro_etapa.ordem) da etapa atual do snapshot (D3).
+    ordem_atual: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    prazo_dias: Mapped[int] = mapped_column(Integer, nullable=False)
+    prazo_em: Mapped[date] = mapped_column(Date, nullable=False)
+    criado_por_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("usuario.id"), nullable=False
+    )
+    criado_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    concluido_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    interessados: Mapped[list["ProcessoInteressado"]] = relationship(
+        "ProcessoInteressado", back_populates="processo"
+    )
+
+
+class ProcessoInteressado(Base):
+    """Dados pessoais de terceiro (LGPD): só `nome` é obrigatório; CPF/CNPJ e
+    tipo de participação são opcionais (proposal — tratamento LGPD)."""
+
+    __tablename__ = "processo_interessado"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    processo_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("processo.id"), nullable=False
+    )
+    nome: Mapped[str] = mapped_column(String(200), nullable=False)
+    documento: Mapped[str | None] = mapped_column(String(14), nullable=True)
+    tipo_documento: Mapped[TipoDocumentoInteressado | None] = mapped_column(
+        _enum_col(TipoDocumentoInteressado, "tipo_documento_interessado"), nullable=True
+    )
+    tipo_participacao: Mapped[TipoParticipacaoInteressado | None] = mapped_column(
+        _enum_col(TipoParticipacaoInteressado, "tipo_participacao_interessado"), nullable=True
+    )
+
+    processo: Mapped[Processo] = relationship("Processo", back_populates="interessados")
+
+
+class Tramitacao(Base):
+    """Histórico imutável de movimentações (D4). INSERT-only — nenhuma rota ou
+    método de update/delete de evento (invariante de histórico imutável)."""
+
+    __tablename__ = "tramitacao"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    processo_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("processo.id"), nullable=False
+    )
+    tipo_evento: Mapped[TipoEventoTramitacao] = mapped_column(
+        _enum_col(TipoEventoTramitacao, "tipo_evento_tramitacao"), nullable=False
+    )
+    unidade_origem_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("unidade.id"), nullable=True
+    )
+    unidade_destino_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("unidade.id"), nullable=True
+    )
+    responsavel_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("usuario.id"), nullable=False
+    )
+    status_resultante: Mapped[StatusProcesso] = mapped_column(
+        _enum_col(StatusProcesso, "status_processo"), nullable=False
+    )
+    motivo: Mapped[MotivoDevolucao | None] = mapped_column(
+        _enum_col(MotivoDevolucao, "motivo_devolucao"), nullable=True
+    )
+    justificativa: Mapped[str | None] = mapped_column(Text, nullable=True)
+    criado_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )

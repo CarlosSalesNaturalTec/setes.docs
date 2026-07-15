@@ -29,6 +29,7 @@ export function ProtectedShell({ children }: { children: React.ReactNode }) {
             <Link href="/perfil" className="font-medium">
               Meu Perfil
             </Link>
+            <Link href="/processos">Processos</Link>
             {(usuario.perfil === "administrador" || usuario.perfil === "gestor") && (
               <Link href="/admin/usuarios">Usuários</Link>
             )}

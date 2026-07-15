@@ -230,6 +230,130 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/processos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Kanban
+         * @description US 2.3/2.8 — Kanban da unidade (Servidor) ou consolidado (Gestor).
+         */
+        get: operations["listar_kanban_processos_get"];
+        put?: never;
+        /**
+         * Criar Processo
+         * @description US 2.1 — Servidor cria processo na própria unidade.
+         */
+        post: operations["criar_processo_processos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/processos/busca": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Buscar Processos
+         * @description US 2.7 — busca interna restrita ao escopo de unidade.
+         */
+        get: operations["buscar_processos_processos_busca_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/processos/{processo_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Detalhe Processo
+         * @description US 1.4 Cen.2 — detalhe por unidade; acesso fora do escopo é negado e logado.
+         */
+        get: operations["detalhe_processo_processos__processo_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/processos/{processo_id}/despachar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Despachar Processo
+         * @description US 2.2 — despacho para a próxima unidade; na última, conclusão confirmada.
+         */
+        post: operations["despachar_processo_processos__processo_id__despachar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/processos/{processo_id}/devolver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Devolver Processo
+         * @description US 2.2b — devolução para a unidade anterior, com motivo obrigatório.
+         */
+        post: operations["devolver_processo_processos__processo_id__devolver_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/processos/{processo_id}/historico": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Historico Processo
+         * @description US 2.4 — linha do tempo imutável; vazia para processo recém-criado.
+         */
+        get: operations["historico_processo_processos__processo_id__historico_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/setup": {
         parameters: {
             query?: never;
@@ -397,7 +521,8 @@ export interface paths {
          * Meu Perfil
          * @description US 1.5 — sempre os dados do próprio token (`get_current_user`); não há
          *     parâmetro de ID manipulável, então não existe rota que permita ver o
-         *     perfil de terceiros (US 1.5 Cen.2 / task 10.2).
+         *     perfil de terceiros (US 1.5 Cen.2 / task 10.2). A lista de processos atuados
+         *     (Cen.1) acompanha o usuário mesmo após transferência (US 1.4 Cen.3).
          */
         get: operations["meu_perfil_usuarios_me_perfil_get"];
         put?: never;
@@ -492,12 +617,56 @@ export interface components {
             /** Unidade Id */
             unidade_id?: string | null;
         };
+        /**
+         * CardProcessoResponse
+         * @description Card enxuto do Kanban/busca (US 2.3, 2.7, 2.8).
+         */
+        CardProcessoResponse: {
+            /** Assunto */
+            assunto: string;
+            /** Dias Restantes */
+            dias_restantes: number;
+            /** Id */
+            id: string;
+            /** Numero */
+            numero: string;
+            /**
+             * Prazo Em
+             * Format: date
+             */
+            prazo_em: string;
+            /** Status */
+            status: string;
+            /** Unidade Atual Id */
+            unidade_atual_id: string;
+            /** Vencido */
+            vencido: boolean;
+        };
+        /** CriarProcessoRequest */
+        CriarProcessoRequest: {
+            /** Assunto */
+            assunto: string;
+            /** Interessados */
+            interessados?: components["schemas"]["InteressadoInput"][];
+            /** Prazo Dias */
+            prazo_dias: number;
+            /** Tipo Processo Id */
+            tipo_processo_id: string;
+        };
         /** CriarTipoProcessoRequest */
         CriarTipoProcessoRequest: {
             /** Nome */
             nome: string;
             /** Unidade Ids */
             unidade_ids?: string[];
+        };
+        /** DespacharRequest */
+        DespacharRequest: {
+            /**
+             * Confirmar
+             * @default false
+             */
+            confirmar: boolean;
         };
         /** DevEmailItem */
         DevEmailItem: {
@@ -509,6 +678,13 @@ export interface components {
             subject: string;
             /** To */
             to: string;
+        };
+        /** DevolverRequest */
+        DevolverRequest: {
+            /** Justificativa */
+            justificativa?: string | null;
+            /** Motivo */
+            motivo?: string | null;
         };
         /** EditarUnidadeRequest */
         EditarUnidadeRequest: {
@@ -543,6 +719,30 @@ export interface components {
             /** Unidade Id */
             unidade_id: string;
         };
+        /** EventoHistoricoResponse */
+        EventoHistoricoResponse: {
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+            /** Id */
+            id: string;
+            /** Justificativa */
+            justificativa: string | null;
+            /** Motivo */
+            motivo: string | null;
+            /** Responsavel Id */
+            responsavel_id: string;
+            /** Status Resultante */
+            status_resultante: string;
+            /** Tipo Evento */
+            tipo_evento: string;
+            /** Unidade Destino Id */
+            unidade_destino_id: string | null;
+            /** Unidade Origem Id */
+            unidade_origem_id: string | null;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -560,6 +760,57 @@ export interface components {
              * @example ok
              */
             status: string;
+        };
+        /** HistoricoResponse */
+        HistoricoResponse: {
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+            /** Eventos */
+            eventos?: components["schemas"]["EventoHistoricoResponse"][];
+            /** Mensagem Vazio */
+            mensagem_vazio?: string | null;
+            /** Processo Id */
+            processo_id: string;
+        };
+        /** InteressadoInput */
+        InteressadoInput: {
+            /** Documento */
+            documento?: string | null;
+            /** Nome */
+            nome: string;
+            /** Tipo Documento */
+            tipo_documento?: ("cpf" | "cnpj") | null;
+            /** Tipo Participacao */
+            tipo_participacao?: ("requerente" | "representado" | "terceiro") | null;
+        };
+        /** InteressadoResponse */
+        InteressadoResponse: {
+            /** Documento */
+            documento: string | null;
+            /** Id */
+            id: string;
+            /** Nome */
+            nome: string;
+            /** Tipo Documento */
+            tipo_documento: string | null;
+            /** Tipo Participacao */
+            tipo_participacao: string | null;
+        };
+        /** KanbanResponse */
+        KanbanResponse: {
+            /** Items */
+            items: components["schemas"]["CardProcessoResponse"][];
+            /** Mensagem Vazio */
+            mensagem_vazio?: string | null;
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
         };
         /** ListaUsuariosResponse */
         ListaUsuariosResponse: {
@@ -609,9 +860,10 @@ export interface components {
         };
         /**
          * MeuPerfilResponse
-         * @description US 1.5 — dados cadastrais + histórico. `processos`/`documentos_assinados`
-         *     ficam sempre vazios neste change (as tabelas `processo`/`documento` são do
-         *     Épico 2/3); os campos de mensagem cobrem o estado vazio (Cen.2).
+         * @description US 1.5 — dados cadastrais + histórico de atuação. `processos` passa a
+         *     listar os processos em que o usuário atuou (número, assunto, data e tipo de
+         *     ação — US 1.5 Cen.1); `documentos_assinados` segue vazio até o Épico 3/4.
+         *     As mensagens cobrem os estados vazios (Cen.2).
          */
         MeuPerfilResponse: {
             /** Documentos Assinados */
@@ -638,6 +890,48 @@ export interface components {
         PrimeiroAcessoRequest: {
             /** Senha */
             senha: string;
+        };
+        /**
+         * ProcessoResponse
+         * @description Saída completa de um processo (criação e detalhe).
+         */
+        ProcessoResponse: {
+            /** Assunto */
+            assunto: string;
+            /** Concluido Em */
+            concluido_em: string | null;
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+            /** Criado Por Id */
+            criado_por_id: string;
+            /** Id */
+            id: string;
+            /** Interessados */
+            interessados?: components["schemas"]["InteressadoResponse"][];
+            /** Numero */
+            numero: string;
+            /** Ordem Atual */
+            ordem_atual: number;
+            /** Prazo Dias */
+            prazo_dias: number;
+            /**
+             * Prazo Em
+             * Format: date
+             */
+            prazo_em: string;
+            /** Roteiro Id */
+            roteiro_id: string;
+            /** Status */
+            status: string;
+            /** Tipo Processo Id */
+            tipo_processo_id: string;
+            /** Unidade Atual Id */
+            unidade_atual_id: string;
+            /** Unidade Origem Id */
+            unidade_origem_id: string;
         };
         /** RecuperarSenhaRequest */
         RecuperarSenhaRequest: {
@@ -1144,6 +1438,252 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AckResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_kanban_processos_get: {
+        parameters: {
+            query?: {
+                filtro_unidade?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KanbanResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    criar_processo_processos_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarProcessoRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    buscar_processos_processos_busca_get: {
+        parameters: {
+            query?: {
+                numero?: string | null;
+                assunto?: string | null;
+                data_inicial?: string | null;
+                data_final?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KanbanResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    detalhe_processo_processos__processo_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    despachar_processo_processos__processo_id__despachar_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DespacharRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    devolver_processo_processos__processo_id__devolver_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DevolverRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    historico_processo_processos__processo_id__historico_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HistoricoResponse"];
                 };
             };
             /** @description Validation Error */
