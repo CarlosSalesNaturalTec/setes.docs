@@ -23,12 +23,12 @@ O sistema SHALL permitir a edição de nome, sigla e gestor responsável de uma 
 - **ENTÃO** as alterações são salvas e passam a valer imediatamente em todas as telas e relatórios (PRD US 8.1 Cen.2)
 
 ### Requirement: Desativação de unidade administrativa
-O sistema SHALL impedir a desativação de uma unidade que possua processos em andamento, e SHALL, ao desativar uma unidade sem pendências, desvincular automaticamente seus usuários e removê-la das opções de novos roteiros, preservando seu histórico. Ver PRD US 8.1. **Nota de escopo**: a contagem de processos em andamento depende da entidade `processo` (Épico 2, ainda inexistente); nesta implementação a contagem é sempre zero, portanto o Cenário de bloqueio abaixo descreve o contrato a ser honrado quando `processo` existir, mas não é observável neste change.
+O sistema SHALL impedir a desativação de uma unidade que possua processos em andamento, e SHALL, ao desativar uma unidade sem pendências, desvincular automaticamente seus usuários e removê-la das opções de novos roteiros, preservando seu histórico. Agora que a entidade `processo` existe, a contagem de processos em andamento (status "Aberto" ou "Em Tramitação") na unidade é **efetiva**. Ver PRD US 8.1.
 
 #### Scenario: Desativação bloqueada com processos pendentes
-- **DADO** que a unidade COFIN possui processos em andamento
+- **DADO** que a unidade COFIN possui processos em andamento (status "Aberto" ou "Em Tramitação")
 - **QUANDO** o Administrador tenta desativar a unidade COFIN
-- **ENTÃO** o sistema rejeita a operação informando a quantidade de processos pendentes e orienta a redistribuí-los ou concluí-los antes (PRD US 8.1 Cen.3)
+- **ENTÃO** o sistema exibe "Esta unidade possui X processo(s) em andamento. Para desativá-la, primeiro redistribua ou conclua todos os processos pendentes." e a desativação não é concluída (PRD US 8.1 Cen.3)
 
 #### Scenario: Desativação sem processos pendentes
 - **DADO** que a unidade COFIN não possui processos em andamento
