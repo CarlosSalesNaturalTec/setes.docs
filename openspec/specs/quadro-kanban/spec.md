@@ -7,7 +7,7 @@ Visualização Kanban por unidade (Servidor) e consolidada por unidades geridas 
 ## Requirements
 
 ### Requirement: Quadro Kanban da unidade (Servidor)
-O sistema SHALL exibir ao Servidor um quadro Kanban **de visualização** (não manipulável por drag-and-drop) com as colunas "Aberto", "Em Tramitação", "Concluído" e "Arquivado", contendo apenas os processos atualmente na sua unidade, com número, assunto, prazo e dias restantes em cada card, ordenados por prazo. Ver PRD US 2.3 e US 1.4.
+O sistema SHALL exibir ao Servidor um quadro Kanban **de visualização** (não manipulável por drag-and-drop) com as colunas "Aberto", "Em Tramitação", "Concluído" e "Arquivado", contendo apenas os processos atualmente na sua unidade, com número, assunto, prazo e dias restantes em cada card, ordenados por prazo. Cada card SHALL expor o atributo `sigiloso`, e os processos sigilosos SHALL ser exibidos normalmente no Kanban da unidade com um indicador visual de "Sigiloso" (ícone de cadeado ou tarja). Ver PRD US 2.3, US 2.6 (Cen.3) e US 1.4.
 
 #### Scenario: Exibição do Kanban por colunas de status
 - **DADO** que estou autenticado como Servidor da unidade COFIN
@@ -28,6 +28,11 @@ O sistema SHALL exibir ao Servidor um quadro Kanban **de visualização** (não 
 - **DADO** que estou autenticado como Servidor de uma unidade sem processos
 - **QUANDO** acesso a tela de Processos
 - **ENTÃO** visualizo as colunas vazias com a mensagem "Nenhum processo encontrado nesta unidade" (PRD US 2.3 Cen.3)
+
+#### Scenario: Card de processo sigiloso com indicador
+- **DADO** que a minha unidade possui um processo marcado como sigiloso
+- **QUANDO** visualizo o Kanban da unidade
+- **ENTÃO** o card do processo sigiloso aparece normalmente na sua coluna de status, com um indicador visual de "Sigiloso" (ícone de cadeado ou tarja); cards de processos não sigilosos não exibem esse indicador (PRD US 2.6 Cen.3)
 
 ### Requirement: Quadro Kanban consolidado (Gestor)
 O sistema SHALL exibir ao Gestor um quadro Kanban consolidado com os processos de **todas as unidades que ele gerencia**, com o nome da unidade atual em cada card e a possibilidade de filtrar por unidade, sem exibir processos de unidades que ele não gerencia. Ver PRD US 2.8 e US 8.6b.
