@@ -32,7 +32,7 @@
 - [x] 4.2 Endpoint `POST /processos/{id}/devolver` (perfil Servidor, `require_acesso_unidade`): bloqueia se `ordem_atual==0` (Cen.2); exige `motivo` predefinido (Cen.3); move para `etapa_anterior`, status `em_tramitacao`, `ordem_atual-1`, INSERT `tramitacao` (devolucao com motivo/justificativa) — aceite: cobre Cen.1 (devolução para anterior), Cen.2 (bloqueio na primeira unidade), Cen.3 (motivo obrigatório)
 - [x] 4.3 Garantir o cenário de acesso negado: Servidor de outra unidade que tenta despachar/devolver é rejeitado e a tentativa é gravada em `log_seguranca` — aceite: 403 + linha `acesso_negado` (PRD US 1.4 Cen.2)
 - [x] 4.4 Teste automatizado de despacho/devolução: todas as transições da máquina de estados, imutabilidade do histórico (nenhum UPDATE/DELETE de evento), acesso negado gravado em log — **obrigatório por tocar histórico de tramitação**
-- [ ] 4.5 **Teste E2E do despacho** (Playwright ou extensão Claude in Chrome): login como Servidor → criar processo → despachar até a conclusão, verificando mudança de status e registro no histórico — **obrigatório (regra E2E de despacho)**
+- [x] 4.5 **Teste E2E do despacho** (Playwright ou extensão Claude in Chrome): login como Servidor → criar processo → despachar até a conclusão, verificando mudança de status e registro no histórico — **obrigatório (regra E2E de despacho)**
 
 ## 5. Histórico de tramitação (US 2.4)
 
@@ -55,14 +55,14 @@
 
 ## 8. Frontend (Next.js — `apps/web`)
 
-- [ ] 8.1 Tela de criação de processo (`app/processos/novo`): formulário com assunto, tipo, prazo, interessados (nome + CPF/CNPJ com máscara + tipo de participação), consumindo `lib/api.ts` tipado — aceite: erros de campo obrigatório e CPF/CNPJ inválido exibidos inline
-- [ ] 8.2 Tela de Kanban (`app/processos`): colunas Aberto/Em Tramitação/Concluído/Arquivado (visualização, sem drag-and-drop), cards com número/assunto/prazo/dias restantes e destaque visual de vencidos (barra vermelha 4px, negrito, ícone); botão "Atualizar"; filtro de unidade para Gestor — aceite: cobre US 2.3 Cen.1/4 e US 2.8 Cen.1/2; estados vazios com mensagens do PRD
-- [ ] 8.3 Tela de detalhe do processo (`app/processos/[id]`): metadados, interessados, ações "Despachar"/"Devolver" (com modal de confirmação de conclusão e modal de motivo de devolução) e aba "Histórico" (linha do tempo) — aceite: modal de conclusão na última etapa (US 2.2 Cen.2) e bloqueio de devolução na primeira etapa (US 2.2b Cen.2)
-- [ ] 8.4 Atualizar "Meu Perfil" (`app/perfil`) para listar processos atuados (US 1.5 Cen.1) mantendo estado vazio quando não houver — aceite: seção populada e seção vazia renderizam corretamente
-- [ ] 8.5 Teste de componente (Vitest + RTL) das telas de criação e de detalhe (validação de formulário, render de modais, estados vazios do Kanban) — aceite: `pnpm --filter @setes/web test` verde
+- [x] 8.1 Tela de criação de processo (`app/processos/novo`): formulário com assunto, tipo, prazo, interessados (nome + CPF/CNPJ com máscara + tipo de participação), consumindo `lib/api.ts` tipado — aceite: erros de campo obrigatório e CPF/CNPJ inválido exibidos inline
+- [x] 8.2 Tela de Kanban (`app/processos`): colunas Aberto/Em Tramitação/Concluído/Arquivado (visualização, sem drag-and-drop), cards com número/assunto/prazo/dias restantes e destaque visual de vencidos (barra vermelha 4px, negrito, ícone); botão "Atualizar"; filtro de unidade para Gestor — aceite: cobre US 2.3 Cen.1/4 e US 2.8 Cen.1/2; estados vazios com mensagens do PRD
+- [x] 8.3 Tela de detalhe do processo (`app/processos/[id]`): metadados, interessados, ações "Despachar"/"Devolver" (com modal de confirmação de conclusão e modal de motivo de devolução) e aba "Histórico" (linha do tempo) — aceite: modal de conclusão na última etapa (US 2.2 Cen.2) e bloqueio de devolução na primeira etapa (US 2.2b Cen.2)
+- [x] 8.4 Atualizar "Meu Perfil" (`app/perfil`) para listar processos atuados (US 1.5 Cen.1) mantendo estado vazio quando não houver — aceite: seção populada e seção vazia renderizam corretamente
+- [x] 8.5 Teste de componente (Vitest + RTL) das telas de criação e de detalhe (validação de formulário, render de modais, estados vazios do Kanban) — aceite: `pnpm --filter @setes/web test` verde
 
 ## 9. Contrato de tipos e verificação final
 
-- [ ] 9.1 Regenerar o contrato front↔back: `pnpm gen:types` e commitar `packages/api-types` atualizado — aceite: `pnpm gen:types:check` passa (snapshot não defasado)
-- [ ] 9.2 Rodar as suítes locais antes do PR: `uv run ruff check .`, `uv run pytest` (API) e `pnpm --filter @setes/web typecheck && pnpm --filter @setes/web test` (web) — aceite: todas verdes
-- [ ] 9.3 Executar o E2E de despacho (tarefa 4.5) contra a stack local (api+web+Postgres) — aceite: fluxo login→criar→despachar→concluir passa fim a fim
+- [x] 9.1 Regenerar o contrato front↔back: `pnpm gen:types` e commitar `packages/api-types` atualizado — aceite: `pnpm gen:types:check` passa (snapshot não defasado)
+- [x] 9.2 Rodar as suítes locais antes do PR: `uv run ruff check .`, `uv run pytest` (API) e `pnpm --filter @setes/web typecheck && pnpm --filter @setes/web test` (web) — aceite: todas verdes
+- [x] 9.3 Executar o E2E de despacho (tarefa 4.5) contra a stack local (api+web+Postgres) — aceite: fluxo login→criar→despachar→concluir passa fim a fim

@@ -17,7 +17,7 @@ from app.schemas.tipos_processo import (
     RoteiroResponse,
     TipoProcessoResponse,
 )
-from app.security.autorizacao import require_perfil
+from app.security.autorizacao import get_current_user, require_perfil
 from app.services.roteiros import obter_roteiro_vigente
 
 router = APIRouter(prefix="/tipos-processo", tags=["tipos-processo"])
@@ -54,10 +54,14 @@ def _validar_unidades(db: Session, unidade_ids: list[str]) -> list[uuid.UUID]:
 
 @router.get("", response_model=list[TipoProcessoResponse])
 def listar_tipos_processo(
-    _admin: Annotated[Usuario, Depends(_require_admin)],
+    _usuario: Annotated[Usuario, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
 ) -> list[TipoProcessoResponse]:
-    """Catálogo de tipos de processo com o roteiro vigente de cada um."""
+    """Catálogo de tipos de processo com o roteiro vigente de cada um.
+
+    Leitura aberta a qualquer usuário autenticado (Servidor precisa listar o
+    catálogo para criar processo — US 2.1); cadastro/edição de roteiro
+    permanecem admin-only (US 8.2, `_require_admin` abaixo)."""
     tipos = db.query(TipoProcesso).order_by(TipoProcesso.nome).all()
     resultado = []
     for tipo in tipos:

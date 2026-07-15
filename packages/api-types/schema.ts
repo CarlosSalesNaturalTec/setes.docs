@@ -398,6 +398,10 @@ export interface paths {
         /**
          * Listar Tipos Processo
          * @description Catálogo de tipos de processo com o roteiro vigente de cada um.
+         *
+         *     Leitura aberta a qualquer usuário autenticado (Servidor precisa listar o
+         *     catálogo para criar processo — US 2.1); cadastro/edição de roteiro
+         *     permanecem admin-only (US 8.2, `_require_admin` abaixo).
          */
         get: operations["listar_tipos_processo_tipos_processo_get"];
         put?: never;

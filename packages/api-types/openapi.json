@@ -2449,7 +2449,7 @@
     },
     "/tipos-processo": {
       "get": {
-        "description": "Catálogo de tipos de processo com o roteiro vigente de cada um.",
+        "description": "Catálogo de tipos de processo com o roteiro vigente de cada um.\n\nLeitura aberta a qualquer usuário autenticado (Servidor precisa listar o\ncatálogo para criar processo — US 2.1); cadastro/edição de roteiro\npermanecem admin-only (US 8.2, `_require_admin` abaixo).",
         "operationId": "listar_tipos_processo_tipos_processo_get",
         "parameters": [
           {
