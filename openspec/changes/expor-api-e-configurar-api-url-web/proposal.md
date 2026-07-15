@@ -11,7 +11,7 @@ Arquitetura escolhida (decisão do usuário): **o browser chama a `api` diretame
 
 ## What Changes
 
-- **`infra/cloudrun.tf`**: `api.ingress` passa de `INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER` para `INGRESS_TRAFFIC_ALL`. A `api` continua **não** `--allow-unauthenticated` no nível de aplicação (JWT próprio); a mudança apenas permite que o request do browser chegue ao container.
+- **`infra/cloudrun.tf`**: `api.ingress` passa de `INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER` para `INGRESS_TRAFFIC_ALL`, e um novo `google_cloud_run_v2_service_iam_member` concede `roles/run.invoker` a `allUsers` na `api` (mesmo padrão do `web_public` já existente para o `web`) — sem essa segunda peça, o Cloud Run rejeita com `403` na camada de plataforma antes do request chegar ao container, independente do `ingress`. A `api` continua **não** `--allow-unauthenticated` no sentido de negócio: toda autorização real (JWT próprio, perfil/unidade) permanece na aplicação.
 - **`.github/workflows/deploy.yml`**: o step de `docker build` do `web` passa a receber `--build-arg NEXT_PUBLIC_API_URL=<URL pública canônica da api>`.
 - **`apps/web/Dockerfile`**: declara `ARG NEXT_PUBLIC_API_URL` e o promove a `ENV` no estágio `build`, para que `pnpm build` do Next.js embuta o valor no bundle.
 - **Validação em produção**: smoke test do fluxo real do browser — `GET /setup/status` (via a origem pública da api) responde `200`, e a tela `/setup` no navegador carrega dados da api em vez de falhar contra `localhost`. Fecha o gap registrado na task 5.3 de `correcao-pipeline-deploy-wif`.

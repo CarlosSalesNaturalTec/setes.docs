@@ -90,7 +90,9 @@ jobs:
       - name: Build & push web
         run: |
           IMAGE="${REGION}-docker.pkg.dev/${AR}/web:${GITHUB_SHA}"
-          docker build -t "$IMAGE" -f apps/web/Dockerfile .
+          docker build -t "$IMAGE" \
+            --build-arg NEXT_PUBLIC_API_URL="${{ vars.NEXT_PUBLIC_API_URL }}" \
+            -f apps/web/Dockerfile .
           docker push "$IMAGE"
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
       - name: Deploy web
