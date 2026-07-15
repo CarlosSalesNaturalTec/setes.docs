@@ -18,6 +18,14 @@ locals {
   # api_url` -- estável entre applies (hash determinístico por projeto/serviço/
   # região). Se o serviço for recriado do zero, atualizar este valor.
   oidc_audience = "https://api-2j5ojmtaiq-rj.a.run.app"
+  # Origem pública do `web`, usada pela api para autorizar CORS (browser chama
+  # a api diretamente -- expor-api-e-configurar-api-url-web). Mesma razão de
+  # `oidc_audience` acima: referenciar `google_cloud_run_v2_service.web.uri`
+  # aqui criaria dependência circular (web já referencia `api.uri` em
+  # API_BASE_URL), então fixamos o valor observado via `terraform output
+  # web_url` -- estável entre applies. Se o serviço `web` for recriado do
+  # zero, atualizar este valor junto com `oidc_audience`.
+  web_url = "https://web-2j5ojmtaiq-rj.a.run.app"
 }
 
 # ---------------------------------------------------------------------------
@@ -86,6 +94,13 @@ resource "google_cloud_run_v2_service" "api" {
       env {
         name  = "EMAIL_FROM"
         value = var.email_provider_from
+      }
+      # Browser do usuário (origem do `web`) chama a api diretamente -- sem essa
+      # allow-list, o browser recebe "Disallowed CORS origin" mesmo com o
+      # ingress público (app/config.py:75 default é só localhost:3000).
+      env {
+        name  = "CORS_ALLOWED_ORIGINS"
+        value = local.web_url
       }
 
       # Conexão com o Cloud SQL: peças simples + senha do secret (D4). A app monta
