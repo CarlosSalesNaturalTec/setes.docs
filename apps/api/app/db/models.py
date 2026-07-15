@@ -12,7 +12,9 @@ import uuid
 from datetime import date, datetime
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
+    CheckConstraint,
     Date,
     DateTime,
     ForeignKey,
@@ -78,6 +80,8 @@ class TipoEventoTramitacao(str, enum.Enum):
     # US 2.6 — sigilo é ortogonal ao status; não altera status_resultante.
     MARCAR_SIGILO = "marcar_sigilo"
     REMOVER_SIGILO = "remover_sigilo"
+    # US 3.1 — remoção de anexo é ortogonal ao status; não altera status_resultante.
+    REMOVER_DOCUMENTO = "remover_documento"
 
 
 class TipoDocumentoInteressado(str, enum.Enum):
@@ -418,3 +422,34 @@ class Tramitacao(Base):
     criado_em: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
+
+
+class Documento(Base):
+    """Anexo de processo (Épico 3, fatia A). Soft-delete derivado: `removido_em
+    IS NULL` = visível (D2) — nenhuma coluna de status textual. `objeto_chave`
+    é a chave opaca do objeto no bucket, desacoplada de `nome_exibicao` (D3)."""
+
+    __tablename__ = "documento"
+    __table_args__ = (CheckConstraint("tamanho_bytes > 0", name="ck_documento_tamanho_positivo"),)
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    processo_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("processo.id"), nullable=False
+    )
+    nome_original: Mapped[str] = mapped_column(String(255), nullable=False)
+    nome_exibicao: Mapped[str] = mapped_column(String(255), nullable=False)
+    objeto_chave: Mapped[str] = mapped_column(String(500), nullable=False, unique=True)
+    tipo_conteudo: Mapped[str] = mapped_column(String(100), nullable=False)
+    tamanho_bytes: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    hash_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    anexado_por_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("usuario.id"), nullable=False
+    )
+    anexado_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    removido_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    removido_por_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("usuario.id"), nullable=True
+    )
+    purgar_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

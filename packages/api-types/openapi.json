@@ -46,6 +46,20 @@
         "title": "AtualizarSistemaConfigRequest",
         "type": "object"
       },
+      "Body_anexar_documento_processos__processo_id__documentos_post": {
+        "properties": {
+          "arquivo": {
+            "contentMediaType": "application/octet-stream",
+            "title": "Arquivo",
+            "type": "string"
+          }
+        },
+        "required": [
+          "arquivo"
+        ],
+        "title": "Body_anexar_documento_processos__processo_id__documentos_post",
+        "type": "object"
+      },
       "CadastroUnidadeRequest": {
         "properties": {
           "gestor_responsavel_id": {
@@ -290,6 +304,63 @@
           }
         },
         "title": "DevolverRequest",
+        "type": "object"
+      },
+      "DocumentoResponse": {
+        "properties": {
+          "anexado_em": {
+            "format": "date-time",
+            "title": "Anexado Em",
+            "type": "string"
+          },
+          "anexado_por_id": {
+            "title": "Anexado Por Id",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nome_exibicao": {
+            "title": "Nome Exibicao",
+            "type": "string"
+          },
+          "processo_id": {
+            "title": "Processo Id",
+            "type": "string"
+          },
+          "tamanho_bytes": {
+            "title": "Tamanho Bytes",
+            "type": "integer"
+          },
+          "tipo_conteudo": {
+            "title": "Tipo Conteudo",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "processo_id",
+          "nome_exibicao",
+          "tipo_conteudo",
+          "tamanho_bytes",
+          "anexado_por_id",
+          "anexado_em"
+        ],
+        "title": "DocumentoResponse",
+        "type": "object"
+      },
+      "DocumentosListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentoResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "DocumentosListResponse",
         "type": "object"
       },
       "EditarUnidadeRequest": {
@@ -2561,6 +2632,340 @@
         "summary": "Devolver Processo",
         "tags": [
           "processos"
+        ]
+      }
+    },
+    "/processos/{processo_id}/documentos": {
+      "get": {
+        "description": "Lista os documentos visíveis do processo, autorizados por unidade.",
+        "operationId": "listar_documentos_processos__processo_id__documentos_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "processo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Processo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentosListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Listar Documentos",
+        "tags": [
+          "documentos"
+        ]
+      },
+      "post": {
+        "description": "US 3.1 Cen.1/2/2b/5 — anexa um documento ao processo.",
+        "operationId": "anexar_documento_processos__processo_id__documentos_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "processo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Processo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_anexar_documento_processos__processo_id__documentos_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Anexar Documento",
+        "tags": [
+          "documentos"
+        ]
+      }
+    },
+    "/processos/{processo_id}/documentos/{documento_id}": {
+      "delete": {
+        "description": "US 3.1 Cen.3/4/4b/4c — soft-delete; bloqueia conforme a regra de custódia (D1).",
+        "operationId": "remover_documento_processos__processo_id__documentos__documento_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "processo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Processo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "documento_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Documento Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remover Documento",
+        "tags": [
+          "documentos"
+        ]
+      }
+    },
+    "/processos/{processo_id}/documentos/{documento_id}/conteudo": {
+      "get": {
+        "description": "US 3.2 Cen.1/3 — inline para PDF/imagem; attachment (com aviso do\nfrontend) para DOC/DOCX. Streaming autenticado (D5) — nunca URL pública.",
+        "operationId": "conteudo_documento_processos__processo_id__documentos__documento_id__conteudo_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "processo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Processo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "documento_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Documento Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Conteudo Documento",
+        "tags": [
+          "documentos"
+        ]
+      }
+    },
+    "/processos/{processo_id}/documentos/{documento_id}/download": {
+      "get": {
+        "description": "US 3.2 Cen.2 — sempre `attachment`, mantendo formato e nome (D3: o\nnome de exibição já desduplicado é \"o nome certo\" a devolver).",
+        "operationId": "baixar_documento_processos__processo_id__documentos__documento_id__download_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "processo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Processo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "documento_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Documento Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Baixar Documento",
+        "tags": [
+          "documentos"
         ]
       }
     },

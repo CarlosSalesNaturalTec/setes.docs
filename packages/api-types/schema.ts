@@ -334,6 +334,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/processos/{processo_id}/documentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Documentos
+         * @description Lista os documentos visíveis do processo, autorizados por unidade.
+         */
+        get: operations["listar_documentos_processos__processo_id__documentos_get"];
+        put?: never;
+        /**
+         * Anexar Documento
+         * @description US 3.1 Cen.1/2/2b/5 — anexa um documento ao processo.
+         */
+        post: operations["anexar_documento_processos__processo_id__documentos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/processos/{processo_id}/documentos/{documento_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remover Documento
+         * @description US 3.1 Cen.3/4/4b/4c — soft-delete; bloqueia conforme a regra de custódia (D1).
+         */
+        delete: operations["remover_documento_processos__processo_id__documentos__documento_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/processos/{processo_id}/documentos/{documento_id}/conteudo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Conteudo Documento
+         * @description US 3.2 Cen.1/3 — inline para PDF/imagem; attachment (com aviso do
+         *     frontend) para DOC/DOCX. Streaming autenticado (D5) — nunca URL pública.
+         */
+        get: operations["conteudo_documento_processos__processo_id__documentos__documento_id__conteudo_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/processos/{processo_id}/documentos/{documento_id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Baixar Documento
+         * @description US 3.2 Cen.2 — sempre `attachment`, mantendo formato e nome (D3: o
+         *     nome de exibição já desduplicado é "o nome certo" a devolver).
+         */
+        get: operations["baixar_documento_processos__processo_id__documentos__documento_id__download_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/processos/{processo_id}/historico": {
         parameters: {
             query?: never;
@@ -692,6 +778,11 @@ export interface components {
              */
             prazo_arquivamento_dias: number;
         };
+        /** Body_anexar_documento_processos__processo_id__documentos_post */
+        Body_anexar_documento_processos__processo_id__documentos_post: {
+            /** Arquivo */
+            arquivo: string;
+        };
         /** CadastroUnidadeRequest */
         CadastroUnidadeRequest: {
             /** Gestor Responsavel Id */
@@ -785,6 +876,31 @@ export interface components {
             justificativa?: string | null;
             /** Motivo */
             motivo?: string | null;
+        };
+        /** DocumentoResponse */
+        DocumentoResponse: {
+            /**
+             * Anexado Em
+             * Format: date-time
+             */
+            anexado_em: string;
+            /** Anexado Por Id */
+            anexado_por_id: string;
+            /** Id */
+            id: string;
+            /** Nome Exibicao */
+            nome_exibicao: string;
+            /** Processo Id */
+            processo_id: string;
+            /** Tamanho Bytes */
+            tamanho_bytes: number;
+            /** Tipo Conteudo */
+            tipo_conteudo: string;
+        };
+        /** DocumentosListResponse */
+        DocumentosListResponse: {
+            /** Items */
+            items?: components["schemas"]["DocumentoResponse"][];
         };
         /** EditarUnidadeRequest */
         EditarUnidadeRequest: {
@@ -1836,6 +1952,178 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProcessoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_documentos_processos__processo_id__documentos_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentosListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    anexar_documento_processos__processo_id__documentos_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_anexar_documento_processos__processo_id__documentos_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remover_documento_processos__processo_id__documentos__documento_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+                documento_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    conteudo_documento_processos__processo_id__documentos__documento_id__conteudo_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+                documento_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    baixar_documento_processos__processo_id__documentos__documento_id__download_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+                documento_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

@@ -93,6 +93,74 @@ const put = <TBody, TResponse>(path: string, body: TBody, options?: RequestOptio
 const del = <TResponse>(path: string, options?: RequestOptions) =>
   request<TResponse>(path, "DELETE", undefined, options);
 
+// Upload multipart (anexação de documento, Épico 3) — não usa JSON no corpo,
+// então não passa pelo `request()` genérico acima.
+async function postMultipart<TResponse>(path: string, form: FormData): Promise<TResponse> {
+  const headers = new Headers();
+  const token = getToken();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
+  const resp = await fetch(buildUrl(path), { method: "POST", headers, body: form });
+
+  const renewed = resp.headers.get("x-renewed-token");
+  if (renewed) setToken(renewed);
+
+  if (!resp.ok) {
+    let detail = resp.statusText;
+    try {
+      const errorBody = (await resp.json()) as { detail?: string };
+      if (errorBody.detail) detail = errorBody.detail;
+    } catch {
+      // corpo de erro não é JSON — mantém statusText
+    }
+    throw new ApiError(resp.status, detail);
+  }
+
+  return (await resp.json()) as TResponse;
+}
+
+export interface ConteudoDocumento {
+  blob: Blob;
+  nomeArquivo: string;
+}
+
+function extrairNomeArquivo(contentDisposition: string | null): string {
+  if (!contentDisposition) return "arquivo";
+  // filename*=UTF-8''<encoded> tem prioridade (acentuação, D3); senão filename="...".
+  const estrela = /filename\*=UTF-8''([^;]+)/i.exec(contentDisposition);
+  if (estrela) return decodeURIComponent(estrela[1]);
+  const simples = /filename="?([^";]+)"?/i.exec(contentDisposition);
+  return simples ? simples[1] : "arquivo";
+}
+
+// Streaming autenticado (D5) — conteúdo/download exigem o header Authorization,
+// então não podem ser um <a href> direto; buscamos o blob via fetch.
+async function getBlob(path: string): Promise<ConteudoDocumento> {
+  const headers = new Headers();
+  const token = getToken();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
+  const resp = await fetch(buildUrl(path), { headers });
+
+  const renewed = resp.headers.get("x-renewed-token");
+  if (renewed) setToken(renewed);
+
+  if (!resp.ok) {
+    let detail = resp.statusText;
+    try {
+      const errorBody = (await resp.json()) as { detail?: string };
+      if (errorBody.detail) detail = errorBody.detail;
+    } catch {
+      // corpo de erro não é JSON — mantém statusText
+    }
+    throw new ApiError(resp.status, detail);
+  }
+
+  const blob = await resp.blob();
+  const nomeArquivo = extrairNomeArquivo(resp.headers.get("content-disposition"));
+  return { blob, nomeArquivo };
+}
+
 export const api = {
   // Inicialização (US 8.0)
   setupStatus: () => get<Schemas["SetupStatusResponse"]>("/setup/status"),
@@ -202,6 +270,23 @@ export const api = {
     }),
   removerSigilo: (processoId: string) =>
     del<Schemas["ProcessoResponse"]>(`/processos/${processoId}/sigilo`, { auth: true }),
+
+  // Documentos (Épico 3, fatia A)
+  listarDocumentos: (processoId: string) =>
+    get<Schemas["DocumentosListResponse"]>(`/processos/${processoId}/documentos`, { auth: true }),
+  anexarDocumento: (processoId: string, arquivo: File) => {
+    const form = new FormData();
+    form.append("arquivo", arquivo);
+    return postMultipart<Schemas["DocumentoResponse"]>(`/processos/${processoId}/documentos`, form);
+  },
+  conteudoDocumento: (processoId: string, documentoId: string) =>
+    getBlob(`/processos/${processoId}/documentos/${documentoId}/conteudo`),
+  baixarDocumento: (processoId: string, documentoId: string) =>
+    getBlob(`/processos/${processoId}/documentos/${documentoId}/download`),
+  removerDocumento: (processoId: string, documentoId: string) =>
+    del<Schemas["DocumentoResponse"]>(`/processos/${processoId}/documentos/${documentoId}`, {
+      auth: true,
+    }),
 
   // Consulta Pública (Épico 7) — sem autenticação, para o Cidadão.
   consultarProcessoPublico: (numero: string) =>
