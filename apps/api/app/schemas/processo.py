@@ -66,6 +66,7 @@ class ProcessoResponse(BaseModel):
     criado_por_id: str
     criado_em: datetime
     concluido_em: datetime | None
+    sigiloso: bool
     interessados: list[InteressadoResponse] = Field(default_factory=list)
 
     @classmethod
@@ -85,6 +86,7 @@ class ProcessoResponse(BaseModel):
             criado_por_id=str(processo.criado_por_id),
             criado_em=processo.criado_em,
             concluido_em=processo.concluido_em,
+            sigiloso=processo.sigiloso,
             interessados=[InteressadoResponse.de(i) for i in processo.interessados],
         )
 
@@ -100,6 +102,7 @@ class CardProcessoResponse(BaseModel):
     prazo_em: date
     dias_restantes: int
     vencido: bool
+    sigiloso: bool
 
     @classmethod
     def de(cls, processo, *, hoje: date) -> "CardProcessoResponse":
@@ -113,6 +116,7 @@ class CardProcessoResponse(BaseModel):
             prazo_em=processo.prazo_em,
             dias_restantes=dias,
             vencido=dias < 0,
+            sigiloso=processo.sigiloso,
         )
 
 

@@ -124,6 +124,7 @@ function DetalheConteudo({ id }: { id: string }) {
   const [erro, setErro] = useState<string | null>(null);
   const [promptConclusao, setPromptConclusao] = useState<string | null>(null);
   const [mostrarDevolucao, setMostrarDevolucao] = useState(false);
+  const [alterandoSigilo, setAlterandoSigilo] = useState(false);
 
   const carregar = useCallback(async () => {
     setErro(null);
@@ -183,6 +184,23 @@ function DetalheConteudo({ id }: { id: string }) {
     }
   }
 
+  async function alternarSigilo(marcar: boolean) {
+    setErro(null);
+    setAlterandoSigilo(true);
+    try {
+      if (marcar) {
+        await api.marcarSigilo(id);
+      } else {
+        await api.removerSigilo(id);
+      }
+      await carregar();
+    } catch (err) {
+      setErro(err instanceof ApiError ? err.detail : "Não foi possível alterar o sigilo.");
+    } finally {
+      setAlterandoSigilo(false);
+    }
+  }
+
   if (erro && !processo) return <p className="text-sm text-red-600">{erro}</p>;
   if (!processo || !historico) return <p className="text-sm text-gray-500">Carregando…</p>;
 
@@ -192,27 +210,55 @@ function DetalheConteudo({ id }: { id: string }) {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-mono text-xl font-semibold">{processo.numero}</h1>
+          <h1 className="flex items-center gap-2 font-mono text-xl font-semibold">
+            {processo.numero}
+            {processo.sigiloso && (
+              <span aria-label="Sigiloso" title="Sigiloso">
+                🔒
+              </span>
+            )}
+          </h1>
           <p className="text-sm text-gray-600">{processo.assunto}</p>
         </div>
-        {!concluido && (
-          <div className="flex gap-2">
+        <div className="flex gap-2">
+          {!concluido && (
+            <>
+              <button
+                type="button"
+                onClick={() => void despachar(false)}
+                className="rounded bg-blue-600 px-3 py-1 text-sm font-medium text-white"
+              >
+                Despachar
+              </button>
+              <button
+                type="button"
+                onClick={() => setMostrarDevolucao(true)}
+                className="rounded border px-3 py-1 text-sm"
+              >
+                Devolver
+              </button>
+            </>
+          )}
+          {processo.sigiloso ? (
             <button
               type="button"
-              onClick={() => void despachar(false)}
-              className="rounded bg-blue-600 px-3 py-1 text-sm font-medium text-white"
-            >
-              Despachar
-            </button>
-            <button
-              type="button"
-              onClick={() => setMostrarDevolucao(true)}
+              onClick={() => void alternarSigilo(false)}
+              disabled={alterandoSigilo}
               className="rounded border px-3 py-1 text-sm"
             >
-              Devolver
+              Remover Sigilo
             </button>
-          </div>
-        )}
+          ) : (
+            <button
+              type="button"
+              onClick={() => void alternarSigilo(true)}
+              disabled={alterandoSigilo}
+              className="rounded border px-3 py-1 text-sm"
+            >
+              Marcar como Sigiloso
+            </button>
+          )}
+        </div>
       </div>
 
       {erro && <p className="mt-3 text-sm text-red-600">{erro}</p>}

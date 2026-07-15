@@ -141,6 +141,10 @@
             "title": "Prazo Em",
             "type": "string"
           },
+          "sigiloso": {
+            "title": "Sigiloso",
+            "type": "boolean"
+          },
           "status": {
             "title": "Status",
             "type": "string"
@@ -162,7 +166,8 @@
           "unidade_atual_id",
           "prazo_em",
           "dias_restantes",
-          "vencido"
+          "vencido",
+          "sigiloso"
         ],
         "title": "CardProcessoResponse",
         "type": "object"
@@ -905,6 +910,10 @@
             "title": "Roteiro Id",
             "type": "string"
           },
+          "sigiloso": {
+            "title": "Sigiloso",
+            "type": "boolean"
+          },
           "status": {
             "title": "Status",
             "type": "string"
@@ -936,7 +945,8 @@
           "prazo_em",
           "criado_por_id",
           "criado_em",
-          "concluido_em"
+          "concluido_em",
+          "sigiloso"
         ],
         "title": "ProcessoResponse",
         "type": "object"
@@ -2419,6 +2429,124 @@
           }
         },
         "summary": "Historico Processo",
+        "tags": [
+          "processos"
+        ]
+      }
+    },
+    "/processos/{processo_id}/sigilo": {
+      "delete": {
+        "description": "US 2.6 Cen.2 — remove sigilo; idempotente (D4).",
+        "operationId": "remover_sigilo_processos__processo_id__sigilo_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "processo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Processo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remover Sigilo",
+        "tags": [
+          "processos"
+        ]
+      },
+      "post": {
+        "description": "US 2.6 Cen.1/1b — marca sigilo; idempotente (D4).",
+        "operationId": "marcar_sigilo_processos__processo_id__sigilo_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "processo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Processo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Marcar Sigilo",
         "tags": [
           "processos"
         ]

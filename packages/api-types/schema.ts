@@ -354,6 +354,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/processos/{processo_id}/sigilo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Marcar Sigilo
+         * @description US 2.6 Cen.1/1b — marca sigilo; idempotente (D4).
+         */
+        post: operations["marcar_sigilo_processos__processo_id__sigilo_post"];
+        /**
+         * Remover Sigilo
+         * @description US 2.6 Cen.2 — remove sigilo; idempotente (D4).
+         */
+        delete: operations["remover_sigilo_processos__processo_id__sigilo_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/setup": {
         parameters: {
             query?: never;
@@ -669,6 +693,8 @@ export interface components {
              * Format: date
              */
             prazo_em: string;
+            /** Sigiloso */
+            sigiloso: boolean;
             /** Status */
             status: string;
             /** Unidade Atual Id */
@@ -958,6 +984,8 @@ export interface components {
             prazo_em: string;
             /** Roteiro Id */
             roteiro_id: string;
+            /** Sigiloso */
+            sigiloso: boolean;
             /** Status */
             status: string;
             /** Tipo Processo Id */
@@ -1726,6 +1754,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HistoricoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    marcar_sigilo_processos__processo_id__sigilo_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remover_sigilo_processos__processo_id__sigilo_delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessoResponse"];
                 };
             };
             /** @description Validation Error */

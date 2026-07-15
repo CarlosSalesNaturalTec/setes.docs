@@ -4,14 +4,23 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "@/lib/api";
 
-const { obterProcesso, historicoProcesso, listarUnidades, despacharProcesso, devolverProcesso } =
-  vi.hoisted(() => ({
-    obterProcesso: vi.fn(),
-    historicoProcesso: vi.fn(),
-    listarUnidades: vi.fn(),
-    despacharProcesso: vi.fn(),
-    devolverProcesso: vi.fn(),
-  }));
+const {
+  obterProcesso,
+  historicoProcesso,
+  listarUnidades,
+  despacharProcesso,
+  devolverProcesso,
+  marcarSigilo,
+  removerSigilo,
+} = vi.hoisted(() => ({
+  obterProcesso: vi.fn(),
+  historicoProcesso: vi.fn(),
+  listarUnidades: vi.fn(),
+  despacharProcesso: vi.fn(),
+  devolverProcesso: vi.fn(),
+  marcarSigilo: vi.fn(),
+  removerSigilo: vi.fn(),
+}));
 
 vi.mock("next/navigation", () => ({
   useParams: () => ({ id: "proc-1" }),
@@ -25,7 +34,15 @@ vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
   return {
     ...actual,
-    api: { obterProcesso, historicoProcesso, listarUnidades, despacharProcesso, devolverProcesso },
+    api: {
+      obterProcesso,
+      historicoProcesso,
+      listarUnidades,
+      despacharProcesso,
+      devolverProcesso,
+      marcarSigilo,
+      removerSigilo,
+    },
   };
 });
 
@@ -46,6 +63,7 @@ const PROCESSO_BASE = {
   criado_por_id: "user-1",
   criado_em: "2026-07-15T10:00:00Z",
   concluido_em: null,
+  sigiloso: false,
   interessados: [],
 };
 
@@ -63,6 +81,8 @@ describe("DetalheProcessoPage", () => {
     listarUnidades.mockReset();
     despacharProcesso.mockReset();
     devolverProcesso.mockReset();
+    marcarSigilo.mockReset();
+    removerSigilo.mockReset();
     listarUnidades.mockResolvedValue([{ id: "un-1", nome: "COFIN", sigla: "COFIN", ativo: true }]);
     historicoProcesso.mockResolvedValue(HISTORICO_VAZIO);
   });
@@ -144,5 +164,53 @@ describe("DetalheProcessoPage", () => {
     await userEvent.click(screen.getByRole("button", { name: "Histórico" }));
 
     expect(await screen.findByText(/Nenhuma movimentação registrada/)).toBeInTheDocument();
+  });
+
+  it("exibe o indicador de sigilo e a ação de remover quando o processo é sigiloso (PRD US 2.6 Cen.3)", async () => {
+    obterProcesso.mockResolvedValue({ ...PROCESSO_BASE, sigiloso: true });
+
+    render(<DetalheProcessoPage />);
+
+    expect(await screen.findByLabelText("Sigiloso")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remover Sigilo" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Marcar como Sigiloso" })).not.toBeInTheDocument();
+  });
+
+  it("não exibe o indicador e mostra a ação de marcar quando o processo não é sigiloso (PRD US 2.6 Cen.1)", async () => {
+    obterProcesso.mockResolvedValue(PROCESSO_BASE);
+
+    render(<DetalheProcessoPage />);
+
+    await screen.findByRole("button", { name: "Marcar como Sigiloso" });
+    expect(screen.queryByLabelText("Sigiloso")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Remover Sigilo" })).not.toBeInTheDocument();
+  });
+
+  it("marcar como sigiloso atualiza o indicador e a ação sem recarregar a página (PRD US 2.6 Cen.1)", async () => {
+    obterProcesso
+      .mockResolvedValueOnce(PROCESSO_BASE)
+      .mockResolvedValue({ ...PROCESSO_BASE, sigiloso: true });
+    marcarSigilo.mockResolvedValue({ ...PROCESSO_BASE, sigiloso: true });
+
+    render(<DetalheProcessoPage />);
+    await userEvent.click(await screen.findByRole("button", { name: "Marcar como Sigiloso" }));
+
+    await waitFor(() => expect(marcarSigilo).toHaveBeenCalledWith("proc-1"));
+    expect(await screen.findByRole("button", { name: "Remover Sigilo" })).toBeInTheDocument();
+    expect(await screen.findByLabelText("Sigiloso")).toBeInTheDocument();
+  });
+
+  it("remover sigilo atualiza o indicador e a ação sem recarregar a página (PRD US 2.6 Cen.2)", async () => {
+    obterProcesso
+      .mockResolvedValueOnce({ ...PROCESSO_BASE, sigiloso: true })
+      .mockResolvedValue(PROCESSO_BASE);
+    removerSigilo.mockResolvedValue(PROCESSO_BASE);
+
+    render(<DetalheProcessoPage />);
+    await userEvent.click(await screen.findByRole("button", { name: "Remover Sigilo" }));
+
+    await waitFor(() => expect(removerSigilo).toHaveBeenCalledWith("proc-1"));
+    expect(await screen.findByRole("button", { name: "Marcar como Sigiloso" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Sigiloso")).not.toBeInTheDocument();
   });
 });
