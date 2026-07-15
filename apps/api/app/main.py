@@ -12,17 +12,19 @@ import logging
 import sys
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, status
+from fastapi import Depends, FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from app.config import Settings, get_settings
 from app.email.provider import EmailDeliveryError, EmailMessage, send_email
-from app.rate_limit import limiter
+from app.rate_limit import MSG_RATE_LIMIT_CONSULTA_PUBLICA, limiter
 from app.routers import (
     auth,
+    consulta_publica,
     dev_tools,
     processos,
     setup,
@@ -43,7 +45,20 @@ logger = logging.getLogger("setes.api")
 
 app = FastAPI(title="SETES.DOCS API", version="0.0.0")
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+@app.exception_handler(RateLimitExceeded)
+def _rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    """D4 — rotas públicas de consulta devolvem a mensagem exata do PRD;
+    as demais mantêm o corpo padrão do `slowapi`."""
+    if request.url.path.startswith("/publico/"):
+        response = JSONResponse(
+            {"detail": MSG_RATE_LIMIT_CONSULTA_PUBLICA}, status_code=status.HTTP_429_TOO_MANY_REQUESTS
+        )
+        return limiter._inject_headers(response, request.state.view_rate_limit)
+    return _rate_limit_exceeded_handler(request, exc)
+
+
 app.add_middleware(SlowAPIMiddleware)
 app.add_middleware(
     CORSMiddleware,
@@ -63,6 +78,7 @@ app.include_router(unidades.router)
 app.include_router(tipos_processo.router)
 app.include_router(processos.router)
 app.include_router(sistema_config.router)
+app.include_router(consulta_publica.router)
 app.include_router(dev_tools.router)
 
 

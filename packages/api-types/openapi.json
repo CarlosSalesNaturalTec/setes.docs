@@ -598,6 +598,19 @@
         "title": "InteressadoInput",
         "type": "object"
       },
+      "InteressadoPublicoResponse": {
+        "properties": {
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nome"
+        ],
+        "title": "InteressadoPublicoResponse",
+        "type": "object"
+      },
       "InteressadoResponse": {
         "properties": {
           "documento": {
@@ -650,6 +663,45 @@
           "tipo_participacao"
         ],
         "title": "InteressadoResponse",
+        "type": "object"
+      },
+      "ItemPesquisaPublicaResponse": {
+        "properties": {
+          "assunto": {
+            "title": "Assunto",
+            "type": "string"
+          },
+          "criado_em": {
+            "format": "date-time",
+            "title": "Criado Em",
+            "type": "string"
+          },
+          "numero": {
+            "title": "Numero",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "tipo_processo": {
+            "title": "Tipo Processo",
+            "type": "string"
+          },
+          "unidade_atual": {
+            "title": "Unidade Atual",
+            "type": "string"
+          }
+        },
+        "required": [
+          "numero",
+          "assunto",
+          "tipo_processo",
+          "status",
+          "unidade_atual",
+          "criado_em"
+        ],
+        "title": "ItemPesquisaPublicaResponse",
         "type": "object"
       },
       "KanbanResponse": {
@@ -837,6 +889,91 @@
         "title": "MeuPerfilResponse",
         "type": "object"
       },
+      "MovimentacaoPublicaResponse": {
+        "properties": {
+          "criado_em": {
+            "format": "date-time",
+            "title": "Criado Em",
+            "type": "string"
+          },
+          "status_resultante": {
+            "title": "Status Resultante",
+            "type": "string"
+          },
+          "unidade_destino": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unidade Destino"
+          },
+          "unidade_origem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unidade Origem"
+          }
+        },
+        "required": [
+          "criado_em",
+          "unidade_origem",
+          "unidade_destino",
+          "status_resultante"
+        ],
+        "title": "MovimentacaoPublicaResponse",
+        "type": "object"
+      },
+      "PesquisaPublicaResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ItemPesquisaPublicaResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "mensagem_vazio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mensagem Vazio"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "default": 20,
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page"
+        ],
+        "title": "PesquisaPublicaResponse",
+        "type": "object"
+      },
       "PrimeiroAcessoRequest": {
         "properties": {
           "senha": {
@@ -848,6 +985,59 @@
           "senha"
         ],
         "title": "PrimeiroAcessoRequest",
+        "type": "object"
+      },
+      "ProcessoPublicoResponse": {
+        "properties": {
+          "assunto": {
+            "title": "Assunto",
+            "type": "string"
+          },
+          "criado_em": {
+            "format": "date-time",
+            "title": "Criado Em",
+            "type": "string"
+          },
+          "historico": {
+            "items": {
+              "$ref": "#/components/schemas/MovimentacaoPublicaResponse"
+            },
+            "title": "Historico",
+            "type": "array"
+          },
+          "interessados": {
+            "items": {
+              "$ref": "#/components/schemas/InteressadoPublicoResponse"
+            },
+            "title": "Interessados",
+            "type": "array"
+          },
+          "numero": {
+            "title": "Numero",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "tipo_processo": {
+            "title": "Tipo Processo",
+            "type": "string"
+          },
+          "unidade_atual": {
+            "title": "Unidade Atual",
+            "type": "string"
+          }
+        },
+        "required": [
+          "numero",
+          "assunto",
+          "tipo_processo",
+          "status",
+          "unidade_atual",
+          "criado_em"
+        ],
+        "title": "ProcessoPublicoResponse",
         "type": "object"
       },
       "ProcessoResponse": {
@@ -2549,6 +2739,160 @@
         "summary": "Marcar Sigilo",
         "tags": [
           "processos"
+        ]
+      }
+    },
+    "/publico/processos": {
+      "get": {
+        "description": "US 7.2 — pesquisa paginada (20/página); sigilosos sempre excluídos.",
+        "operationId": "pesquisar_processos_publico_processos_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "assunto",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Assunto"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tipo_processo",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tipo Processo"
+            }
+          },
+          {
+            "in": "query",
+            "name": "data_inicio",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Data Inicio"
+            }
+          },
+          {
+            "in": "query",
+            "name": "data_fim",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Data Fim"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pagina",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Pagina",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PesquisaPublicaResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Pesquisar Processos",
+        "tags": [
+          "consulta-publica"
+        ]
+      }
+    },
+    "/publico/processos/{numero}": {
+      "get": {
+        "description": "US 7.1 — consulta por número exato; sigiloso = \"não encontrado\" (Cen.4).",
+        "operationId": "consultar_processo_publico_processos__numero__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "numero",
+            "required": true,
+            "schema": {
+              "title": "Numero",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessoPublicoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Consultar Processo",
+        "tags": [
+          "consulta-publica"
         ]
       }
     },

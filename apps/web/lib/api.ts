@@ -202,6 +202,17 @@ export const api = {
     }),
   removerSigilo: (processoId: string) =>
     del<Schemas["ProcessoResponse"]>(`/processos/${processoId}/sigilo`, { auth: true }),
+
+  // Consulta Pública (Épico 7) — sem autenticação, para o Cidadão.
+  consultarProcessoPublico: (numero: string) =>
+    get<Schemas["ProcessoPublicoResponse"]>(`/publico/processos/${encodeURIComponent(numero)}`),
+  pesquisarProcessosPublico: (query: {
+    assunto?: string;
+    tipo_processo?: string;
+    data_inicio?: string;
+    data_fim?: string;
+    pagina?: number;
+  }) => get<Schemas["PesquisaPublicaResponse"]>("/publico/processos", { query }),
 };
 
 export type { Schemas };
