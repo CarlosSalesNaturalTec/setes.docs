@@ -28,8 +28,9 @@ resource "google_cloud_run_v2_service" "api" {
   name     = "api"
   location = var.region
 
-  # Só a rede interna + o web/tasks (via IAM) chamam a api; sem acesso público direto.
-  ingress = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
+  # Browser do usuário chama a api diretamente; autorização real fica na aplicação
+  # (JWT próprio) -- ver google_cloud_run_v2_service_iam_member.api_public abaixo.
+  ingress = "INGRESS_TRAFFIC_ALL"
 
   template {
     service_account = google_service_account.sa["sa-api"].email
@@ -155,6 +156,18 @@ resource "google_cloud_run_v2_service" "api" {
     google_secret_manager_secret_iam_member.api_secrets,
     google_service_networking_connection.psa,
   ]
+}
+
+# api é chamada diretamente pelo browser do usuário (sem BFF/proxy). Isso é o
+# análogo do --allow-unauthenticated: remove a exigência de token OIDC/IAM do
+# Cloud Run, mas não abre mão de nenhuma autorização de negócio -- essa
+# continua inteiramente na aplicação (JWT, require_perfil/require_acesso_unidade,
+# rate limiting slowapi, log_seguranca de acesso negado).
+resource "google_cloud_run_v2_service_iam_member" "api_public" {
+  location = var.region
+  name     = google_cloud_run_v2_service.api.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 }
 
 # ---------------------------------------------------------------------------

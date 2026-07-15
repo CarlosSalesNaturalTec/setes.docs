@@ -22,6 +22,10 @@ COPY pnpm-workspace.yaml package.json ./
 COPY packages ./packages
 COPY apps/web ./apps/web
 WORKDIR /repo/apps/web
+# NEXT_PUBLIC_* é resolvido em build-time pelo Next.js e embutido no bundle
+# servido ao browser -- precisa estar disponível antes do `pnpm build`.
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN pnpm build
 
 FROM base AS runner
