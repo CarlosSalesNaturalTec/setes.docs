@@ -1,4 +1,5 @@
 .agent/
+.claude/settings.local.json
 
 # Node / pnpm
 node_modules/
