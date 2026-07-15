@@ -40,6 +40,7 @@ from app.security.autorizacao import (
     tem_acesso_a_unidade,
 )
 from app.security.senha import hash_senha_inutilizavel
+from app.services import processo_consulta
 from app.services.tokens import gerar_token
 
 router = APIRouter(tags=["usuarios"])
@@ -274,8 +275,19 @@ def listar_usuarios(
 
 
 @router.get("/usuarios/me/perfil", response_model=MeuPerfilResponse)
-def meu_perfil(usuario_atual: Annotated[Usuario, Depends(get_current_user)]) -> MeuPerfilResponse:
+def meu_perfil(
+    usuario_atual: Annotated[Usuario, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> MeuPerfilResponse:
     """US 1.5 — sempre os dados do próprio token (`get_current_user`); não há
     parâmetro de ID manipulável, então não existe rota que permita ver o
-    perfil de terceiros (US 1.5 Cen.2 / task 10.2)."""
-    return MeuPerfilResponse(usuario=UsuarioResponse.de(usuario_atual))
+    perfil de terceiros (US 1.5 Cen.2 / task 10.2). A lista de processos atuados
+    (Cen.1) acompanha o usuário mesmo após transferência (US 1.4 Cen.3)."""
+    processos = processo_consulta.processos_atuados(db, usuario_atual)
+    return MeuPerfilResponse(
+        usuario=UsuarioResponse.de(usuario_atual),
+        processos=processos,
+        mensagem_processos=(
+            "Nenhum processo registrado" if not processos else ""
+        ),
+    )

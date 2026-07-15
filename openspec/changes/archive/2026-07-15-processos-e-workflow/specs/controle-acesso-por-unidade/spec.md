@@ -1,10 +1,6 @@
 # controle-acesso-por-unidade
 
-## Purpose
-
-Primitiva de autorização reutilizável que restringe operações por perfil (Servidor, Gestor, Administrador) e por escopo de unidade, negando acesso e registrando tentativas em log de segurança quando o escopo não é atendido. Também cobre a tela "Meu Perfil".
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Autorização por perfil e unidade
 O sistema SHALL prover uma primitiva de autorização reutilizável que restringe cada operação por perfil (Servidor, Gestor, Administrador) e por escopo de unidade (unidade própria do Servidor; unidades geridas do Gestor; qualquer unidade para o Administrador), negando o acesso e registrando a tentativa em log de segurança quando o escopo não é atendido. Os endpoints de processo (Épico 2) **consomem efetivamente** esta primitiva para o filtro de Kanban, a busca interna e o acesso a detalhes/ações de processo, aplicando a US 1.4 na prática. Ver PRD US 1.4.

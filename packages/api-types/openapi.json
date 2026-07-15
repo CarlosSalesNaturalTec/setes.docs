@@ -101,6 +101,88 @@
         "title": "CadastroUsuarioRequest",
         "type": "object"
       },
+      "CardProcessoResponse": {
+        "description": "Card enxuto do Kanban/busca (US 2.3, 2.7, 2.8).",
+        "properties": {
+          "assunto": {
+            "title": "Assunto",
+            "type": "string"
+          },
+          "dias_restantes": {
+            "title": "Dias Restantes",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "numero": {
+            "title": "Numero",
+            "type": "string"
+          },
+          "prazo_em": {
+            "format": "date",
+            "title": "Prazo Em",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "unidade_atual_id": {
+            "title": "Unidade Atual Id",
+            "type": "string"
+          },
+          "vencido": {
+            "title": "Vencido",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "numero",
+          "assunto",
+          "status",
+          "unidade_atual_id",
+          "prazo_em",
+          "dias_restantes",
+          "vencido"
+        ],
+        "title": "CardProcessoResponse",
+        "type": "object"
+      },
+      "CriarProcessoRequest": {
+        "properties": {
+          "assunto": {
+            "minLength": 1,
+            "title": "Assunto",
+            "type": "string"
+          },
+          "interessados": {
+            "items": {
+              "$ref": "#/components/schemas/InteressadoInput"
+            },
+            "title": "Interessados",
+            "type": "array"
+          },
+          "prazo_dias": {
+            "exclusiveMinimum": 0,
+            "title": "Prazo Dias",
+            "type": "integer"
+          },
+          "tipo_processo_id": {
+            "title": "Tipo Processo Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assunto",
+          "tipo_processo_id",
+          "prazo_dias"
+        ],
+        "title": "CriarProcessoRequest",
+        "type": "object"
+      },
       "CriarTipoProcessoRequest": {
         "properties": {
           "nome": {
@@ -120,6 +202,17 @@
           "nome"
         ],
         "title": "CriarTipoProcessoRequest",
+        "type": "object"
+      },
+      "DespacharRequest": {
+        "properties": {
+          "confirmar": {
+            "default": false,
+            "title": "Confirmar",
+            "type": "boolean"
+          }
+        },
+        "title": "DespacharRequest",
         "type": "object"
       },
       "DevEmailItem": {
@@ -148,6 +241,34 @@
           "event_id"
         ],
         "title": "DevEmailItem",
+        "type": "object"
+      },
+      "DevolverRequest": {
+        "properties": {
+          "justificativa": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Justificativa"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo"
+          }
+        },
+        "title": "DevolverRequest",
         "type": "object"
       },
       "EditarUnidadeRequest": {
@@ -237,6 +358,88 @@
         "title": "EtapaRoteiroResponse",
         "type": "object"
       },
+      "EventoHistoricoResponse": {
+        "properties": {
+          "criado_em": {
+            "format": "date-time",
+            "title": "Criado Em",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "justificativa": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Justificativa"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo"
+          },
+          "responsavel_id": {
+            "title": "Responsavel Id",
+            "type": "string"
+          },
+          "status_resultante": {
+            "title": "Status Resultante",
+            "type": "string"
+          },
+          "tipo_evento": {
+            "title": "Tipo Evento",
+            "type": "string"
+          },
+          "unidade_destino_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unidade Destino Id"
+          },
+          "unidade_origem_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unidade Origem Id"
+          }
+        },
+        "required": [
+          "id",
+          "tipo_evento",
+          "unidade_origem_id",
+          "unidade_destino_id",
+          "responsavel_id",
+          "status_resultante",
+          "motivo",
+          "justificativa",
+          "criado_em"
+        ],
+        "title": "EventoHistoricoResponse",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -272,6 +475,195 @@
           "service"
         ],
         "title": "HealthResponse",
+        "type": "object"
+      },
+      "HistoricoResponse": {
+        "properties": {
+          "criado_em": {
+            "format": "date-time",
+            "title": "Criado Em",
+            "type": "string"
+          },
+          "eventos": {
+            "items": {
+              "$ref": "#/components/schemas/EventoHistoricoResponse"
+            },
+            "title": "Eventos",
+            "type": "array"
+          },
+          "mensagem_vazio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mensagem Vazio"
+          },
+          "processo_id": {
+            "title": "Processo Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "processo_id",
+          "criado_em"
+        ],
+        "title": "HistoricoResponse",
+        "type": "object"
+      },
+      "InteressadoInput": {
+        "properties": {
+          "documento": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Documento"
+          },
+          "nome": {
+            "minLength": 1,
+            "title": "Nome",
+            "type": "string"
+          },
+          "tipo_documento": {
+            "anyOf": [
+              {
+                "enum": [
+                  "cpf",
+                  "cnpj"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tipo Documento"
+          },
+          "tipo_participacao": {
+            "anyOf": [
+              {
+                "enum": [
+                  "requerente",
+                  "representado",
+                  "terceiro"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tipo Participacao"
+          }
+        },
+        "required": [
+          "nome"
+        ],
+        "title": "InteressadoInput",
+        "type": "object"
+      },
+      "InteressadoResponse": {
+        "properties": {
+          "documento": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Documento"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "tipo_documento": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tipo Documento"
+          },
+          "tipo_participacao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tipo Participacao"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "documento",
+          "tipo_documento",
+          "tipo_participacao"
+        ],
+        "title": "InteressadoResponse",
+        "type": "object"
+      },
+      "KanbanResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CardProcessoResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "mensagem_vazio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mensagem Vazio"
+          },
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size"
+        ],
+        "title": "KanbanResponse",
         "type": "object"
       },
       "ListaUsuariosResponse": {
@@ -379,7 +771,7 @@
         "type": "object"
       },
       "MeuPerfilResponse": {
-        "description": "US 1.5 — dados cadastrais + histórico. `processos`/`documentos_assinados`\nficam sempre vazios neste change (as tabelas `processo`/`documento` são do\nÉpico 2/3); os campos de mensagem cobrem o estado vazio (Cen.2).",
+        "description": "US 1.5 — dados cadastrais + histórico de atuação. `processos` passa a\nlistar os processos em que o usuário atuou (número, assunto, data e tipo de\nação — US 1.5 Cen.1); `documentos_assinados` segue vazio até o Épico 3/4.\nAs mensagens cobrem os estados vazios (Cen.2).",
         "properties": {
           "documentos_assinados": {
             "items": {
@@ -428,6 +820,102 @@
           "senha"
         ],
         "title": "PrimeiroAcessoRequest",
+        "type": "object"
+      },
+      "ProcessoResponse": {
+        "description": "Saída completa de um processo (criação e detalhe).",
+        "properties": {
+          "assunto": {
+            "title": "Assunto",
+            "type": "string"
+          },
+          "concluido_em": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Concluido Em"
+          },
+          "criado_em": {
+            "format": "date-time",
+            "title": "Criado Em",
+            "type": "string"
+          },
+          "criado_por_id": {
+            "title": "Criado Por Id",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "interessados": {
+            "items": {
+              "$ref": "#/components/schemas/InteressadoResponse"
+            },
+            "title": "Interessados",
+            "type": "array"
+          },
+          "numero": {
+            "title": "Numero",
+            "type": "string"
+          },
+          "ordem_atual": {
+            "title": "Ordem Atual",
+            "type": "integer"
+          },
+          "prazo_dias": {
+            "title": "Prazo Dias",
+            "type": "integer"
+          },
+          "prazo_em": {
+            "format": "date",
+            "title": "Prazo Em",
+            "type": "string"
+          },
+          "roteiro_id": {
+            "title": "Roteiro Id",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "tipo_processo_id": {
+            "title": "Tipo Processo Id",
+            "type": "string"
+          },
+          "unidade_atual_id": {
+            "title": "Unidade Atual Id",
+            "type": "string"
+          },
+          "unidade_origem_id": {
+            "title": "Unidade Origem Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "numero",
+          "assunto",
+          "status",
+          "tipo_processo_id",
+          "roteiro_id",
+          "unidade_atual_id",
+          "unidade_origem_id",
+          "ordem_atual",
+          "prazo_dias",
+          "prazo_em",
+          "criado_por_id",
+          "criado_em",
+          "concluido_em"
+        ],
+        "title": "ProcessoResponse",
         "type": "object"
       },
       "RecuperarSenhaRequest": {
@@ -1373,6 +1861,530 @@
         ]
       }
     },
+    "/processos": {
+      "get": {
+        "description": "US 2.3/2.8 — Kanban da unidade (Servidor) ou consolidado (Gestor).",
+        "operationId": "listar_kanban_processos_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "filtro_unidade",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Filtro Unidade"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KanbanResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Listar Kanban",
+        "tags": [
+          "processos"
+        ]
+      },
+      "post": {
+        "description": "US 2.1 — Servidor cria processo na própria unidade.",
+        "operationId": "criar_processo_processos_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarProcessoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Criar Processo",
+        "tags": [
+          "processos"
+        ]
+      }
+    },
+    "/processos/busca": {
+      "get": {
+        "description": "US 2.7 — busca interna restrita ao escopo de unidade.",
+        "operationId": "buscar_processos_processos_busca_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "numero",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Numero"
+            }
+          },
+          {
+            "in": "query",
+            "name": "assunto",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Assunto"
+            }
+          },
+          {
+            "in": "query",
+            "name": "data_inicial",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Data Inicial"
+            }
+          },
+          {
+            "in": "query",
+            "name": "data_final",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Data Final"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KanbanResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Buscar Processos",
+        "tags": [
+          "processos"
+        ]
+      }
+    },
+    "/processos/{processo_id}": {
+      "get": {
+        "description": "US 1.4 Cen.2 — detalhe por unidade; acesso fora do escopo é negado e logado.",
+        "operationId": "detalhe_processo_processos__processo_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "processo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Processo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Detalhe Processo",
+        "tags": [
+          "processos"
+        ]
+      }
+    },
+    "/processos/{processo_id}/despachar": {
+      "post": {
+        "description": "US 2.2 — despacho para a próxima unidade; na última, conclusão confirmada.",
+        "operationId": "despachar_processo_processos__processo_id__despachar_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "processo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Processo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DespacharRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Despachar Processo",
+        "tags": [
+          "processos"
+        ]
+      }
+    },
+    "/processos/{processo_id}/devolver": {
+      "post": {
+        "description": "US 2.2b — devolução para a unidade anterior, com motivo obrigatório.",
+        "operationId": "devolver_processo_processos__processo_id__devolver_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "processo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Processo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DevolverRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Devolver Processo",
+        "tags": [
+          "processos"
+        ]
+      }
+    },
+    "/processos/{processo_id}/historico": {
+      "get": {
+        "description": "US 2.4 — linha do tempo imutável; vazia para processo recém-criado.",
+        "operationId": "historico_processo_processos__processo_id__historico_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "processo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Processo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoricoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Historico Processo",
+        "tags": [
+          "processos"
+        ]
+      }
+    },
     "/setup": {
       "post": {
         "operationId": "inicializar_sistema_setup_post",
@@ -1437,7 +2449,7 @@
     },
     "/tipos-processo": {
       "get": {
-        "description": "Catálogo de tipos de processo com o roteiro vigente de cada um.",
+        "description": "Catálogo de tipos de processo com o roteiro vigente de cada um.\n\nLeitura aberta a qualquer usuário autenticado (Servidor precisa listar o\ncatálogo para criar processo — US 2.1); cadastro/edição de roteiro\npermanecem admin-only (US 8.2, `_require_admin` abaixo).",
         "operationId": "listar_tipos_processo_tipos_processo_get",
         "parameters": [
           {
@@ -1985,7 +2997,7 @@
     },
     "/usuarios/me/perfil": {
       "get": {
-        "description": "US 1.5 — sempre os dados do próprio token (`get_current_user`); não há\nparâmetro de ID manipulável, então não existe rota que permita ver o\nperfil de terceiros (US 1.5 Cen.2 / task 10.2).",
+        "description": "US 1.5 — sempre os dados do próprio token (`get_current_user`); não há\nparâmetro de ID manipulável, então não existe rota que permita ver o\nperfil de terceiros (US 1.5 Cen.2 / task 10.2). A lista de processos atuados\n(Cen.1) acompanha o usuário mesmo após transferência (US 1.4 Cen.3).",
         "operationId": "meu_perfil_usuarios_me_perfil_get",
         "parameters": [
           {

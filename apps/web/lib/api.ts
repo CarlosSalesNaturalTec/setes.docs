@@ -164,6 +164,36 @@ export const api = {
       body,
       { auth: true },
     ),
+
+  // Processos e workflow (Épico 2)
+  criarProcesso: (body: Schemas["CriarProcessoRequest"]) =>
+    post<Schemas["CriarProcessoRequest"], Schemas["ProcessoResponse"]>("/processos", body, {
+      auth: true,
+    }),
+  listarKanban: (query?: { filtro_unidade?: string; page?: number; page_size?: number }) =>
+    get<Schemas["KanbanResponse"]>("/processos", { auth: true, query }),
+  buscarProcessos: (query: {
+    numero?: string;
+    assunto?: string;
+    data_inicial?: string;
+    data_final?: string;
+  }) => get<Schemas["KanbanResponse"]>("/processos/busca", { auth: true, query }),
+  obterProcesso: (processoId: string) =>
+    get<Schemas["ProcessoResponse"]>(`/processos/${processoId}`, { auth: true }),
+  historicoProcesso: (processoId: string) =>
+    get<Schemas["HistoricoResponse"]>(`/processos/${processoId}/historico`, { auth: true }),
+  despacharProcesso: (processoId: string, body: Schemas["DespacharRequest"]) =>
+    post<Schemas["DespacharRequest"], Schemas["ProcessoResponse"]>(
+      `/processos/${processoId}/despachar`,
+      body,
+      { auth: true },
+    ),
+  devolverProcesso: (processoId: string, body: Schemas["DevolverRequest"]) =>
+    post<Schemas["DevolverRequest"], Schemas["ProcessoResponse"]>(
+      `/processos/${processoId}/devolver`,
+      body,
+      { auth: true },
+    ),
 };
 
 export type { Schemas };
