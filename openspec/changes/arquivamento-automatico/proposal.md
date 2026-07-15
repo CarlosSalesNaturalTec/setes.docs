@@ -22,11 +22,12 @@ Este é o **change B1** derivado do explore do Épico 2: arquivamento (US 2.5) �
 ## Capabilities
 
 ### New Capabilities
-- `arquivamento-automatico`: rotina diária que transiciona processos `Concluído → Arquivado` após o prazo configurado, de forma idempotente e retomável, com evento imutável de histórico por processo (US 2.5).
+- `arquivamento-automatico`: rotina diária que transiciona processos `Concluído → Arquivado` após o prazo configurado, de forma idempotente e retomável, com evento imutável de histórico por processo (US 2.5); o congelamento de `arquivar_em` na conclusão (US 2.5 Cen.2); e o prazo de arquivamento como parâmetro operacional configurável pelo Administrador (fatia mínima da US 8.5). A capability é a dona ponta-a-ponta do prazo: seu valor, sua configurabilidade e a rotina que o consome.
 
 ### Modified Capabilities
-- `workflow-tramitacao`: a máquina de estados passa a **admitir a transição `Concluído → Arquivado`** (antes reservada e inalcançável); adiciona o evento `arquivamento_automatico` ao histórico imutável; e o congelamento de `arquivar_em` na conclusão passa a fazer parte da ação de conclusão (US 2.5 Cen.2).
-- `inicializacao-sistema`: `sistema_config` deixa de ser um singleton apenas com `inicializado` e passa a carregar o primeiro parâmetro operacional configurável (`prazo_arquivamento_dias`), com endpoint Admin-only de leitura/escrita (fatia mínima da US 8.5).
+- `workflow-tramitacao`: a máquina de estados passa a **admitir a transição `Concluído → Arquivado`** (antes reservada e inalcançável), realizada apenas pela rotina automática; adiciona o evento `arquivamento_automatico` ao histórico imutável.
+
+**Nota sobre `sistema_config`**: a tabela singleton (`inicializacao-sistema`) ganha a coluna `prazo_arquivamento_dias` — mudança de **schema**, registrada no Impact abaixo. As **regras** de configuração desse parâmetro (validação, permissão, não-retroatividade) vivem na capability `arquivamento-automatico`, não em `inicializacao-sistema` (cujo propósito é apenas o setup único). Quando a US 8.5 completa chegar (demais parâmetros + tela de configurações), essas regras migram para a capability de configuração então criada.
 
 ## Impact
 
