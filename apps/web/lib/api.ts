@@ -48,7 +48,7 @@ function buildUrl(path: string, query?: RequestOptions["query"]): string {
 
 async function request<TResponse>(
   path: string,
-  method: "GET" | "POST" | "PATCH" | "PUT",
+  method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
   body: unknown,
   options: RequestOptions = {},
 ): Promise<TResponse> {
@@ -90,6 +90,8 @@ const patch = <TBody, TResponse>(path: string, body: TBody, options?: RequestOpt
   request<TResponse>(path, "PATCH", body, options);
 const put = <TBody, TResponse>(path: string, body: TBody, options?: RequestOptions) =>
   request<TResponse>(path, "PUT", body, options);
+const del = <TResponse>(path: string, options?: RequestOptions) =>
+  request<TResponse>(path, "DELETE", undefined, options);
 
 export const api = {
   // Inicialização (US 8.0)
@@ -194,6 +196,12 @@ export const api = {
       body,
       { auth: true },
     ),
+  marcarSigilo: (processoId: string) =>
+    post<undefined, Schemas["ProcessoResponse"]>(`/processos/${processoId}/sigilo`, undefined, {
+      auth: true,
+    }),
+  removerSigilo: (processoId: string) =>
+    del<Schemas["ProcessoResponse"]>(`/processos/${processoId}/sigilo`, { auth: true }),
 };
 
 export type { Schemas };

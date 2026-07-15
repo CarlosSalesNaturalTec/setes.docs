@@ -75,6 +75,9 @@ class TipoEventoTramitacao(str, enum.Enum):
     CONCLUSAO = "conclusao"
     # Change B1 (US 2.5) — evento de sistema, sem responsável humano (D3).
     ARQUIVAMENTO_AUTOMATICO = "arquivamento_automatico"
+    # US 2.6 — sigilo é ortogonal ao status; não altera status_resultante.
+    MARCAR_SIGILO = "marcar_sigilo"
+    REMOVER_SIGILO = "remover_sigilo"
 
 
 class TipoDocumentoInteressado(str, enum.Enum):
@@ -350,6 +353,8 @@ class Processo(Base):
     concluido_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     # Congelado na conclusão (US 2.5 Cen.2, D1) — NULL enquanto não concluído.
     arquivar_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # US 2.6 — atributo de visibilidade, ortogonal ao status (D1).
+    sigiloso: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false", default=False)
 
     interessados: Mapped[list["ProcessoInteressado"]] = relationship(
         "ProcessoInteressado", back_populates="processo"

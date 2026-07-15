@@ -36,6 +36,7 @@ from app.security.autorizacao import (
 )
 from app.services import processo as processo_service
 from app.services import processo_consulta
+from app.services import sigilo as sigilo_service
 
 router = APIRouter(prefix="/processos", tags=["processos"])
 
@@ -205,4 +206,32 @@ def devolver_processo(
     processo = processo_service.devolver(
         db, processo=processo, responsavel=servidor, payload=payload
     )
+    return ProcessoResponse.de(processo)
+
+
+@router.post("/{processo_id}/sigilo", response_model=ProcessoResponse)
+def marcar_sigilo(
+    processo_id: uuid.UUID,
+    request: Request,
+    usuario: Annotated[Usuario, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> ProcessoResponse:
+    """US 2.6 Cen.1/1b — marca sigilo; idempotente (D4)."""
+    processo = _carregar_processo(db, processo_id)
+    _exigir_acesso_ao_processo(db, usuario=usuario, processo=processo, request=request)
+    processo = sigilo_service.marcar(db, processo=processo, responsavel=usuario)
+    return ProcessoResponse.de(processo)
+
+
+@router.delete("/{processo_id}/sigilo", response_model=ProcessoResponse)
+def remover_sigilo(
+    processo_id: uuid.UUID,
+    request: Request,
+    usuario: Annotated[Usuario, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> ProcessoResponse:
+    """US 2.6 Cen.2 — remove sigilo; idempotente (D4)."""
+    processo = _carregar_processo(db, processo_id)
+    _exigir_acesso_ao_processo(db, usuario=usuario, processo=processo, request=request)
+    processo = sigilo_service.remover(db, processo=processo, responsavel=usuario)
     return ProcessoResponse.de(processo)

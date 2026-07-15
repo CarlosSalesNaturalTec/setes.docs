@@ -62,6 +62,7 @@ describe("ProcessosPage (Kanban)", () => {
           prazo_em: "2026-08-01",
           dias_restantes: 5,
           vencido: false,
+          sigiloso: false,
         },
         {
           id: "proc-2",
@@ -72,6 +73,7 @@ describe("ProcessosPage (Kanban)", () => {
           prazo_em: "2026-07-01",
           dias_restantes: -5,
           vencido: true,
+          sigiloso: false,
         },
       ],
       total: 2,
@@ -90,6 +92,47 @@ describe("ProcessosPage (Kanban)", () => {
     expect(emDia?.className).not.toContain("border-l-red-600");
     expect(vencido?.className).toContain("border-l-red-600");
     expect(within(vencido as HTMLElement).getByText(/⏰/)).toBeInTheDocument();
+  });
+
+  it("exibe o indicador de sigilo apenas no card sigiloso (PRD US 2.6 Cen.3)", async () => {
+    listarKanban.mockResolvedValue({
+      items: [
+        {
+          id: "proc-1",
+          numero: "2026/000001",
+          assunto: "Processo comum",
+          status: "aberto",
+          unidade_atual_id: "un-1",
+          prazo_em: "2026-08-01",
+          dias_restantes: 5,
+          vencido: false,
+          sigiloso: false,
+        },
+        {
+          id: "proc-2",
+          numero: "2026/000002",
+          assunto: "Processo sigiloso",
+          status: "aberto",
+          unidade_atual_id: "un-1",
+          prazo_em: "2026-08-01",
+          dias_restantes: 5,
+          vencido: false,
+          sigiloso: true,
+        },
+      ],
+      total: 2,
+      page: 1,
+      page_size: 50,
+      mensagem_vazio: null,
+    });
+
+    render(<ProcessosPage />);
+
+    const comum = (await screen.findByText("2026/000001")).closest("a");
+    const sigiloso = screen.getByText("2026/000002").closest("a");
+
+    expect(within(comum as HTMLElement).queryByLabelText("Sigiloso")).not.toBeInTheDocument();
+    expect(within(sigiloso as HTMLElement).getByLabelText("Sigiloso")).toBeInTheDocument();
   });
 
   it("exibe o filtro por unidade apenas para o Gestor (PRD US 2.8 Cen.2)", async () => {

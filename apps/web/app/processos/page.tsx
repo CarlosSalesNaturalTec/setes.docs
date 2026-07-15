@@ -19,7 +19,14 @@ function CardProcesso({ card, nomeUnidade }: { card: Card; nomeUnidade: (id: str
         card.vencido ? "border-l-4 border-l-red-600 font-bold" : ""
       }`}
     >
-      <div className="font-mono text-xs text-gray-500">{card.numero}</div>
+      <div className="flex items-center gap-1 font-mono text-xs text-gray-500">
+        {card.numero}
+        {card.sigiloso && (
+          <span aria-label="Sigiloso" title="Sigiloso">
+            🔒
+          </span>
+        )}
+      </div>
       <div className="mt-1">{card.assunto}</div>
       <div className="mt-1 text-xs text-gray-500">{nomeUnidade(card.unidade_atual_id)}</div>
       <div className={`mt-1 text-xs ${card.vencido ? "text-red-600" : "text-gray-500"}`}>
