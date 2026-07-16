@@ -46,6 +46,20 @@
             ],
             "title": "Dias Antecedencia Alerta Prazo"
           },
+          "dias_para_processo_parado": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "examples": [
+              10
+            ],
+            "title": "Dias Para Processo Parado"
+          },
           "prazo_arquivamento_dias": {
             "anyOf": [
               {
@@ -271,6 +285,51 @@
           "nome"
         ],
         "title": "CriarTipoProcessoRequest",
+        "type": "object"
+      },
+      "DashboardKpisResponse": {
+        "description": "US 6.1 Cen.1 — os 5 indicadores + a lista de prazo em risco, no escopo do Gestor.",
+        "properties": {
+          "prazos_em_risco": {
+            "items": {
+              "$ref": "#/components/schemas/PrazoRiscoItem"
+            },
+            "title": "Prazos Em Risco",
+            "type": "array"
+          },
+          "produtividade_por_unidade": {
+            "items": {
+              "$ref": "#/components/schemas/ProdutividadeUnidadeItem"
+            },
+            "title": "Produtividade Por Unidade",
+            "type": "array"
+          },
+          "tempo_medio_tramitacao_dias": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tempo Medio Tramitacao Dias"
+          },
+          "total_processos_ativos": {
+            "title": "Total Processos Ativos",
+            "type": "integer"
+          },
+          "total_processos_parados": {
+            "title": "Total Processos Parados",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_processos_ativos",
+          "tempo_medio_tramitacao_dias",
+          "total_processos_parados"
+        ],
+        "title": "DashboardKpisResponse",
         "type": "object"
       },
       "DespacharRequest": {
@@ -1276,6 +1335,50 @@
         "title": "PesquisaPublicaResponse",
         "type": "object"
       },
+      "PrazoRiscoItem": {
+        "properties": {
+          "assunto": {
+            "title": "Assunto",
+            "type": "string"
+          },
+          "dias_restantes": {
+            "title": "Dias Restantes",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "numero": {
+            "title": "Numero",
+            "type": "string"
+          },
+          "prazo_em": {
+            "format": "date",
+            "title": "Prazo Em",
+            "type": "string"
+          },
+          "unidade_atual_id": {
+            "title": "Unidade Atual Id",
+            "type": "string"
+          },
+          "vencido": {
+            "title": "Vencido",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "numero",
+          "assunto",
+          "unidade_atual_id",
+          "prazo_em",
+          "dias_restantes",
+          "vencido"
+        ],
+        "title": "PrazoRiscoItem",
+        "type": "object"
+      },
       "PrimeiroAcessoRequest": {
         "properties": {
           "senha": {
@@ -1287,6 +1390,74 @@
           "senha"
         ],
         "title": "PrimeiroAcessoRequest",
+        "type": "object"
+      },
+      "ProcessoAtivoItem": {
+        "description": "Item de drill-down de \"Processos Ativos\" (US 6.1 Cen.5).",
+        "properties": {
+          "assunto": {
+            "title": "Assunto",
+            "type": "string"
+          },
+          "dias_restantes": {
+            "title": "Dias Restantes",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "numero": {
+            "title": "Numero",
+            "type": "string"
+          },
+          "unidade_atual_id": {
+            "title": "Unidade Atual Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "numero",
+          "assunto",
+          "unidade_atual_id",
+          "dias_restantes"
+        ],
+        "title": "ProcessoAtivoItem",
+        "type": "object"
+      },
+      "ProcessoParadoItem": {
+        "description": "Item de drill-down de \"Processos Parados\" (US 6.1 Cen.4).",
+        "properties": {
+          "assunto": {
+            "title": "Assunto",
+            "type": "string"
+          },
+          "dias_parados": {
+            "title": "Dias Parados",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "numero": {
+            "title": "Numero",
+            "type": "string"
+          },
+          "unidade_atual_id": {
+            "title": "Unidade Atual Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "numero",
+          "assunto",
+          "unidade_atual_id",
+          "dias_parados"
+        ],
+        "title": "ProcessoParadoItem",
         "type": "object"
       },
       "ProcessoPublicoResponse": {
@@ -1441,6 +1612,69 @@
           "sigiloso"
         ],
         "title": "ProcessoResponse",
+        "type": "object"
+      },
+      "ProcessosAtivosResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProcessoAtivoItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total"
+        ],
+        "title": "ProcessosAtivosResponse",
+        "type": "object"
+      },
+      "ProcessosParadosResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProcessoParadoItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total"
+        ],
+        "title": "ProcessosParadosResponse",
+        "type": "object"
+      },
+      "ProdutividadeUnidadeItem": {
+        "properties": {
+          "quantidade": {
+            "title": "Quantidade",
+            "type": "integer"
+          },
+          "unidade_id": {
+            "title": "Unidade Id",
+            "type": "string"
+          },
+          "unidade_nome": {
+            "title": "Unidade Nome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "unidade_id",
+          "unidade_nome",
+          "quantidade"
+        ],
+        "title": "ProdutividadeUnidadeItem",
         "type": "object"
       },
       "RecuperarSenhaRequest": {
@@ -1598,6 +1832,13 @@
             "title": "Dias Antecedencia Alerta Prazo",
             "type": "integer"
           },
+          "dias_para_processo_parado": {
+            "examples": [
+              7
+            ],
+            "title": "Dias Para Processo Parado",
+            "type": "integer"
+          },
           "prazo_arquivamento_dias": {
             "examples": [
               30
@@ -1608,7 +1849,8 @@
         },
         "required": [
           "prazo_arquivamento_dias",
-          "dias_antecedencia_alerta_prazo"
+          "dias_antecedencia_alerta_prazo",
+          "dias_para_processo_parado"
         ],
         "title": "SistemaConfigResponse",
         "type": "object"
@@ -2369,6 +2611,207 @@
         "summary": "Trocar Senha",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/dashboard/kpis": {
+      "get": {
+        "description": "US 6.1 Cen.1/Cen.2/Cen.3 — KPIs consolidados (ou de uma unidade) do escopo do Gestor.",
+        "operationId": "obter_kpis_dashboard_kpis_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "unidade_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Unidade Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardKpisResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Obter Kpis",
+        "tags": [
+          "dashboard"
+        ]
+      }
+    },
+    "/dashboard/processos-ativos": {
+      "get": {
+        "description": "US 6.1 Cen.5 — drill-down do KPI \"Total de Processos Ativos\".",
+        "operationId": "obter_processos_ativos_dashboard_processos_ativos_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "unidade_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Unidade Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessosAtivosResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Obter Processos Ativos",
+        "tags": [
+          "dashboard"
+        ]
+      }
+    },
+    "/dashboard/processos-parados": {
+      "get": {
+        "description": "US 6.1 Cen.4 — drill-down do KPI \"Processos Parados\".",
+        "operationId": "obter_processos_parados_dashboard_processos_parados_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "unidade_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Unidade Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessosParadosResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Obter Processos Parados",
+        "tags": [
+          "dashboard"
         ]
       }
     },

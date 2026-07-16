@@ -25,6 +25,7 @@ from app.rate_limit import MSG_RATE_LIMIT_CONSULTA_PUBLICA, limiter
 from app.routers import (
     auth,
     consulta_publica,
+    dashboard,
     dev_tools,
     documentos,
     documentos_removidos,
@@ -86,6 +87,7 @@ app.include_router(documentos.router)
 app.include_router(documentos_removidos.router)
 app.include_router(notificacoes.router)
 app.include_router(sistema_config.router)
+app.include_router(dashboard.router)
 app.include_router(consulta_publica.router)
 app.include_router(dev_tools.router)
 

@@ -197,6 +197,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/dashboard/kpis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Obter Kpis
+         * @description US 6.1 Cen.1/Cen.2/Cen.3 — KPIs consolidados (ou de uma unidade) do escopo do Gestor.
+         */
+        get: operations["obter_kpis_dashboard_kpis_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/dashboard/processos-ativos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Obter Processos Ativos
+         * @description US 6.1 Cen.5 — drill-down do KPI "Total de Processos Ativos".
+         */
+        get: operations["obter_processos_ativos_dashboard_processos_ativos_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/dashboard/processos-parados": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Obter Processos Parados
+         * @description US 6.1 Cen.4 — drill-down do KPI "Processos Parados".
+         */
+        get: operations["obter_processos_parados_dashboard_processos_parados_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -903,6 +963,11 @@ export interface components {
              */
             dias_antecedencia_alerta_prazo?: number | null;
             /**
+             * Dias Para Processo Parado
+             * @example 10
+             */
+            dias_para_processo_parado?: number | null;
+            /**
              * Prazo Arquivamento Dias
              * @example 60
              */
@@ -988,6 +1053,22 @@ export interface components {
             nome: string;
             /** Unidade Ids */
             unidade_ids?: string[];
+        };
+        /**
+         * DashboardKpisResponse
+         * @description US 6.1 Cen.1 — os 5 indicadores + a lista de prazo em risco, no escopo do Gestor.
+         */
+        DashboardKpisResponse: {
+            /** Prazos Em Risco */
+            prazos_em_risco?: components["schemas"]["PrazoRiscoItem"][];
+            /** Produtividade Por Unidade */
+            produtividade_por_unidade?: components["schemas"]["ProdutividadeUnidadeItem"][];
+            /** Tempo Medio Tramitacao Dias */
+            tempo_medio_tramitacao_dias: number | null;
+            /** Total Processos Ativos */
+            total_processos_ativos: number;
+            /** Total Processos Parados */
+            total_processos_parados: number;
         };
         /** DespacharRequest */
         DespacharRequest: {
@@ -1368,10 +1449,62 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** PrazoRiscoItem */
+        PrazoRiscoItem: {
+            /** Assunto */
+            assunto: string;
+            /** Dias Restantes */
+            dias_restantes: number;
+            /** Id */
+            id: string;
+            /** Numero */
+            numero: string;
+            /**
+             * Prazo Em
+             * Format: date
+             */
+            prazo_em: string;
+            /** Unidade Atual Id */
+            unidade_atual_id: string;
+            /** Vencido */
+            vencido: boolean;
+        };
         /** PrimeiroAcessoRequest */
         PrimeiroAcessoRequest: {
             /** Senha */
             senha: string;
+        };
+        /**
+         * ProcessoAtivoItem
+         * @description Item de drill-down de "Processos Ativos" (US 6.1 Cen.5).
+         */
+        ProcessoAtivoItem: {
+            /** Assunto */
+            assunto: string;
+            /** Dias Restantes */
+            dias_restantes: number;
+            /** Id */
+            id: string;
+            /** Numero */
+            numero: string;
+            /** Unidade Atual Id */
+            unidade_atual_id: string;
+        };
+        /**
+         * ProcessoParadoItem
+         * @description Item de drill-down de "Processos Parados" (US 6.1 Cen.4).
+         */
+        ProcessoParadoItem: {
+            /** Assunto */
+            assunto: string;
+            /** Dias Parados */
+            dias_parados: number;
+            /** Id */
+            id: string;
+            /** Numero */
+            numero: string;
+            /** Unidade Atual Id */
+            unidade_atual_id: string;
         };
         /** ProcessoPublicoResponse */
         ProcessoPublicoResponse: {
@@ -1439,6 +1572,29 @@ export interface components {
             /** Unidade Origem Id */
             unidade_origem_id: string;
         };
+        /** ProcessosAtivosResponse */
+        ProcessosAtivosResponse: {
+            /** Items */
+            items?: components["schemas"]["ProcessoAtivoItem"][];
+            /** Total */
+            total: number;
+        };
+        /** ProcessosParadosResponse */
+        ProcessosParadosResponse: {
+            /** Items */
+            items?: components["schemas"]["ProcessoParadoItem"][];
+            /** Total */
+            total: number;
+        };
+        /** ProdutividadeUnidadeItem */
+        ProdutividadeUnidadeItem: {
+            /** Quantidade */
+            quantidade: number;
+            /** Unidade Id */
+            unidade_id: string;
+            /** Unidade Nome */
+            unidade_nome: string;
+        };
         /** RecuperarSenhaRequest */
         RecuperarSenhaRequest: {
             /**
@@ -1504,6 +1660,11 @@ export interface components {
              * @example 2
              */
             dias_antecedencia_alerta_prazo: number;
+            /**
+             * Dias Para Processo Parado
+             * @example 7
+             */
+            dias_para_processo_parado: number;
             /**
              * Prazo Arquivamento Dias
              * @example 30
@@ -1917,6 +2078,105 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MensagemResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obter_kpis_dashboard_kpis_get: {
+        parameters: {
+            query?: {
+                unidade_id?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardKpisResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obter_processos_ativos_dashboard_processos_ativos_get: {
+        parameters: {
+            query?: {
+                unidade_id?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessosAtivosResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obter_processos_parados_dashboard_processos_parados_get: {
+        parameters: {
+            query?: {
+                unidade_id?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessosParadosResponse"];
                 };
             };
             /** @description Validation Error */
