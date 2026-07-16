@@ -282,6 +282,66 @@ function AcaoResetarSenha({ usuario }: { usuario: Usuario }) {
   );
 }
 
+function AcaoPermissaoAuditoria({ usuario, onAlterado }: { usuario: Usuario; onAlterado: () => void }) {
+  const [erro, setErro] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState(false);
+
+  async function alternar() {
+    setErro(null);
+    setEnviando(true);
+    try {
+      if (usuario.pode_auditar) {
+        await api.revogarPermissaoAuditoria(usuario.id);
+      } else {
+        await api.concederPermissaoAuditoria(usuario.id);
+      }
+      onAlterado();
+    } catch (err) {
+      setErro(err instanceof ApiError ? err.detail : "Não foi possível alterar a permissão de auditoria.");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <div>
+      <button onClick={alternar} disabled={enviando} className="text-sm text-purple-600 disabled:opacity-50">
+        {usuario.pode_auditar ? "Revogar Permissão de Auditoria" : "Conceder Permissão de Auditoria"}
+      </button>
+      {erro && <p className="text-xs text-red-600">{erro}</p>}
+    </div>
+  );
+}
+
+function AcaoDesativarUsuario({ usuario, onAlterado }: { usuario: Usuario; onAlterado: () => void }) {
+  const [erro, setErro] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState(false);
+
+  if (usuario.status === "inativo") return null;
+
+  async function desativar() {
+    setErro(null);
+    setEnviando(true);
+    try {
+      await api.desativarUsuario(usuario.id);
+      onAlterado();
+    } catch (err) {
+      setErro(err instanceof ApiError ? err.detail : "Não foi possível desativar o usuário.");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <div>
+      <button onClick={desativar} disabled={enviando} className="text-sm text-red-600 disabled:opacity-50">
+        Desativar Usuário
+      </button>
+      {erro && <p className="text-xs text-red-600">{erro}</p>}
+    </div>
+  );
+}
+
 function AdminUsuariosConteudo() {
   const { usuario: usuarioAtual } = useAuth();
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -346,6 +406,8 @@ function AdminUsuariosConteudo() {
                   <AcaoUnidadesGeridas usuario={u} unidades={unidades} />
                 )}
                 {souAdministrador && <AcaoResetarSenha usuario={u} />}
+                {souAdministrador && <AcaoPermissaoAuditoria usuario={u} onAlterado={carregar} />}
+                {souAdministrador && <AcaoDesativarUsuario usuario={u} onAlterado={carregar} />}
               </td>
             </tr>
           ))}

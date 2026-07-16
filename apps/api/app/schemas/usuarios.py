@@ -14,6 +14,7 @@ class UsuarioResponse(BaseModel):
     perfil: str
     status: str
     unidade_id: str | None
+    pode_auditar: bool
 
     @classmethod
     def de(cls, usuario) -> "UsuarioResponse":  # usuario: app.db.models.Usuario
@@ -24,6 +25,7 @@ class UsuarioResponse(BaseModel):
             perfil=usuario.perfil.value,
             status=usuario.status.value,
             unidade_id=str(usuario.unidade_id) if usuario.unidade_id else None,
+            pode_auditar=usuario.pode_auditar,
         )
 
 

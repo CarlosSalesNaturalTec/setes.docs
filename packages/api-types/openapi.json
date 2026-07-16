@@ -1989,6 +1989,10 @@
             "title": "Perfil",
             "type": "string"
           },
+          "pode_auditar": {
+            "title": "Pode Auditar",
+            "type": "boolean"
+          },
           "status": {
             "title": "Status",
             "type": "string"
@@ -2011,7 +2015,8 @@
           "email",
           "perfil",
           "status",
-          "unidade_id"
+          "unidade_id",
+          "pode_auditar"
         ],
         "title": "UsuarioResponse",
         "type": "object"
@@ -5065,6 +5070,184 @@
           }
         },
         "summary": "Meu Perfil",
+        "tags": [
+          "usuarios"
+        ]
+      }
+    },
+    "/usuarios/{usuario_id}/desativar": {
+      "post": {
+        "description": "US 8.4 — desativa com a guarda de processos em andamento sob\nresponsabilidade (D2); idempotente (D4).",
+        "operationId": "desativar_usuario_usuarios__usuario_id__desativar_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "usuario_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Usuario Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Desativar Usuario",
+        "tags": [
+          "usuarios"
+        ]
+      }
+    },
+    "/usuarios/{usuario_id}/permissao-auditoria": {
+      "delete": {
+        "description": "US 8.3 Cen.2 — revoga sem \"lembrar\" perfil anterior; idempotente (D3/D4).",
+        "operationId": "revogar_permissao_auditoria_usuarios__usuario_id__permissao_auditoria_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "usuario_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Usuario Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revogar Permissao Auditoria",
+        "tags": [
+          "usuarios"
+        ]
+      },
+      "post": {
+        "description": "US 8.3 Cen.1 — concede, ortogonal ao `perfil`; idempotente (só loga em\ntransição real, D3/D4).",
+        "operationId": "conceder_permissao_auditoria_usuarios__usuario_id__permissao_auditoria_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "usuario_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Usuario Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Conceder Permissao Auditoria",
         "tags": [
           "usuarios"
         ]

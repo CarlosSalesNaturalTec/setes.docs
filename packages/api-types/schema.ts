@@ -894,6 +894,52 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/usuarios/{usuario_id}/desativar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Desativar Usuario
+         * @description US 8.4 — desativa com a guarda de processos em andamento sob
+         *     responsabilidade (D2); idempotente (D4).
+         */
+        post: operations["desativar_usuario_usuarios__usuario_id__desativar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/usuarios/{usuario_id}/permissao-auditoria": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Conceder Permissao Auditoria
+         * @description US 8.3 Cen.1 — concede, ortogonal ao `perfil`; idempotente (só loga em
+         *     transição real, D3/D4).
+         */
+        post: operations["conceder_permissao_auditoria_usuarios__usuario_id__permissao_auditoria_post"];
+        /**
+         * Revogar Permissao Auditoria
+         * @description US 8.3 Cen.2 — revoga sem "lembrar" perfil anterior; idempotente (D3/D4).
+         */
+        delete: operations["revogar_permissao_auditoria_usuarios__usuario_id__permissao_auditoria_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/usuarios/{usuario_id}/unidade": {
         parameters: {
             query?: never;
@@ -1721,6 +1767,8 @@ export interface components {
             nome: string;
             /** Perfil */
             perfil: string;
+            /** Pode Auditar */
+            pode_auditar: boolean;
             /** Status */
             status: string;
             /** Unidade Id */
@@ -3415,6 +3463,105 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeuPerfilResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    desativar_usuario_usuarios__usuario_id__desativar_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                usuario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    conceder_permissao_auditoria_usuarios__usuario_id__permissao_auditoria_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                usuario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revogar_permissao_auditoria_usuarios__usuario_id__permissao_auditoria_delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                usuario_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioResponse"];
                 };
             };
             /** @description Validation Error */
