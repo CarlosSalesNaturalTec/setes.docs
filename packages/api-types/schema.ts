@@ -4,6 +4,48 @@
  */
 
 export interface paths {
+    "/admin/documentos-removidos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Documentos Removidos
+         * @description US 8.7 Cen.2/3 — lista os documentos em retenção (não os já purgados),
+         *     de qualquer unidade, com processo de origem, data de remoção e responsável.
+         */
+        get: operations["listar_documentos_removidos_admin_documentos_removidos_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/documentos-removidos/{documento_id}/restaurar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restaurar Documento
+         * @description US 8.7 Cen.1/2 — restaura um documento em retenção; 404 se já purgado ou
+         *     inexistente (a purga faz DELETE, então "purgado" é naturalmente 404, D2).
+         */
+        post: operations["restaurar_documento_admin_documentos_removidos__documento_id__restaurar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/usuarios/{usuario_id}/resetar-senha": {
         parameters: {
             query?: never;
@@ -328,6 +370,92 @@ export interface paths {
          * @description US 2.2b — devolução para a unidade anterior, com motivo obrigatório.
          */
         post: operations["devolver_processo_processos__processo_id__devolver_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/processos/{processo_id}/documentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Documentos
+         * @description Lista os documentos visíveis do processo, autorizados por unidade.
+         */
+        get: operations["listar_documentos_processos__processo_id__documentos_get"];
+        put?: never;
+        /**
+         * Anexar Documento
+         * @description US 3.1 Cen.1/2/2b/5 — anexa um documento ao processo.
+         */
+        post: operations["anexar_documento_processos__processo_id__documentos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/processos/{processo_id}/documentos/{documento_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remover Documento
+         * @description US 3.1 Cen.3/4/4b/4c — soft-delete; bloqueia conforme a regra de custódia (D1).
+         */
+        delete: operations["remover_documento_processos__processo_id__documentos__documento_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/processos/{processo_id}/documentos/{documento_id}/conteudo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Conteudo Documento
+         * @description US 3.2 Cen.1/3 — inline para PDF/imagem; attachment (com aviso do
+         *     frontend) para DOC/DOCX. Streaming autenticado (D5) — nunca URL pública.
+         */
+        get: operations["conteudo_documento_processos__processo_id__documentos__documento_id__conteudo_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/processos/{processo_id}/documentos/{documento_id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Baixar Documento
+         * @description US 3.2 Cen.2 — sempre `attachment`, mantendo formato e nome (D3: o
+         *     nome de exibição já desduplicado é "o nome certo" a devolver).
+         */
+        get: operations["baixar_documento_processos__processo_id__documentos__documento_id__download_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -692,6 +820,11 @@ export interface components {
              */
             prazo_arquivamento_dias: number;
         };
+        /** Body_anexar_documento_processos__processo_id__documentos_post */
+        Body_anexar_documento_processos__processo_id__documentos_post: {
+            /** Arquivo */
+            arquivo: string;
+        };
         /** CadastroUnidadeRequest */
         CadastroUnidadeRequest: {
             /** Gestor Responsavel Id */
@@ -785,6 +918,61 @@ export interface components {
             justificativa?: string | null;
             /** Motivo */
             motivo?: string | null;
+        };
+        /**
+         * DocumentoRemovidoResponse
+         * @description Item da área administrativa "Documentos Removidos" (US 8.7): identifica o
+         *     anexo em retenção com o processo de origem (número/assunto), a data de
+         *     remoção e o responsável pela remoção.
+         */
+        DocumentoRemovidoResponse: {
+            /** Id */
+            id: string;
+            /** Nome Exibicao */
+            nome_exibicao: string;
+            /** Processo Assunto */
+            processo_assunto: string;
+            /** Processo Id */
+            processo_id: string;
+            /** Processo Numero */
+            processo_numero: string;
+            /**
+             * Removido Em
+             * Format: date-time
+             */
+            removido_em: string;
+            /** Removido Por Id */
+            removido_por_id: string;
+        };
+        /** DocumentoResponse */
+        DocumentoResponse: {
+            /**
+             * Anexado Em
+             * Format: date-time
+             */
+            anexado_em: string;
+            /** Anexado Por Id */
+            anexado_por_id: string;
+            /** Id */
+            id: string;
+            /** Nome Exibicao */
+            nome_exibicao: string;
+            /** Processo Id */
+            processo_id: string;
+            /** Tamanho Bytes */
+            tamanho_bytes: number;
+            /** Tipo Conteudo */
+            tipo_conteudo: string;
+        };
+        /** DocumentosListResponse */
+        DocumentosListResponse: {
+            /** Items */
+            items?: components["schemas"]["DocumentoResponse"][];
+        };
+        /** DocumentosRemovidosListResponse */
+        DocumentosRemovidosListResponse: {
+            /** Items */
+            items?: components["schemas"]["DocumentoRemovidoResponse"][];
         };
         /** EditarUnidadeRequest */
         EditarUnidadeRequest: {
@@ -1266,6 +1454,70 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listar_documentos_removidos_admin_documentos_removidos_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentosRemovidosListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restaurar_documento_admin_documentos_removidos__documento_id__restaurar_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                documento_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     resetar_senha_admin_admin_usuarios__usuario_id__resetar_senha_post: {
         parameters: {
             query?: never;
@@ -1836,6 +2088,178 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProcessoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_documentos_processos__processo_id__documentos_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentosListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    anexar_documento_processos__processo_id__documentos_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_anexar_documento_processos__processo_id__documentos_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remover_documento_processos__processo_id__documentos__documento_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+                documento_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    conteudo_documento_processos__processo_id__documentos__documento_id__conteudo_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+                documento_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    baixar_documento_processos__processo_id__documentos__documento_id__download_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+                documento_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

@@ -70,6 +70,17 @@ class Settings(BaseSettings):
     # garantir "banco limpo" entre execuções. Nunca setado em produção.
     dev_db_reset: bool = Field(default=False, alias="DEV_DB_RESET")
 
+    # Cloud Storage (Épico 3, D4) — bucket `${project_id}-documentos`
+    # (provisionado no bootstrap). Em produção, `documentos_storage_local` fica
+    # `False` e o backend real (google-cloud-storage, ADC via SA do Cloud Run)
+    # é usado; em dev/pytest/E2E, o backend local (filesystem) evita depender
+    # do GCP, mesmo padrão dev/prod de `email/provider.py`.
+    documentos_bucket: str = Field(default="", alias="DOCUMENTOS_BUCKET")
+    documentos_storage_local: bool = Field(default=True, alias="DOCUMENTOS_STORAGE_LOCAL")
+    documentos_storage_local_dir: str = Field(
+        default="/tmp/setes-documentos", alias="DOCUMENTOS_STORAGE_LOCAL_DIR"
+    )
+
     # CORS — o frontend chama a API a partir de uma origem diferente (dev:
     # localhost:3000 -> localhost:8000; prod: domínios distintos no Cloud Run).
     cors_allowed_origins_raw: str = Field(

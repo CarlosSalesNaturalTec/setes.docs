@@ -26,6 +26,8 @@ from app.routers import (
     auth,
     consulta_publica,
     dev_tools,
+    documentos,
+    documentos_removidos,
     processos,
     setup,
     sistema_config,
@@ -66,9 +68,11 @@ app.add_middleware(
     allow_credentials=False,  # sessão é via Bearer token (D1), não cookies
     allow_methods=["*"],
     allow_headers=["*"],
-    # O frontend lê o JWT renovado (sliding window, D1) neste header a cada
-    # chamada autenticada — sem expor, o fetch() do browser não o enxerga.
-    expose_headers=["X-Renewed-Token"],
+    # O frontend lê o JWT renovado (sliding window, D1) e o nome do arquivo
+    # (Épico 3, D5 — streaming de documentos) nestes headers a cada chamada;
+    # sem expor, o fetch() do browser não os enxerga (CORS só libera os
+    # headers "simples" por padrão).
+    expose_headers=["X-Renewed-Token", "Content-Disposition"],
 )
 
 app.include_router(setup.router)
@@ -77,6 +81,8 @@ app.include_router(usuarios.router)
 app.include_router(unidades.router)
 app.include_router(tipos_processo.router)
 app.include_router(processos.router)
+app.include_router(documentos.router)
+app.include_router(documentos_removidos.router)
 app.include_router(sistema_config.router)
 app.include_router(consulta_publica.router)
 app.include_router(dev_tools.router)

@@ -7,6 +7,8 @@ import { ProtectedShell } from "@/components/protected-shell";
 import { ApiError, api, type Schemas } from "@/lib/api";
 import { MOTIVOS_DEVOLUCAO, rotuloEvento, rotuloStatus } from "@/lib/processo-ui";
 
+import { DocumentosSection } from "./documentos-section";
+
 type Processo = Schemas["ProcessoResponse"];
 type Historico = Schemas["HistoricoResponse"];
 type Unidade = Schemas["UnidadeResponse"];
@@ -120,7 +122,7 @@ function DetalheConteudo({ id }: { id: string }) {
   const [processo, setProcesso] = useState<Processo | null>(null);
   const [historico, setHistorico] = useState<Historico | null>(null);
   const [unidades, setUnidades] = useState<Unidade[]>([]);
-  const [aba, setAba] = useState<"detalhe" | "historico">("detalhe");
+  const [aba, setAba] = useState<"detalhe" | "documentos" | "historico">("detalhe");
   const [erro, setErro] = useState<string | null>(null);
   const [promptConclusao, setPromptConclusao] = useState<string | null>(null);
   const [mostrarDevolucao, setMostrarDevolucao] = useState(false);
@@ -273,6 +275,13 @@ function DetalheConteudo({ id }: { id: string }) {
         </button>
         <button
           type="button"
+          onClick={() => setAba("documentos")}
+          className={`pb-2 ${aba === "documentos" ? "border-b-2 border-blue-600 font-medium" : "text-gray-500"}`}
+        >
+          Documentos
+        </button>
+        <button
+          type="button"
           onClick={() => setAba("historico")}
           className={`pb-2 ${aba === "historico" ? "border-b-2 border-blue-600 font-medium" : "text-gray-500"}`}
         >
@@ -307,6 +316,14 @@ function DetalheConteudo({ id }: { id: string }) {
               </ul>
             )}
           </section>
+        </div>
+      ) : aba === "documentos" ? (
+        <div className="mt-4">
+          <DocumentosSection
+            processoId={processo.id}
+            status={processo.status}
+            eventos={historico.eventos ?? []}
+          />
         </div>
       ) : (
         <div className="mt-4">
