@@ -272,6 +272,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/notificacoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Notificacoes
+         * @description US 5.1 Cen.4/4b — lidas ficam visíveis por 30 dias; não lidas, sempre.
+         */
+        get: operations["listar_notificacoes_notificacoes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notificacoes/contador": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Contador Notificacoes
+         * @description US 5.1 Cen.2/3 — só as não lidas do próprio usuário.
+         */
+        get: operations["contador_notificacoes_notificacoes_contador_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notificacoes/marcar-todas-lidas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Marcar Todas Como Lidas
+         * @description US 5.1 Cen.2 — marca todas as próprias notificações não lidas; contador zera.
+         */
+        post: operations["marcar_todas_como_lidas_notificacoes_marcar_todas_lidas_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notificacoes/{notificacao_id}/ler": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Marcar Como Lida
+         * @description US 5.1 Cen.2 — marca uma notificação como lida; o contador decrementa.
+         */
+        post: operations["marcar_como_lida_notificacoes__notificacao_id__ler_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/processos": {
         parameters: {
             query?: never;
@@ -592,7 +672,10 @@ export interface paths {
         /**
          * Atualizar Sistema Config
          * @description US 8.5 Cen.1/3 — só afeta conclusões futuras (o congelamento em
-         *     `services/processo.py` já garante a não-retroatividade).
+         *     `services/processo.py` já garante a não-retroatividade). US 5.4/8.5 — o
+         *     parâmetro de antecedência de alerta é lido em runtime pela rotina diária
+         *     (D4, design.md `notificacoes-e-alertas`); cada campo só é alterado se
+         *     informado no payload.
          */
         put: operations["atualizar_sistema_config_sistema_config_put"];
         post?: never;
@@ -815,10 +898,15 @@ export interface components {
         /** AtualizarSistemaConfigRequest */
         AtualizarSistemaConfigRequest: {
             /**
+             * Dias Antecedencia Alerta Prazo
+             * @example 5
+             */
+            dias_antecedencia_alerta_prazo?: number | null;
+            /**
              * Prazo Arquivamento Dias
              * @example 60
              */
-            prazo_arquivamento_dias: number;
+            prazo_arquivamento_dias?: number | null;
         };
         /** Body_anexar_documento_processos__processo_id__documentos_post */
         Body_anexar_documento_processos__processo_id__documentos_post: {
@@ -874,6 +962,14 @@ export interface components {
             unidade_atual_id: string;
             /** Vencido */
             vencido: boolean;
+        };
+        /** ContadorNotificacoesResponse */
+        ContadorNotificacoesResponse: {
+            /**
+             * Nao Lidas
+             * @example 3
+             */
+            nao_lidas: number;
         };
         /** CriarProcessoRequest */
         CriarProcessoRequest: {
@@ -1123,6 +1219,13 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** ListaNotificacoesResponse */
+        ListaNotificacoesResponse: {
+            /** Items */
+            items?: components["schemas"]["NotificacaoResponse"][];
+            /** Mensagem Vazio */
+            mensagem_vazio?: string | null;
+        };
         /** ListaUsuariosResponse */
         ListaUsuariosResponse: {
             /** Items */
@@ -1154,6 +1257,14 @@ export interface components {
             /** Token */
             token: string;
             usuario: components["schemas"]["UsuarioResumo"];
+        };
+        /** MarcarTodasLidasResponse */
+        MarcarTodasLidasResponse: {
+            /**
+             * Marcadas
+             * @example 3
+             */
+            marcadas: number;
         };
         /** MeResponse */
         MeResponse: {
@@ -1210,6 +1321,36 @@ export interface components {
             unidade_destino: string | null;
             /** Unidade Origem */
             unidade_origem: string | null;
+        };
+        /** NotificacaoResponse */
+        NotificacaoResponse: {
+            /** Assunto */
+            assunto: string;
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+            /** Id */
+            id: string;
+            /** Lida Em */
+            lida_em: string | null;
+            /** Numero Processo */
+            numero_processo: string;
+            /** Prazo Referencia */
+            prazo_referencia: string | null;
+            /** Processo Id */
+            processo_id: string;
+            /** Tipo */
+            tipo: string;
+            /** Unidade Id */
+            unidade_id: string;
+            /** Unidade Nome */
+            unidade_nome: string;
+            /** Unidade Origem Id */
+            unidade_origem_id: string | null;
+            /** Unidade Origem Nome */
+            unidade_origem_nome: string | null;
         };
         /** PesquisaPublicaResponse */
         PesquisaPublicaResponse: {
@@ -1358,6 +1499,11 @@ export interface components {
         };
         /** SistemaConfigResponse */
         SistemaConfigResponse: {
+            /**
+             * Dias Antecedencia Alerta Prazo
+             * @example 2
+             */
+            dias_antecedencia_alerta_prazo: number;
             /**
              * Prazo Arquivamento Dias
              * @example 30
@@ -1875,6 +2021,132 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AckResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_notificacoes_notificacoes_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListaNotificacoesResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    contador_notificacoes_notificacoes_contador_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContadorNotificacoesResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    marcar_todas_como_lidas_notificacoes_marcar_todas_lidas_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarcarTodasLidasResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    marcar_como_lida_notificacoes__notificacao_id__ler_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                notificacao_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificacaoResponse"];
                 };
             };
             /** @description Validation Error */

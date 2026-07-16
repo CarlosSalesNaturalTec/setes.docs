@@ -66,3 +66,56 @@ def test_gestor_recebe_acesso_negado(client, db):
 
     resp = client.get("/sistema-config", headers=auth(token))
     assert resp.status_code == 403
+
+
+def test_dias_antecedencia_alerta_prazo_padrao_e_2(client, db):
+    admin = usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin2@example.com")
+    token = login(client, admin.email)
+
+    resp = client.get("/sistema-config", headers=auth(token))
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["dias_antecedencia_alerta_prazo"] == 2
+
+
+def test_admin_altera_dias_antecedencia_alerta_prazo_e_persiste(client, db):
+    admin = usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin3@example.com")
+    token = login(client, admin.email)
+
+    resp = client.put(
+        "/sistema-config", json={"dias_antecedencia_alerta_prazo": 5}, headers=auth(token)
+    )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["dias_antecedencia_alerta_prazo"] == 5
+    # Não altera o outro parâmetro (campos independentes, D4).
+    assert resp.json()["prazo_arquivamento_dias"] == 30
+
+    resp_get = client.get("/sistema-config", headers=auth(token))
+    assert resp_get.json()["dias_antecedencia_alerta_prazo"] == 5
+
+
+def test_servidor_ou_gestor_nao_altera_dias_antecedencia_alerta_prazo(client, db):
+    servidor = usuario(db, perfil=PerfilUsuario.SERVIDOR, email="servidor2@example.com")
+    token = login(client, servidor.email)
+
+    resp = client.put(
+        "/sistema-config", json={"dias_antecedencia_alerta_prazo": 5}, headers=auth(token)
+    )
+    assert resp.status_code == 403
+
+    gestor = usuario(db, perfil=PerfilUsuario.GESTOR, email="gestor2@example.com")
+    token_gestor = login(client, gestor.email)
+    resp_gestor = client.put(
+        "/sistema-config", json={"dias_antecedencia_alerta_prazo": 5}, headers=auth(token_gestor)
+    )
+    assert resp_gestor.status_code == 403
+
+
+def test_dias_antecedencia_alerta_prazo_valor_invalido_e_rejeitado(client, db):
+    admin = usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin4@example.com")
+    token = login(client, admin.email)
+
+    resp = client.put(
+        "/sistema-config", json={"dias_antecedencia_alerta_prazo": 0}, headers=auth(token)
+    )
+    assert resp.status_code == 422
+    assert resp.json()["detail"] == "O valor deve ser um número inteiro positivo"

@@ -7,7 +7,11 @@ from pydantic import BaseModel, Field
 
 class SistemaConfigResponse(BaseModel):
     prazo_arquivamento_dias: int = Field(examples=[30])
+    dias_antecedencia_alerta_prazo: int = Field(examples=[2])
 
 
 class AtualizarSistemaConfigRequest(BaseModel):
-    prazo_arquivamento_dias: int = Field(examples=[60])
+    # Campos independentes — cada um é atualizado só quando informado (D4,
+    # design.md `notificacoes-e-alertas`); omitir mantém o valor vigente.
+    prazo_arquivamento_dias: int | None = Field(default=None, examples=[60])
+    dias_antecedencia_alerta_prazo: int | None = Field(default=None, examples=[5])

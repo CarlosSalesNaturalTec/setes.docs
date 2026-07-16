@@ -16,18 +16,21 @@ from sqlalchemy.orm import Session
 
 from app.db.models import (
     MotivoDevolucao,
+    Notificacao,
     Processo,
     ProcessoInteressado,
     SistemaConfig,
     StatusProcesso,
     TipoDocumentoInteressado,
     TipoEventoTramitacao,
+    TipoNotificacao,
     TipoParticipacaoInteressado,
     TipoProcesso,
     Tramitacao,
     Usuario,
 )
 from app.schemas.processo import CriarProcessoRequest, DevolverRequest, InteressadoInput
+from app.services import notificacao as notificacao_service
 from app.services.documento_fiscal import normalizar_documento, validar_cnpj, validar_cpf
 from app.services.numero_processo import alocar_numero
 from app.services.processo_estado import validar_transicao
@@ -136,8 +139,16 @@ def criar_processo(db: Session, *, criador: Usuario, payload: CriarProcessoReque
     return processo
 
 
-def despachar(db: Session, *, processo: Processo, responsavel: Usuario, confirmar: bool) -> Processo:
-    """Despacha para a próxima etapa; na última, conclui (com confirmação). US 2.2."""
+def despachar(
+    db: Session, *, processo: Processo, responsavel: Usuario, confirmar: bool
+) -> tuple[Processo, list[Notificacao]]:
+    """Despacha para a próxima etapa; na última, conclui (com confirmação). US 2.2.
+
+    Retorna também as notificações internas geradas (US 5.1/5.3) — inseridas na
+    mesma transação do evento de tramitação (D1, design.md
+    `notificacoes-e-alertas`) — para o router enfileirar os e-mails correspondentes
+    após o commit.
+    """
     etapas = etapas_do_roteiro(db, processo.roteiro_id)
 
     if is_ultima(etapas, processo.ordem_atual):
@@ -171,9 +182,12 @@ def despachar(db: Session, *, processo: Processo, responsavel: Usuario, confirma
                 status_resultante=StatusProcesso.CONCLUIDO,
             )
         )
+        notificacoes = notificacao_service.gerar_notificacoes(
+            db, tipo=TipoNotificacao.CONCLUIDO, processo=processo, unidade_id=origem_id
+        )
         db.commit()
         db.refresh(processo)
-        return processo
+        return processo, notificacoes
 
     prox = proxima_etapa(etapas, processo.ordem_atual)
     assert prox is not None  # garantido por not is_ultima
@@ -192,9 +206,16 @@ def despachar(db: Session, *, processo: Processo, responsavel: Usuario, confirma
             status_resultante=StatusProcesso.EM_TRAMITACAO,
         )
     )
+    notificacoes = notificacao_service.gerar_notificacoes(
+        db,
+        tipo=TipoNotificacao.NOVO_PROCESSO,
+        processo=processo,
+        unidade_id=prox.unidade_id,
+        unidade_origem_id=origem_id,
+    )
     db.commit()
     db.refresh(processo)
-    return processo
+    return processo, notificacoes
 
 
 def devolver(

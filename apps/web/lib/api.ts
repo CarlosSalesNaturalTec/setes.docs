@@ -298,6 +298,19 @@ export const api = {
       { auth: true },
     ),
 
+  // Notificações internas — sino (Épico 5, US 5.1/5.3/5.4).
+  listarNotificacoes: () => get<Schemas["ListaNotificacoesResponse"]>("/notificacoes", { auth: true }),
+  contarNotificacoes: () =>
+    get<Schemas["ContadorNotificacoesResponse"]>("/notificacoes/contador", { auth: true }),
+  marcarNotificacaoLida: (notificacaoId: string) =>
+    post<undefined, Schemas["NotificacaoResponse"]>(`/notificacoes/${notificacaoId}/ler`, undefined, {
+      auth: true,
+    }),
+  marcarTodasNotificacoesLidas: () =>
+    post<undefined, Schemas["MarcarTodasLidasResponse"]>("/notificacoes/marcar-todas-lidas", undefined, {
+      auth: true,
+    }),
+
   // Consulta Pública (Épico 7) — sem autenticação, para o Cidadão.
   consultarProcessoPublico: (numero: string) =>
     get<Schemas["ProcessoPublicoResponse"]>(`/publico/processos/${encodeURIComponent(numero)}`),
