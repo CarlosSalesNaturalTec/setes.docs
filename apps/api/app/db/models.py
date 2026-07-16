@@ -18,6 +18,7 @@ from sqlalchemy import (
     Date,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -101,6 +102,14 @@ class MotivoDevolucao(str, enum.Enum):
     DOCUMENTACAO_INSUFICIENTE = "documentacao_insuficiente"
     CORRECAO_DADOS = "correcao_dados"
     DILIGENCIA_COMPLEMENTAR = "diligencia_complementar"
+
+
+class TipoNotificacao(str, enum.Enum):
+    """Épico 5 (US 5.1, 5.3, 5.4) — tipo da notificação interna (sino)."""
+
+    NOVO_PROCESSO = "novo_processo"
+    CONCLUIDO = "concluido"
+    ALERTA_PRAZO = "alerta_prazo"
 
 
 def _uuid_pk() -> Mapped[uuid.UUID]:
@@ -300,6 +309,9 @@ class SistemaConfig(Base):
     # Fatia mínima da US 8.5 (change arquivamento-automatico) — demais
     # parâmetros operacionais ficam para a tela de configurações completa.
     prazo_arquivamento_dias: Mapped[int] = mapped_column(Integer, nullable=False, default=30)
+    # Épico 5 (US 8.5, US 5.4) — janela de antecedência do alerta de prazo,
+    # lida em runtime pela rotina diária de verificação de prazos (D4).
+    dias_antecedencia_alerta_prazo: Mapped[int] = mapped_column(Integer, nullable=False, default=2)
 
 
 def _enum_col(enum_cls, name):
@@ -459,3 +471,58 @@ class Documento(Base):
     # Só leitura — a área administrativa "Documentos Removidos" (US 8.7) exibe
     # número/assunto do processo de origem na listagem cross-processo.
     processo: Mapped[Processo] = relationship("Processo")
+
+
+class Notificacao(Base):
+    """Notificação interna (sino), Épico 5 — US 5.1, 5.3, 5.4.
+
+    Fan-out por linha (D2, design.md): uma linha por (destinatário, evento).
+    Snapshot mínimo de render (`numero_processo`/`assunto`/`unidade_nome`) — o
+    histórico não muda se o processo (ou o nome da unidade) mudar depois.
+    `unidade_origem_id`/`unidade_origem_nome` só são preenchidos para
+    `novo_processo`; `prazo_referencia` só para `alerta_prazo` (base do guard
+    de idempotência D3 da rotina diária).
+    """
+
+    __tablename__ = "notificacao"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    usuario_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("usuario.id"), nullable=False
+    )
+    processo_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("processo.id"), nullable=False
+    )
+    # Unidade de contexto do evento (destino no despacho, unidade de
+    # conclusão, ou unidade atual no alerta de prazo) — coincide com a
+    # unidade do destinatário no momento da geração.
+    unidade_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("unidade.id"), nullable=False
+    )
+    unidade_nome: Mapped[str] = mapped_column(String(200), nullable=False)
+    unidade_origem_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("unidade.id"), nullable=True
+    )
+    unidade_origem_nome: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    tipo: Mapped[TipoNotificacao] = mapped_column(
+        _enum_col(TipoNotificacao, "tipo_notificacao"), nullable=False
+    )
+    numero_processo: Mapped[str] = mapped_column(String(20), nullable=False)
+    assunto: Mapped[str] = mapped_column(String(500), nullable=False)
+    prazo_referencia: Mapped[date | None] = mapped_column(Date, nullable=True)
+    lida_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    criado_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+    __table_args__ = (
+        Index("ix_notificacao_usuario_lida_em", "usuario_id", "lida_em"),
+        Index(
+            "ix_notificacao_prazo_guard",
+            "processo_id",
+            "usuario_id",
+            "tipo",
+            "prazo_referencia",
+        ),
+        Index("ix_notificacao_lida_em", "lida_em"),
+    )

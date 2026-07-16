@@ -109,6 +109,36 @@ def processo_concluido(
     return processo
 
 
+def processo_ativo(
+    db: Session,
+    *,
+    unidade: Unidade,
+    criador: Usuario,
+    tipo: TipoProcesso,
+    prazo_em: date,
+    status: StatusProcesso = StatusProcesso.EM_TRAMITACAO,
+) -> Processo:
+    """Cria um processo diretamente `Aberto`/`Em Tramitação` com `prazo_em` sob
+    controle do teste (rotina de prazo não passa pelo fluxo HTTP de criação)."""
+    roteiro = obter_roteiro_vigente(db, tipo.id)
+    processo = Processo(
+        numero=f"2026/{uuid.uuid4().int % 999999:06d}",
+        assunto="Processo de teste",
+        tipo_processo_id=tipo.id,
+        roteiro_id=roteiro.id,
+        status=status,
+        unidade_atual_id=unidade.id,
+        unidade_origem_id=unidade.id,
+        ordem_atual=0,
+        prazo_dias=30,
+        prazo_em=prazo_em,
+        criado_por_id=criador.id,
+    )
+    db.add(processo)
+    db.commit()
+    return processo
+
+
 def tipo_sem_roteiro(db: Session, nome: str = "SemRoteiro") -> TipoProcesso:
     tipo = TipoProcesso(nome=f"{nome}-{uuid.uuid4().hex[:6]}", ativo=True)
     db.add(tipo)

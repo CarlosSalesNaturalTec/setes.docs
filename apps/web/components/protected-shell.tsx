@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { useAuth } from "./auth-provider";
+import { NotificacoesSino } from "./notificacoes-sino";
 import { SessionWatcher } from "./session-watcher";
 
 export function ProtectedShell({ children }: { children: React.ReactNode }) {
@@ -42,6 +43,7 @@ export function ProtectedShell({ children }: { children: React.ReactNode }) {
             )}
           </div>
           <div className="flex items-center gap-3">
+            <NotificacoesSino />
             <span className="text-gray-500">
               {usuario.nome} · {usuario.perfil}
             </span>

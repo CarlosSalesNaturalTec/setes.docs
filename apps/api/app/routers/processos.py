@@ -15,8 +15,11 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 
-from app.db.models import PerfilUsuario, Processo, Usuario
+from app.config import Settings, get_settings
+from app.db.models import Notificacao, PerfilUsuario, Processo, TipoNotificacao, Unidade, Usuario
 from app.db.session import get_db
+from app.email.provider import EmailMessage
+from app.email.queue import config_from_settings, enqueue_email_seguro
 from app.schemas.processo import (
     CardProcessoResponse,
     CriarProcessoRequest,
@@ -171,6 +174,38 @@ def historico_processo(
     )
 
 
+def _enfileirar_emails_novo_processo(
+    db: Session, *, notificacoes: list[Notificacao], processo: Processo, settings: Settings
+) -> None:
+    """US 5.2 Cen.1 — best-effort, após o commit da transação de despacho (D1)."""
+    if not notificacoes:
+        return
+    unidade_origem = (
+        db.get(Unidade, notificacoes[0].unidade_origem_id)
+        if notificacoes[0].unidade_origem_id
+        else None
+    )
+    link = f"{settings.frontend_base_url}/processos/{processo.id}"
+    config = config_from_settings(settings)
+    for notificacao in notificacoes:
+        destinatario = db.get(Usuario, notificacao.usuario_id)
+        if destinatario is None:
+            continue
+        origem_txt = f", vindo da unidade {unidade_origem.nome}" if unidade_origem else ""
+        enqueue_email_seguro(
+            EmailMessage(
+                to=destinatario.email,
+                subject=f"Novo processo recebido — {processo.numero}",
+                body=(
+                    f"O processo {processo.numero} — {processo.assunto} foi despachado para a "
+                    f"sua unidade{origem_txt}. Acesse: {link}"
+                ),
+            ),
+            event_id=f"novo-processo:{notificacao.id}",
+            config=config,
+        )
+
+
 @router.post("/{processo_id}/despachar", response_model=ProcessoResponse)
 def despachar_processo(
     processo_id: uuid.UUID,
@@ -178,14 +213,19 @@ def despachar_processo(
     request: Request,
     servidor: Annotated[Usuario, Depends(_require_servidor)],
     db: Annotated[Session, Depends(get_db)],
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> ProcessoResponse:
     """US 2.2 — despacho para a próxima unidade; na última, conclusão confirmada."""
     processo = _carregar_processo(db, processo_id)
     require_acesso_unidade(
         db, usuario=servidor, unidade_id=processo.unidade_atual_id, rota=request.url.path
     )
-    processo = processo_service.despachar(
+    processo, notificacoes = processo_service.despachar(
         db, processo=processo, responsavel=servidor, confirmar=payload.confirmar
+    )
+    novo_processo = [n for n in notificacoes if n.tipo == TipoNotificacao.NOVO_PROCESSO]
+    _enfileirar_emails_novo_processo(
+        db, notificacoes=novo_processo, processo=processo, settings=settings
     )
     return ProcessoResponse.de(processo)
 
