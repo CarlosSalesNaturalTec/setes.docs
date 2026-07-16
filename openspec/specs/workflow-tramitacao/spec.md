@@ -71,7 +71,7 @@ O sistema SHALL permitir que o Servidor da unidade atual devolva o processo para
 - **ENTÃO** o sistema exibe "Selecione um motivo para a devolução" e não conclui a ação (PRD US 2.2b Cen.3)
 
 ### Requirement: Histórico de tramitação imutável
-O sistema SHALL registrar cada movimentação do processo (criação, despacho, devolução, conclusão, arquivamento automático, marcação de sigilo, remoção de sigilo) como um **evento imutável** (INSERT, nunca UPDATE ou DELETE), guardando unidade de origem, unidade de destino, responsável, data/hora e status resultante, e SHALL exibi-los como uma linha do tempo. Os eventos `marcar_sigilo` e `remover_sigilo` registram o responsável humano que agiu, têm unidade de origem/destino nulas (o sigilo não move o processo) e `status_resultante` igual ao status atual do processo (o sigilo não altera o status). Ver PRD US 2.4, US 2.6 e RF 25 (histórico imutável — invariante do projeto).
+O sistema SHALL registrar cada movimentação do processo (criação, despacho, devolução, conclusão, arquivamento automático, marcação de sigilo, remoção de sigilo, remoção de documento, restauração de documento) como um **evento imutável** (INSERT, nunca UPDATE ou DELETE), guardando unidade de origem, unidade de destino, responsável, data/hora e status resultante, e SHALL exibi-los como uma linha do tempo. Os eventos `marcar_sigilo` e `remover_sigilo` registram o responsável humano que agiu, têm unidade de origem/destino nulas (o sigilo não move o processo) e `status_resultante` igual ao status atual do processo (o sigilo não altera o status). Os eventos `remover_documento` e `restaurar_documento` registram o responsável humano que agiu sobre o anexo (o Administrador, no caso da restauração), têm unidade de origem/destino nulas (não movem o processo) e `status_resultante` igual ao status atual do processo (não alteram o status). Ver PRD US 2.4, US 2.6, US 3.1, US 8.7 e RF 25 (histórico imutável — invariante do projeto).
 
 #### Scenario: Visualização do histórico
 - **DADO** que um processo já passou por três unidades (COFIN → AJUR → DIRAD)
@@ -92,3 +92,13 @@ O sistema SHALL registrar cada movimentação do processo (criação, despacho, 
 - **DADO** um processo cujo sigilo é marcado e depois removido por usuários autorizados
 - **QUANDO** acesso o histórico do processo
 - **ENTÃO** visualizo um evento `marcar_sigilo` e um evento `remover_sigilo`, cada um com responsável e data/hora, sem unidade de origem/destino e com o status do processo naquele momento; ambos são imutáveis e não alteram o status do processo (PRD US 2.6 Cen.1/2)
+
+#### Scenario: Remoção de documento gera evento imutável
+- **DADO** que um documento é removido (soft-delete) de um processo por um usuário autorizado
+- **QUANDO** acesso o histórico do processo
+- **ENTÃO** visualizo um evento `remover_documento` com responsável e data/hora, sem unidade de origem/destino e com o status atual do processo; o evento é imutável e não altera o status do processo (PRD US 3.1 Cen.3)
+
+#### Scenario: Restauração de documento gera evento imutável
+- **DADO** que um documento removido é restaurado por um Administrador dentro do período de retenção
+- **QUANDO** acesso o histórico do processo
+- **ENTÃO** visualizo um evento `restaurar_documento` com o Administrador responsável e data/hora, sem unidade de origem/destino e com o status atual do processo; o evento é imutável e não altera o status do processo (PRD US 8.7 Cen.1)
