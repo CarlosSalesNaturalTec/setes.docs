@@ -4,11 +4,26 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+import { type Schemas } from "@/lib/api";
+
 import { useAuth } from "./auth-provider";
 import { NotificacoesSino } from "./notificacoes-sino";
 import { SessionWatcher } from "./session-watcher";
 
-export function ProtectedShell({ children }: { children: React.ReactNode }) {
+type Perfil = Schemas["UsuarioResumo"]["perfil"];
+
+export function ProtectedShell({
+  children,
+  perfisPermitidos,
+}: {
+  children: React.ReactNode;
+  /** Restringe o conteúdo da página aos perfis informados. Um usuário
+   * autenticado mas fora da lista continua vendo o shell (cabeçalho/menu),
+   * porém no lugar do conteúdo recebe "Acesso negado para o seu perfil." —
+   * o cenário de rejeição explícito exigido para toda regra de visibilidade
+   * por perfil (US 8.2). Sem a prop, a página fica aberta a qualquer sessão. */
+  perfisPermitidos?: Perfil[];
+}) {
   const { usuario, carregando, logout } = useAuth();
   const router = useRouter();
 
@@ -20,6 +35,8 @@ export function ProtectedShell({ children }: { children: React.ReactNode }) {
     return <p className="p-8 text-sm text-gray-500">Carregando…</p>;
   }
   if (!usuario) return null;
+
+  const acessoNegado = perfisPermitidos != null && !perfisPermitidos.includes(usuario.perfil);
 
   return (
     <div className="min-h-screen">
@@ -62,7 +79,13 @@ export function ProtectedShell({ children }: { children: React.ReactNode }) {
           </div>
         </nav>
       </header>
-      <main className="mx-auto max-w-4xl p-6">{children}</main>
+      <main className="mx-auto max-w-4xl p-6">
+        {acessoNegado ? (
+          <p className="text-sm text-red-600">Acesso negado para o seu perfil.</p>
+        ) : (
+          children
+        )}
+      </main>
     </div>
   );
 }

@@ -245,8 +245,12 @@ function AdminTiposProcessoConteudo() {
 }
 
 export default function AdminTiposProcessoPage() {
+  // US 8.2 — cadastro/edição de tipos de processo e roteiros é admin-only.
+  // O GET do catálogo é aberto (Servidor precisa dele para criar processo,
+  // US 2.1), então sem este guard a tela renderiza o formulário completo para
+  // qualquer sessão; aqui bloqueamos no nível da página.
   return (
-    <ProtectedShell>
+    <ProtectedShell perfisPermitidos={["administrador"]}>
       <AdminTiposProcessoConteudo />
     </ProtectedShell>
   );
