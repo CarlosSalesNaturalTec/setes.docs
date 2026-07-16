@@ -1,9 +1,11 @@
 """Endpoints de documentos (Épico 3, fatia A — US 3.1, 3.2).
 
 Upload multipart, listagem, visualização inline/streaming, download e remoção
-(soft-delete). Reusa `_carregar_processo`/`_exigir_acesso_ao_processo` de
-`routers/processos.py` — mesma regra de visibilidade por unidade do Épico 2,
-toda rejeição grava `log_seguranca`.
+(soft-delete). Reusa `_carregar_processo` de `routers/processos.py`. Leitura
+usa `_exigir_leitura_ao_processo` (libera auditor, US 9.1); escrita (anexar/
+remover) usa `_exigir_acesso_ao_processo`, estrito por unidade — a permissão
+de auditoria é somente leitura e não concede escrita. Toda rejeição grava
+`log_seguranca`.
 """
 
 from __future__ import annotations
@@ -19,7 +21,11 @@ from sqlalchemy.orm import Session
 from app.config import Settings, get_settings
 from app.db.models import Documento, Usuario
 from app.db.session import get_db
-from app.routers.processos import _carregar_processo, _exigir_acesso_ao_processo
+from app.routers.processos import (
+    _carregar_processo,
+    _exigir_acesso_ao_processo,
+    _exigir_leitura_ao_processo,
+)
 from app.schemas.documento import DocumentoResponse, DocumentosListResponse
 from app.security.autorizacao import get_current_user
 from app.services import documento as documento_service
@@ -71,7 +77,7 @@ def listar_documentos(
 ) -> DocumentosListResponse:
     """Lista os documentos visíveis do processo, autorizados por unidade."""
     processo = _carregar_processo(db, processo_id)
-    _exigir_acesso_ao_processo(db, usuario=usuario, processo=processo, request=request)
+    _exigir_leitura_ao_processo(db, usuario=usuario, processo=processo, request=request)
     documentos = documento_service.listar(db, processo_id=processo.id)
     return DocumentosListResponse(items=[DocumentoResponse.de(d) for d in documentos])
 
@@ -92,7 +98,7 @@ def conteudo_documento(
     """US 3.2 Cen.1/3 — inline para PDF/imagem; attachment (com aviso do
     frontend) para DOC/DOCX. Streaming autenticado (D5) — nunca URL pública."""
     processo = _carregar_processo(db, processo_id)
-    _exigir_acesso_ao_processo(db, usuario=usuario, processo=processo, request=request)
+    _exigir_leitura_ao_processo(db, usuario=usuario, processo=processo, request=request)
     documento = documento_service.obter_visivel(
         db, processo_id=processo.id, documento_id=documento_id
     )
@@ -118,7 +124,7 @@ def baixar_documento(
     """US 3.2 Cen.2 — sempre `attachment`, mantendo formato e nome (D3: o
     nome de exibição já desduplicado é "o nome certo" a devolver)."""
     processo = _carregar_processo(db, processo_id)
-    _exigir_acesso_ao_processo(db, usuario=usuario, processo=processo, request=request)
+    _exigir_leitura_ao_processo(db, usuario=usuario, processo=processo, request=request)
     documento = documento_service.obter_visivel(
         db, processo_id=processo.id, documento_id=documento_id
     )

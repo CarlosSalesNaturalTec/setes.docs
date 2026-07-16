@@ -36,13 +36,26 @@ com caminho de "acesso negado" registrado em `log_seguranca`.
 
 ## Decisions
 
-### D1 — `pode_auditar` como bypass no seam de acesso ao processo, não novo perfil
-`_exigir_acesso_ao_processo` (em `routers/processos.py`) passa a liberar o acesso quando
-`usuario.pode_auditar` for verdadeiro, **antes** de aplicar a checagem de unidade. Mantém-se
-o perfil intacto (a flag é ortogonal). Alternativa considerada: criar um perfil `AUDITOR` na
-enum `PerfilUsuario` — **rejeitada**, porque o change anterior modelou a auditoria
-deliberadamente como flag ortogonal (um Gestor pode também ser auditor), e um perfil novo
-quebraria essa ortogonalidade e exigiria migração de dados.
+### D1 — `pode_auditar` como bypass de **leitura**, em seam separado do de escrita
+A leitura de processo passa por `_exigir_leitura_ao_processo` (em `routers/processos.py`),
+que libera o acesso quando `usuario.pode_auditar` for verdadeiro, **antes** de aplicar a
+checagem de unidade. Mantém-se o perfil intacto (a flag é ortogonal). Alternativa
+considerada: criar um perfil `AUDITOR` na enum `PerfilUsuario` — **rejeitada**, porque o
+change anterior modelou a auditoria deliberadamente como flag ortogonal (um Gestor pode
+também ser auditor), e um perfil novo quebraria essa ortogonalidade e exigiria migração de
+dados.
+
+**A permissão de auditoria é somente leitura (US 9.1).** Por isso o bypass vive **apenas**
+no seam de leitura; o seam de escrita/operação `_exigir_acesso_ao_processo` **ignora**
+`pode_auditar` e mantém a checagem estrita por unidade. Endpoints são roteados por
+intenção: leitura (`GET /processos/{id}`, `/historico`, listagem/visualização/download de
+documentos) → `_exigir_leitura_ao_processo`; escrita (`POST`/`DELETE` de sigilo, anexar/
+remover documento) → `_exigir_acesso_ao_processo`. Assim um auditor sem vínculo de unidade
+nunca marca sigilo nem toca no acervo de documentos de outra unidade — a auditoria é
+fiscalização não-interventiva. Alternativa considerada: um único seam com parâmetro
+`permitir_auditoria` — **rejeitada** em favor de dois seams nomeados por intenção, para que
+o caminho perigoso (destravar acesso) seja explícito em cada chamada e um endpoint novo não
+herde o bypass por engano.
 
 ### D2 — Mensagem de rejeição específica só para sigiloso-sem-permissão
 A regra de decisão no seam de leitura fica:

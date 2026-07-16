@@ -112,6 +112,69 @@ def test_acesso_de_auditoria_fora_da_unidade_e_registrado(client, db):
     assert logs[0].contexto["processo_id"] == proc_id
 
 
+def _auditor_de_outra_unidade(client, db, sufixo):
+    ajur = unidade(db, "AJUR")
+    auditor = usuario(db, unidade_id=ajur.id, email=f"auditor-w{sufixo}-{ajur.id}@ex.com")
+    auditor.pode_auditar = True
+    db.commit()
+    return auditor, login(client, auditor.email)
+
+
+def test_auditor_nao_pode_marcar_sigilo_em_outra_unidade(client, db):
+    """US 9.1 — auditoria é somente leitura; escrita fora da unidade é negada."""
+    proc_id, _cofin = _processo_de_outra_unidade(client, db)
+    _auditor, token = _auditor_de_outra_unidade(client, db, "sig")
+
+    resp = client.post(f"/processos/{proc_id}/sigilo", headers=auth(token))
+
+    assert resp.status_code == 403
+    assert resp.json()["detail"] == (
+        "Acesso negado — você não tem permissão para visualizar este processo"
+    )
+    assert len(_logs(db, TipoEventoLog.ACESSO_AUDITORIA)) == 0
+
+
+def test_auditor_nao_pode_remover_sigilo_em_outra_unidade(client, db):
+    proc_id, _cofin = _processo_de_outra_unidade(client, db, sigiloso=True)
+    _auditor, token = _auditor_de_outra_unidade(client, db, "delsig")
+
+    resp = client.delete(f"/processos/{proc_id}/sigilo", headers=auth(token))
+
+    assert resp.status_code == 403
+    assert len(_logs(db, TipoEventoLog.ACESSO_AUDITORIA)) == 0
+
+
+def test_auditor_nao_pode_anexar_documento_em_outra_unidade(client, db):
+    proc_id, _cofin = _processo_de_outra_unidade(client, db)
+    _auditor, token = _auditor_de_outra_unidade(client, db, "anexar")
+
+    resp = client.post(
+        f"/processos/{proc_id}/documentos",
+        headers=auth(token),
+        files={"arquivo": ("intruso.pdf", PDF, "application/pdf")},
+    )
+
+    assert resp.status_code == 403
+    assert len(_logs(db, TipoEventoLog.ACESSO_AUDITORIA)) == 0
+
+
+def test_auditor_nao_pode_remover_documento_em_outra_unidade(client, db):
+    proc_id, _cofin = _processo_de_outra_unidade(client, db)
+    _auditor, token = _auditor_de_outra_unidade(client, db, "deldoc")
+
+    # Auditor pode LER a lista (US 9.1), mas não pode remover (somente leitura).
+    doc_id = client.get(f"/processos/{proc_id}/documentos", headers=auth(token)).json()[
+        "items"
+    ][0]["id"]
+
+    resp = client.delete(f"/processos/{proc_id}/documentos/{doc_id}", headers=auth(token))
+
+    assert resp.status_code == 403
+    assert resp.json()["detail"] == (
+        "Acesso negado — você não tem permissão para visualizar este processo"
+    )
+
+
 def test_leitura_na_propria_unidade_nao_gera_evento_de_auditoria(client, db):
     cofin = unidade(db, "COFIN")
     tipo = tipo_com_roteiro(db, cofin)

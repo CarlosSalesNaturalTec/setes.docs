@@ -13,6 +13,19 @@ O sistema SHALL permitir que um usuário autenticado com permissão de auditoria
 - **QUANDO** acesso o Kanban e a leitura de processos da minha unidade
 - **ENTÃO** continuo restrito exclusivamente aos processos da minha unidade (US 1.4), sem qualquer acesso ampliado — a leitura irrestrita depende **estritamente** da flag `pode_auditar`
 
+### Requirement: Permissão de auditoria é somente leitura
+O sistema SHALL restringir a permissão de auditoria (`usuario.pode_auditar`) a **operações de leitura** (detalhe, histórico, listagem/visualização/download de documentos, relatório). A permissão NÃO concede nenhuma operação de **escrita** sobre o processo — marcar/remover sigilo, anexar/remover documento, despachar ou devolver. Um usuário cujo único vínculo com o processo é a permissão de auditoria (sem acesso à unidade atual) que tente qualquer operação de escrita SHALL receber acesso negado (`403`, mensagem genérica de acesso negado por unidade), registrado em `log_seguranca` (`tipo_evento = acesso_negado`), preservando a natureza de fiscalização não-interventiva do Auditor.
+
+#### Scenario: Auditor tenta marcar sigilo em processo de outra unidade
+- **DADO** que sou usuário com `pode_auditar = true`, sem acesso à unidade atual de um processo
+- **QUANDO** tento marcar ou remover o sigilo desse processo
+- **ENTÃO** o sistema nega a operação com `403` e a mensagem genérica de acesso negado por unidade, a marcação não é alterada e a tentativa é registrada em `log_seguranca` (`tipo_evento = acesso_negado`) — a permissão de auditoria não destrava escrita
+
+#### Scenario: Auditor tenta anexar ou remover documento em processo de outra unidade
+- **DADO** que sou usuário com `pode_auditar = true`, sem acesso à unidade atual de um processo, e consigo **ler** seus documentos (US 9.1)
+- **QUANDO** tento anexar um novo documento ou remover um documento existente
+- **ENTÃO** o sistema nega a operação com `403` e a mensagem genérica de acesso negado por unidade, o acervo de documentos permanece inalterado, e nenhum evento `acesso_auditoria` é registrado para a tentativa de escrita
+
 ### Requirement: Acesso negado a processo sigiloso sem permissão de auditoria
 O sistema SHALL negar a leitura de um processo **sigiloso** fora do escopo de unidade a um usuário autenticado **sem** permissão de auditoria (`pode_auditar = false`), retornando a mensagem específica `"Acesso restrito — solicite autorização ao Administrador"` (distinta da rejeição genérica de unidade) e registrando a tentativa como linha imutável em `log_seguranca` (`tipo_evento = acesso_negado`). Ver PRD US 9.1 (Cen.2) e o invariante de visibilidade por unidade com caminho de "acesso negado" explícito.
 
