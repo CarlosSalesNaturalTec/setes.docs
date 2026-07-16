@@ -210,6 +210,16 @@ export const api = {
     post<undefined, Schemas["MensagemResponse"]>(`/admin/usuarios/${usuarioId}/resetar-senha`, undefined, {
       auth: true,
     }),
+  concederPermissaoAuditoria: (usuarioId: string) =>
+    post<undefined, Schemas["UsuarioResponse"]>(`/usuarios/${usuarioId}/permissao-auditoria`, undefined, {
+      auth: true,
+    }),
+  revogarPermissaoAuditoria: (usuarioId: string) =>
+    del<Schemas["UsuarioResponse"]>(`/usuarios/${usuarioId}/permissao-auditoria`, { auth: true }),
+  desativarUsuario: (usuarioId: string) =>
+    post<undefined, Schemas["UsuarioResponse"]>(`/usuarios/${usuarioId}/desativar`, undefined, {
+      auth: true,
+    }),
 
   // Unidades administrativas
   listarUnidades: () => get<Schemas["UnidadeResponse"][]>("/unidades", { auth: true }),

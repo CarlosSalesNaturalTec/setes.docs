@@ -58,6 +58,15 @@ MSG_PERFIL_NAO_PERMITIDO_GESTOR = (
 )
 MSG_UNIDADE_NAO_GERENCIADA = "Você não tem permissão para cadastrar usuários nesta unidade"
 MSG_TRANSFERENCIA_APENAS_SERVIDOR = "Esta operação se aplica apenas a usuários com perfil Servidor."
+MSG_USUARIO_NAO_ENCONTRADO = "Usuário não encontrado."
+MSG_USUARIO_JA_INATIVO = "Usuário já está inativo"
+
+
+def _msg_processos_pendentes(quantidade: int) -> str:
+    return (
+        f"Este usuário possui {quantidade} processo(s) em andamento. "
+        "Reatribua os processos antes de desativar."
+    )
 
 _EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
@@ -272,6 +281,94 @@ def listar_usuarios(
     return ListaUsuariosResponse(
         items=[UsuarioResponse.de(u) for u in itens], total=total, page=page, page_size=page_size
     )
+
+
+@router.post("/usuarios/{usuario_id}/permissao-auditoria", response_model=UsuarioResponse)
+def conceder_permissao_auditoria(
+    usuario_id: uuid.UUID,
+    admin: Annotated[Usuario, Depends(require_perfil(PerfilUsuario.ADMINISTRADOR))],
+    db: Annotated[Session, Depends(get_db)],
+) -> UsuarioResponse:
+    """US 8.3 Cen.1 — concede, ortogonal ao `perfil`; idempotente (só loga em
+    transição real, D3/D4)."""
+    alvo = db.get(Usuario, usuario_id)
+    if alvo is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=MSG_USUARIO_NAO_ENCONTRADO)
+
+    if not alvo.pode_auditar:
+        alvo.pode_auditar = True
+        db.add(
+            LogSeguranca(
+                usuario_id=alvo.id,
+                tipo_evento=TipoEventoLog.PERMISSAO_AUDITORIA_CONCEDIDA,
+                contexto={"administrador_id": str(admin.id)},
+            )
+        )
+        db.commit()
+
+    return UsuarioResponse.de(alvo)
+
+
+@router.delete("/usuarios/{usuario_id}/permissao-auditoria", response_model=UsuarioResponse)
+def revogar_permissao_auditoria(
+    usuario_id: uuid.UUID,
+    admin: Annotated[Usuario, Depends(require_perfil(PerfilUsuario.ADMINISTRADOR))],
+    db: Annotated[Session, Depends(get_db)],
+) -> UsuarioResponse:
+    """US 8.3 Cen.2 — revoga sem "lembrar" perfil anterior; idempotente (D3/D4)."""
+    alvo = db.get(Usuario, usuario_id)
+    if alvo is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=MSG_USUARIO_NAO_ENCONTRADO)
+
+    if alvo.pode_auditar:
+        alvo.pode_auditar = False
+        db.add(
+            LogSeguranca(
+                usuario_id=alvo.id,
+                tipo_evento=TipoEventoLog.PERMISSAO_AUDITORIA_REVOGADA,
+                contexto={"administrador_id": str(admin.id)},
+            )
+        )
+        db.commit()
+
+    return UsuarioResponse.de(alvo)
+
+
+@router.post("/usuarios/{usuario_id}/desativar", response_model=UsuarioResponse)
+def desativar_usuario(
+    usuario_id: uuid.UUID,
+    admin: Annotated[Usuario, Depends(require_perfil(PerfilUsuario.ADMINISTRADOR))],
+    db: Annotated[Session, Depends(get_db)],
+) -> UsuarioResponse:
+    """US 8.4 — desativa com a guarda de processos em andamento sob
+    responsabilidade (D2); idempotente (D4)."""
+    alvo = db.get(Usuario, usuario_id)
+    if alvo is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=MSG_USUARIO_NAO_ENCONTRADO)
+
+    if alvo.status == StatusUsuario.INATIVO:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=MSG_USUARIO_JA_INATIVO
+        )
+
+    quantidade = processo_consulta.contar_processos_sob_responsabilidade(db, alvo)
+    if quantidade > 0:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=_msg_processos_pendentes(quantidade),
+        )
+
+    alvo.status = StatusUsuario.INATIVO
+    db.add(
+        LogSeguranca(
+            usuario_id=alvo.id,
+            tipo_evento=TipoEventoLog.USUARIO_DESATIVADO,
+            contexto={"administrador_id": str(admin.id)},
+        )
+    )
+    db.commit()
+
+    return UsuarioResponse.de(alvo)
 
 
 @router.get("/usuarios/me/perfil", response_model=MeuPerfilResponse)

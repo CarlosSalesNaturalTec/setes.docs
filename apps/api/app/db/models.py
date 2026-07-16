@@ -57,6 +57,10 @@ class TipoEventoLog(str, enum.Enum):
     # Épico 2 (D1) — capacidade da numeração de processos AAAA/NNNNNN.
     EXPANSAO_NUMERO_PROCESSO = "expansao_numero_processo"
     ALERTA_CAPACIDADE = "alerta_capacidade"
+    # US 8.3/8.4 (D3, administracao-usuario-auditoria) — permissão de auditoria e desativação.
+    PERMISSAO_AUDITORIA_CONCEDIDA = "permissao_auditoria_concedida"
+    PERMISSAO_AUDITORIA_REVOGADA = "permissao_auditoria_revogada"
+    USUARIO_DESATIVADO = "usuario_desativado"
 
 
 class StatusProcesso(str, enum.Enum):
@@ -165,6 +169,9 @@ class Usuario(Base):
     criado_em: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
+    # US 8.3 (D1, administracao-usuario-auditoria) — permissão de auditoria,
+    # ortogonal ao `perfil`; concedida/revogada pelo Administrador.
+    pode_auditar: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     unidade: Mapped[Unidade | None] = relationship(
         "Unidade", back_populates="usuarios", foreign_keys=[unidade_id]
