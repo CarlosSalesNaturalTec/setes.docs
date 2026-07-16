@@ -4,6 +4,48 @@
  */
 
 export interface paths {
+    "/admin/documentos-removidos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Documentos Removidos
+         * @description US 8.7 Cen.2/3 — lista os documentos em retenção (não os já purgados),
+         *     de qualquer unidade, com processo de origem, data de remoção e responsável.
+         */
+        get: operations["listar_documentos_removidos_admin_documentos_removidos_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/documentos-removidos/{documento_id}/restaurar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restaurar Documento
+         * @description US 8.7 Cen.1/2 — restaura um documento em retenção; 404 se já purgado ou
+         *     inexistente (a purga faz DELETE, então "purgado" é naturalmente 404, D2).
+         */
+        post: operations["restaurar_documento_admin_documentos_removidos__documento_id__restaurar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/usuarios/{usuario_id}/resetar-senha": {
         parameters: {
             query?: never;
@@ -877,6 +919,31 @@ export interface components {
             /** Motivo */
             motivo?: string | null;
         };
+        /**
+         * DocumentoRemovidoResponse
+         * @description Item da área administrativa "Documentos Removidos" (US 8.7): identifica o
+         *     anexo em retenção com o processo de origem (número/assunto), a data de
+         *     remoção e o responsável pela remoção.
+         */
+        DocumentoRemovidoResponse: {
+            /** Id */
+            id: string;
+            /** Nome Exibicao */
+            nome_exibicao: string;
+            /** Processo Assunto */
+            processo_assunto: string;
+            /** Processo Id */
+            processo_id: string;
+            /** Processo Numero */
+            processo_numero: string;
+            /**
+             * Removido Em
+             * Format: date-time
+             */
+            removido_em: string;
+            /** Removido Por Id */
+            removido_por_id: string;
+        };
         /** DocumentoResponse */
         DocumentoResponse: {
             /**
@@ -901,6 +968,11 @@ export interface components {
         DocumentosListResponse: {
             /** Items */
             items?: components["schemas"]["DocumentoResponse"][];
+        };
+        /** DocumentosRemovidosListResponse */
+        DocumentosRemovidosListResponse: {
+            /** Items */
+            items?: components["schemas"]["DocumentoRemovidoResponse"][];
         };
         /** EditarUnidadeRequest */
         EditarUnidadeRequest: {
@@ -1382,6 +1454,70 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listar_documentos_removidos_admin_documentos_removidos_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentosRemovidosListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restaurar_documento_admin_documentos_removidos__documento_id__restaurar_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                documento_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     resetar_senha_admin_admin_usuarios__usuario_id__resetar_senha_post: {
         parameters: {
             query?: never;

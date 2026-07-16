@@ -288,6 +288,16 @@ export const api = {
       auth: true,
     }),
 
+  // Documentos removidos — área administrativa "Documentos Removidos" (US 8.7).
+  listarDocumentosRemovidos: () =>
+    get<Schemas["DocumentosRemovidosListResponse"]>("/admin/documentos-removidos", { auth: true }),
+  restaurarDocumento: (documentoId: string) =>
+    post<undefined, Schemas["DocumentoResponse"]>(
+      `/admin/documentos-removidos/${documentoId}/restaurar`,
+      undefined,
+      { auth: true },
+    ),
+
   // Consulta Pública (Épico 7) — sem autenticação, para o Cidadão.
   consultarProcessoPublico: (numero: string) =>
     get<Schemas["ProcessoPublicoResponse"]>(`/publico/processos/${encodeURIComponent(numero)}`),

@@ -82,6 +82,8 @@ class TipoEventoTramitacao(str, enum.Enum):
     REMOVER_SIGILO = "remover_sigilo"
     # US 3.1 — remoção de anexo é ortogonal ao status; não altera status_resultante.
     REMOVER_DOCUMENTO = "remover_documento"
+    # US 8.7 — restauração de anexo (inversa do soft-delete); também ortogonal ao status.
+    RESTAURAR_DOCUMENTO = "restaurar_documento"
 
 
 class TipoDocumentoInteressado(str, enum.Enum):
@@ -453,3 +455,7 @@ class Documento(Base):
         UUID(as_uuid=True), ForeignKey("usuario.id"), nullable=True
     )
     purgar_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Só leitura — a área administrativa "Documentos Removidos" (US 8.7) exibe
+    # número/assunto do processo de origem na listagem cross-processo.
+    processo: Mapped[Processo] = relationship("Processo")

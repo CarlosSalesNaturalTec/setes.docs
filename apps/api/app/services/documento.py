@@ -215,6 +215,65 @@ def remover(db: Session, *, processo: Processo, documento: Documento, usuario: U
     return documento
 
 
+def listar_removidos_em_retencao(db: Session, *, agora: datetime) -> list[Documento]:
+    """Documentos em período de retenção (soft-deleted e ainda não purgados),
+    cross-processo — a área é do Administrador (acesso irrestrito, D5), não
+    filtrada por unidade. Restaurável ⇔ `removido_em IS NOT NULL AND
+    purgar_em > agora` (D2); documento já purgado não existe mais (a purga faz
+    DELETE), então simplesmente não aparece. Ordenado por data de remoção
+    (US 8.7 Cen.1/2/3)."""
+    return list(
+        db.scalars(
+            select(Documento)
+            .where(Documento.removido_em.is_not(None))
+            .where(Documento.purgar_em > agora)
+            .order_by(Documento.removido_em)
+        ).all()
+    )
+
+
+def restaurar(db: Session, *, documento: Documento, admin: Usuario) -> Documento:
+    """Restaura um documento em retenção — inversa exata do soft-delete (US 8.7
+    Cen.1, D1/D3/D4/D6). Recarrega o documento com o predicado de retenção
+    **dentro da transação** (não confia no id vindo da listagem): se a purga do
+    job diário apagou a linha entre o GET e o POST, o resultado é 404 limpo
+    (US 8.7 Cen.2). Re-resolve `nome_exibicao` sobre os visíveis atuais para não
+    colidir (D3), limpa os três campos de remoção e insere o evento imutável
+    `restaurar_documento` (Admin responsável, unidades nulas, status atual —
+    a restauração não altera a máquina de estados, D6). Não toca no storage
+    (o objeto nunca saiu do bucket durante a retenção, D4)."""
+    agora = datetime.now(timezone.utc)
+    restauravel = db.scalars(
+        select(Documento)
+        .where(Documento.id == documento.id)
+        .where(Documento.removido_em.is_not(None))
+        .where(Documento.purgar_em > agora)
+    ).first()
+    if restauravel is None:
+        raise _erro(status.HTTP_404_NOT_FOUND, MSG_DOCUMENTO_NAO_ENCONTRADO)
+
+    processo = db.get(Processo, restauravel.processo_id)
+    restauravel.nome_exibicao = _resolver_nome_exibicao(
+        db, processo_id=restauravel.processo_id, nome_original=restauravel.nome_exibicao
+    )
+    restauravel.removido_em = None
+    restauravel.removido_por_id = None
+    restauravel.purgar_em = None
+    db.add(
+        Tramitacao(
+            processo_id=restauravel.processo_id,
+            tipo_evento=TipoEventoTramitacao.RESTAURAR_DOCUMENTO,
+            unidade_origem_id=None,
+            unidade_destino_id=None,
+            responsavel_id=admin.id,
+            status_resultante=processo.status,
+        )
+    )
+    db.commit()
+    db.refresh(restauravel)
+    return restauravel
+
+
 def purgar_documentos_vencidos(db: Session, *, agora: datetime, storage: Storage) -> int:
     """Purga física dos documentos vencidos (D7): remove o objeto do storage
     **antes** de deletar a linha, commit por documento (retomável). Seleção

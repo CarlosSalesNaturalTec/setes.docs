@@ -37,6 +37,7 @@ export function ProtectedShell({ children }: { children: React.ReactNode }) {
               <>
                 <Link href="/admin/unidades">Unidades</Link>
                 <Link href="/admin/tipos-processo">Tipos de Processo</Link>
+                <Link href="/admin/documentos-removidos">Documentos Removidos</Link>
               </>
             )}
           </div>

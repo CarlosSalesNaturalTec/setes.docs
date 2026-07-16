@@ -31,3 +31,33 @@ class DocumentoResponse(BaseModel):
 
 class DocumentosListResponse(BaseModel):
     items: list[DocumentoResponse] = Field(default_factory=list)
+
+
+class DocumentoRemovidoResponse(BaseModel):
+    """Item da área administrativa "Documentos Removidos" (US 8.7): identifica o
+    anexo em retenção com o processo de origem (número/assunto), a data de
+    remoção e o responsável pela remoção."""
+
+    id: str
+    processo_id: str
+    processo_numero: str
+    processo_assunto: str
+    nome_exibicao: str
+    removido_em: datetime
+    removido_por_id: str
+
+    @classmethod
+    def de(cls, documento) -> "DocumentoRemovidoResponse":
+        return cls(
+            id=str(documento.id),
+            processo_id=str(documento.processo_id),
+            processo_numero=documento.processo.numero,
+            processo_assunto=documento.processo.assunto,
+            nome_exibicao=documento.nome_exibicao,
+            removido_em=documento.removido_em,
+            removido_por_id=str(documento.removido_por_id),
+        )
+
+
+class DocumentosRemovidosListResponse(BaseModel):
+    items: list[DocumentoRemovidoResponse] = Field(default_factory=list)

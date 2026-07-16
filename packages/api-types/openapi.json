@@ -306,6 +306,51 @@
         "title": "DevolverRequest",
         "type": "object"
       },
+      "DocumentoRemovidoResponse": {
+        "description": "Item da área administrativa \"Documentos Removidos\" (US 8.7): identifica o\nanexo em retenção com o processo de origem (número/assunto), a data de\nremoção e o responsável pela remoção.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nome_exibicao": {
+            "title": "Nome Exibicao",
+            "type": "string"
+          },
+          "processo_assunto": {
+            "title": "Processo Assunto",
+            "type": "string"
+          },
+          "processo_id": {
+            "title": "Processo Id",
+            "type": "string"
+          },
+          "processo_numero": {
+            "title": "Processo Numero",
+            "type": "string"
+          },
+          "removido_em": {
+            "format": "date-time",
+            "title": "Removido Em",
+            "type": "string"
+          },
+          "removido_por_id": {
+            "title": "Removido Por Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "processo_id",
+          "processo_numero",
+          "processo_assunto",
+          "nome_exibicao",
+          "removido_em",
+          "removido_por_id"
+        ],
+        "title": "DocumentoRemovidoResponse",
+        "type": "object"
+      },
       "DocumentoResponse": {
         "properties": {
           "anexado_em": {
@@ -361,6 +406,19 @@
           }
         },
         "title": "DocumentosListResponse",
+        "type": "object"
+      },
+      "DocumentosRemovidosListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentoRemovidoResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "DocumentosRemovidosListResponse",
         "type": "object"
       },
       "EditarUnidadeRequest": {
@@ -1616,6 +1674,116 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/admin/documentos-removidos": {
+      "get": {
+        "description": "US 8.7 Cen.2/3 — lista os documentos em retenção (não os já purgados),\nde qualquer unidade, com processo de origem, data de remoção e responsável.",
+        "operationId": "listar_documentos_removidos_admin_documentos_removidos_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentosRemovidosListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Listar Documentos Removidos",
+        "tags": [
+          "documentos-removidos"
+        ]
+      }
+    },
+    "/admin/documentos-removidos/{documento_id}/restaurar": {
+      "post": {
+        "description": "US 8.7 Cen.1/2 — restaura um documento em retenção; 404 se já purgado ou\ninexistente (a purga faz DELETE, então \"purgado\" é naturalmente 404, D2).",
+        "operationId": "restaurar_documento_admin_documentos_removidos__documento_id__restaurar_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "documento_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Documento Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Restaurar Documento",
+        "tags": [
+          "documentos-removidos"
+        ]
+      }
+    },
     "/admin/usuarios/{usuario_id}/resetar-senha": {
       "post": {
         "description": "PRD US 1.10 — invalida a senha atual, envia link de redefinição, audita.",
