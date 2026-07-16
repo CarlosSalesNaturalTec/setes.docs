@@ -311,6 +311,14 @@ export const api = {
       auth: true,
     }),
 
+  // Dashboard de KPIs do Gestor (Épico 6, US 6.1).
+  obterDashboardKpis: (query?: { unidade_id?: string }) =>
+    get<Schemas["DashboardKpisResponse"]>("/dashboard/kpis", { auth: true, query }),
+  obterProcessosAtivosDashboard: (query?: { unidade_id?: string }) =>
+    get<Schemas["ProcessosAtivosResponse"]>("/dashboard/processos-ativos", { auth: true, query }),
+  obterProcessosParadosDashboard: (query?: { unidade_id?: string }) =>
+    get<Schemas["ProcessosParadosResponse"]>("/dashboard/processos-parados", { auth: true, query }),
+
   // Consulta Pública (Épico 7) — sem autenticação, para o Cidadão.
   consultarProcessoPublico: (numero: string) =>
     get<Schemas["ProcessoPublicoResponse"]>(`/publico/processos/${encodeURIComponent(numero)}`),

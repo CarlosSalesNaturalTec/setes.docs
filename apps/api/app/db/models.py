@@ -312,6 +312,9 @@ class SistemaConfig(Base):
     # Épico 5 (US 8.5, US 5.4) — janela de antecedência do alerta de prazo,
     # lida em runtime pela rotina diária de verificação de prazos (D4).
     dias_antecedencia_alerta_prazo: Mapped[int] = mapped_column(Integer, nullable=False, default=2)
+    # Épico 6 (US 8.5, US 6.1) — limiar do KPI "Processos parados", lido em
+    # runtime pelo service de agregação do dashboard (D1, design.md dashboard-kpis-gestor).
+    dias_para_processo_parado: Mapped[int] = mapped_column(Integer, nullable=False, default=7)
 
 
 def _enum_col(enum_cls, name):

@@ -23,6 +23,7 @@ def _response(config: SistemaConfig) -> SistemaConfigResponse:
     return SistemaConfigResponse(
         prazo_arquivamento_dias=config.prazo_arquivamento_dias,
         dias_antecedencia_alerta_prazo=config.dias_antecedencia_alerta_prazo,
+        dias_para_processo_parado=config.dias_para_processo_parado,
     )
 
 
@@ -61,6 +62,13 @@ def atualizar_sistema_config(
                 status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=MSG_VALOR_INVALIDO
             )
         config.dias_antecedencia_alerta_prazo = payload.dias_antecedencia_alerta_prazo
+
+    if payload.dias_para_processo_parado is not None:
+        if payload.dias_para_processo_parado < 1:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=MSG_VALOR_INVALIDO
+            )
+        config.dias_para_processo_parado = payload.dias_para_processo_parado
 
     db.commit()
     return _response(config)

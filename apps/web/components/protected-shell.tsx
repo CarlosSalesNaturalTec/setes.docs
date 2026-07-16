@@ -48,6 +48,7 @@ export function ProtectedShell({
               Meu Perfil
             </Link>
             <Link href="/processos">Processos</Link>
+            {usuario.perfil === "gestor" && <Link href="/dashboard">Dashboard</Link>}
             {(usuario.perfil === "administrador" || usuario.perfil === "gestor") && (
               <Link href="/admin/usuarios">Usuários</Link>
             )}
