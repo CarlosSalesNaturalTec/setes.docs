@@ -1513,6 +1513,62 @@
         "title": "ProcessoPublicoResponse",
         "type": "object"
       },
+      "ProcessoRelatorioItem": {
+        "properties": {
+          "assunto": {
+            "title": "Assunto",
+            "type": "string"
+          },
+          "concluido_em": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Concluido Em"
+          },
+          "criado_em": {
+            "format": "date-time",
+            "title": "Criado Em",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "numero": {
+            "title": "Numero",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/StatusProcesso"
+          },
+          "tipo_processo_id": {
+            "title": "Tipo Processo Id",
+            "type": "string"
+          },
+          "unidade_atual_id": {
+            "title": "Unidade Atual Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "numero",
+          "assunto",
+          "status",
+          "unidade_atual_id",
+          "tipo_processo_id",
+          "criado_em",
+          "concluido_em"
+        ],
+        "title": "ProcessoRelatorioItem",
+        "type": "object"
+      },
       "ProcessoResponse": {
         "description": "Saída completa de um processo (criação e detalhe).",
         "properties": {
@@ -1704,6 +1760,50 @@
         "title": "RedefinirSenhaRequest",
         "type": "object"
       },
+      "RelatorioAuditoriaResponse": {
+        "description": "US 9.2 Cen.1/Cen.2 — consolidado em tela, sem exportação.",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProcessoRelatorioItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "mensagem_vazio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mensagem Vazio"
+          },
+          "tempo_medio_tramitacao_dias": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tempo Medio Tramitacao Dias"
+          },
+          "total_processos": {
+            "title": "Total Processos",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_processos",
+          "tempo_medio_tramitacao_dias"
+        ],
+        "title": "RelatorioAuditoriaResponse",
+        "type": "object"
+      },
       "RoteiroResponse": {
         "properties": {
           "etapas": {
@@ -1854,6 +1954,17 @@
         ],
         "title": "SistemaConfigResponse",
         "type": "object"
+      },
+      "StatusProcesso": {
+        "description": "Máquina de estados do processo (D4). `ARQUIVADO` só é alcançado pela\nrotina automática de arquivamento (change arquivamento-automatico).",
+        "enum": [
+          "aberto",
+          "em_tramitacao",
+          "concluido",
+          "arquivado"
+        ],
+        "title": "StatusProcesso",
+        "type": "string"
       },
       "TipoProcessoResponse": {
         "properties": {
@@ -2039,6 +2150,10 @@
             "title": "Perfil",
             "type": "string"
           },
+          "pode_auditar": {
+            "title": "Pode Auditar",
+            "type": "boolean"
+          },
           "status": {
             "title": "Status",
             "type": "string"
@@ -2049,7 +2164,8 @@
           "nome",
           "email",
           "perfil",
-          "status"
+          "status",
+          "pode_auditar"
         ],
         "title": "UsuarioResumo",
         "type": "object"
@@ -2269,6 +2385,124 @@
         "summary": "Resetar Senha Admin",
         "tags": [
           "usuarios"
+        ]
+      }
+    },
+    "/auditoria/relatorio": {
+      "get": {
+        "description": "US 9.2 Cen.1/Cen.2 — relatório consolidado em tela, sem exportação.",
+        "operationId": "obter_relatorio_auditoria_relatorio_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "inicio",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Inicio"
+            }
+          },
+          {
+            "in": "query",
+            "name": "fim",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Fim"
+            }
+          },
+          {
+            "in": "query",
+            "name": "unidade_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Unidade Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tipo_processo_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tipo Processo Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelatorioAuditoriaResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Obter Relatorio",
+        "tags": [
+          "auditoria"
         ]
       }
     },

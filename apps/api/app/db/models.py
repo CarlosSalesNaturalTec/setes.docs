@@ -61,6 +61,8 @@ class TipoEventoLog(str, enum.Enum):
     PERMISSAO_AUDITORIA_CONCEDIDA = "permissao_auditoria_concedida"
     PERMISSAO_AUDITORIA_REVOGADA = "permissao_auditoria_revogada"
     USUARIO_DESATIVADO = "usuario_desativado"
+    # Épico 9 (US 9.1, D3, auditoria-e-relatorios) — acesso de auditoria destravado fora da unidade.
+    ACESSO_AUDITORIA = "acesso_auditoria"
 
 
 class StatusProcesso(str, enum.Enum):

@@ -66,6 +66,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auditoria/relatorio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Obter Relatorio
+         * @description US 9.2 Cen.1/Cen.2 — relatório consolidado em tela, sem exportação.
+         */
+        get: operations["obter_relatorio_auditoria_relatorio_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/login": {
         parameters: {
             query?: never;
@@ -1574,6 +1594,27 @@ export interface components {
             /** Unidade Atual */
             unidade_atual: string;
         };
+        /** ProcessoRelatorioItem */
+        ProcessoRelatorioItem: {
+            /** Assunto */
+            assunto: string;
+            /** Concluido Em */
+            concluido_em: string | null;
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+            /** Id */
+            id: string;
+            /** Numero */
+            numero: string;
+            status: components["schemas"]["StatusProcesso"];
+            /** Tipo Processo Id */
+            tipo_processo_id: string;
+            /** Unidade Atual Id */
+            unidade_atual_id: string;
+        };
         /**
          * ProcessoResponse
          * @description Saída completa de um processo (criação e detalhe).
@@ -1654,6 +1695,20 @@ export interface components {
             /** Senha */
             senha: string;
         };
+        /**
+         * RelatorioAuditoriaResponse
+         * @description US 9.2 Cen.1/Cen.2 — consolidado em tela, sem exportação.
+         */
+        RelatorioAuditoriaResponse: {
+            /** Items */
+            items?: components["schemas"]["ProcessoRelatorioItem"][];
+            /** Mensagem Vazio */
+            mensagem_vazio?: string | null;
+            /** Tempo Medio Tramitacao Dias */
+            tempo_medio_tramitacao_dias: number | null;
+            /** Total Processos */
+            total_processos: number;
+        };
         /** RoteiroResponse */
         RoteiroResponse: {
             /** Etapas */
@@ -1717,6 +1772,13 @@ export interface components {
              */
             prazo_arquivamento_dias: number;
         };
+        /**
+         * StatusProcesso
+         * @description Máquina de estados do processo (D4). `ARQUIVADO` só é alcançado pela
+         *     rotina automática de arquivamento (change arquivamento-automatico).
+         * @enum {string}
+         */
+        StatusProcesso: "aberto" | "em_tramitacao" | "concluido" | "arquivado";
         /** TipoProcessoResponse */
         TipoProcessoResponse: {
             /** Ativo */
@@ -1784,6 +1846,8 @@ export interface components {
             nome: string;
             /** Perfil */
             perfil: string;
+            /** Pode Auditar */
+            pode_auditar: boolean;
             /** Status */
             status: string;
         };
@@ -1893,6 +1957,42 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MensagemResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obter_relatorio_auditoria_relatorio_get: {
+        parameters: {
+            query?: {
+                inicio?: string | null;
+                fim?: string | null;
+                unidade_id?: string | null;
+                tipo_processo_id?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelatorioAuditoriaResponse"];
                 };
             };
             /** @description Validation Error */

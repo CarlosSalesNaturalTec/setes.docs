@@ -98,6 +98,25 @@ def require_perfil(*perfis: PerfilUsuario) -> Callable[..., Usuario]:
     return _dependency
 
 
+def require_pode_auditar(
+    request: Request,
+    usuario: Annotated[Usuario, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> Usuario:
+    """Dependência FastAPI (D6): exige `usuario.pode_auditar = true`.
+
+    A permissão de auditoria é ortogonal ao perfil (Servidor/Gestor/
+    Administrador) — não reutiliza `require_perfil`.
+    """
+    if not usuario.pode_auditar:
+        registrar_acesso_negado(db, usuario=usuario, rota=request.url.path)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso negado — permissão de auditoria necessária.",
+        )
+    return usuario
+
+
 def tem_acesso_a_unidade(db: Session, *, usuario: Usuario, unidade_id: uuid.UUID) -> bool:
     """Servidor: só a própria unidade. Gestor: unidades geridas. Administrador: qualquer uma."""
     if usuario.perfil == PerfilUsuario.ADMINISTRADOR:
