@@ -17,7 +17,7 @@ vi.mock("@/lib/api", async () => {
   };
 });
 
-import { DocumentosRemovidosConteudo } from "./page";
+import { DocumentosRemovidosConteudo } from "./documentos-removidos-content";
 
 const DOC = {
   id: "doc-1",
