@@ -33,22 +33,20 @@ são vinculantes, não sugestões.
   inclusive sigilosos, e gera relatórios consolidados.
 - **Cidadão** — sem autenticação; usa a consulta pública e o canal LGPD.
 
-### Roadmap: o que está construído vs. pendente
+### Roadmap por épicos
 
-O MVP é entregue por changes incrementais. Estado atual (ver `openspec/changes/` e
-`openspec/specs/`):
+O MVP é entregue por changes incrementais, um recorte de épico por vez. Os 10 épicos são:
+1 (autenticação + controle de acesso), 2 (processos + workflow Kanban), 3 (gestão
+documental / Cloud Storage), 4 (assinatura ICP-Brasil — *condicional a Discovery
+Técnico*), 5 (notificações internas + e-mail), 6 (dashboard de KPIs), 7 (consulta
+pública), 8 (administração do sistema), 9 (auditoria/relatórios), 10 (canal e rotinas
+LGPD). Os critérios de cada um vivem no `docs/PRD.md`.
 
-- **Construído** — Épico 1 (autenticação, controle de acesso por perfil/unidade) e a
-  base do Épico 8 (inicialização do sistema, unidades, tipos de processo + roteiros,
-  gestão de usuários). É o change `identidade-e-estrutura-organizacional` (arquivado).
-- **Pendente** (próximos changes) — Épico 2 (processos + workflow Kanban), Épico 3
-  (gestão documental / Cloud Storage), Épico 4 (assinatura ICP-Brasil — *condicional a
-  Discovery Técnico*), Épico 5 (notificações internas + e-mail), Épico 6 (dashboard de
-  KPIs), Épico 7 (consulta pública), Épico 9 (auditoria/relatórios), Épico 10 (canal e
-  rotinas LGPD).
-
-Ao criar um novo change, situe-o nesse roadmap e declare de qual change anterior ele
-depende (regra do `proposal` em `openspec/config.yaml`).
+**O estado (o que já está pronto vs. pendente) muda a cada branch — não é mantido aqui.**
+A fonte da verdade do que foi construído é o próprio repositório: os changes arquivados em
+`openspec/changes/archive/` e as specs consolidadas em `openspec/specs/`. Consulte-os antes
+de planejar. Ao criar um novo change, situe-o no roadmap acima e declare de qual change
+anterior ele depende (regra do `proposal` em `openspec/config.yaml`).
 
 ### Invariantes de domínio (valem para todos os épicos)
 
