@@ -28,6 +28,11 @@ output "documentos_bucket" {
   value       = google_storage_bucket.documentos.name
 }
 
+output "lgpd_solicitacoes_bucket" {
+  description = "Nome do bucket de documentos de identificação do canal LGPD."
+  value       = google_storage_bucket.lgpd_solicitacoes.name
+}
+
 output "emails_queue" {
   description = "Fila Cloud Tasks de e-mails."
   value       = google_cloud_tasks_queue.emails.id

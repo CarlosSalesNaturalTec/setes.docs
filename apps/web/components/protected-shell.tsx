@@ -66,6 +66,7 @@ export function ProtectedShell({
                 <Link href="/admin/unidades">Unidades</Link>
                 <Link href="/admin/tipos-processo">Tipos de Processo</Link>
                 <Link href="/admin/documentos-removidos">Documentos Removidos</Link>
+                <Link href="/admin/lgpd">Solicitações LGPD</Link>
               </>
             )}
           </div>

@@ -81,6 +81,14 @@ class Settings(BaseSettings):
         default="/tmp/setes-documentos", alias="DOCUMENTOS_STORAGE_LOCAL_DIR"
     )
 
+    # Cloud Storage (Épico 10, D6) — bucket dedicado `${project_id}-lgpd-solicitacoes`
+    # para o documento de identificação anexado ao canal público de solicitação
+    # LGPD; mesmo padrão dev/prod local-vs-GCS de `documentos_bucket` acima.
+    lgpd_solicitacoes_bucket: str = Field(default="", alias="LGPD_SOLICITACOES_BUCKET")
+    lgpd_solicitacoes_storage_local_dir: str = Field(
+        default="/tmp/setes-lgpd-solicitacoes", alias="LGPD_SOLICITACOES_STORAGE_LOCAL_DIR"
+    )
+
     # CORS — o frontend chama a API a partir de uma origem diferente (dev:
     # localhost:3000 -> localhost:8000; prod: domínios distintos no Cloud Run).
     cors_allowed_origins_raw: str = Field(

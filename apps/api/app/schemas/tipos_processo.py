@@ -21,6 +21,8 @@ class TipoProcessoResponse(BaseModel):
     nome: str
     ativo: bool
     roteiro: RoteiroResponse
+    # US 10.3 Cen.2 (Épico 10) — prazo legal de anonimização LGPD, em anos.
+    prazo_anonimizacao_anos: int
 
 
 class CriarTipoProcessoRequest(BaseModel):
@@ -31,3 +33,10 @@ class CriarTipoProcessoRequest(BaseModel):
 
 class AtualizarRoteiroRequest(BaseModel):
     unidade_ids: list[str] = Field(default_factory=list)
+
+
+class TipoProcessoUpdate(BaseModel):
+    """US 10.3 Cen.2/3 — só o prazo de anonimização é editável por esta rota
+    (nome/roteiro têm rotas próprias). Inteiro positivo (Cen.3)."""
+
+    prazo_anonimizacao_anos: int = Field(gt=0)

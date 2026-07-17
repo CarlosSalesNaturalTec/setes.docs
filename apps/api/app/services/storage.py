@@ -97,3 +97,12 @@ def get_storage(settings: Settings) -> Storage:
         os.makedirs(settings.documentos_storage_local_dir, exist_ok=True)
         return FilesystemStorage(settings.documentos_storage_local_dir)
     return GCSStorage(settings.documentos_bucket)
+
+
+def get_lgpd_storage(settings: Settings) -> Storage:
+    """Backend do bucket dedicado ao documento de identificação do canal LGPD
+    (Épico 10, D6) — mesmo seletor local/GCS de `get_storage`, bucket distinto."""
+    if settings.documentos_storage_local:
+        os.makedirs(settings.lgpd_solicitacoes_storage_local_dir, exist_ok=True)
+        return FilesystemStorage(settings.lgpd_solicitacoes_storage_local_dir)
+    return GCSStorage(settings.lgpd_solicitacoes_bucket)

@@ -8,8 +8,8 @@ locals {
       schedule = "0 3 * * *" # diário 03:00
     }
     job-anonimizacao-lgpd = {
-      command  = ["python", "-m", "app.jobs.entrypoint"] # placeholder; entrypoint próprio virá depois
-      schedule = "0 4 1 1,4,7,10 *"                      # trimestral (1º dia de jan/abr/jul/out, 04:00)
+      command  = ["python", "-m", "app.jobs.entrypoint_lgpd"] # Épico 10 — anonimização automática (US 10.3)
+      schedule = "0 4 1 1,4,7,10 *"                            # trimestral (1º dia de jan/abr/jul/out, 04:00)
     }
   }
   scheduler_timezone = "America/Bahia"

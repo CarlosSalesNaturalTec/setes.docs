@@ -50,6 +50,15 @@ resource "google_storage_bucket_iam_member" "api_bucket" {
   member = local.m["sa-api"]
 }
 
+# storage.objectUser no bucket de solicitações LGPD (Épico 10, D6) — só a api
+# grava o documento de identificação; sa-jobs não precisa lê-lo (a rotina
+# automática não acessa esse bucket).
+resource "google_storage_bucket_iam_member" "api_lgpd_bucket" {
+  bucket = google_storage_bucket.lgpd_solicitacoes.name
+  role   = "roles/storage.objectUser"
+  member = local.m["sa-api"]
+}
+
 # cloudtasks.enqueuer na fila emails.
 resource "google_cloud_tasks_queue_iam_member" "api_enqueue" {
   location = var.region

@@ -16,6 +16,7 @@ from app.schemas.tipos_processo import (
     EtapaRoteiroResponse,
     RoteiroResponse,
     TipoProcessoResponse,
+    TipoProcessoUpdate,
 )
 from app.security.autorizacao import get_current_user, require_perfil
 from app.services.roteiros import obter_roteiro_vigente
@@ -70,7 +71,11 @@ def listar_tipos_processo(
             continue  # nunca deveria acontecer (todo tipo nasce com um roteiro), defensivo
         resultado.append(
             TipoProcessoResponse(
-                id=str(tipo.id), nome=tipo.nome, ativo=tipo.ativo, roteiro=_roteiro_response(vigente)
+                id=str(tipo.id),
+                nome=tipo.nome,
+                ativo=tipo.ativo,
+                roteiro=_roteiro_response(vigente),
+                prazo_anonimizacao_anos=tipo.prazo_anonimizacao_anos,
             )
         )
     return resultado
@@ -100,7 +105,38 @@ def criar_tipo_processo(
     db.refresh(roteiro)
 
     return TipoProcessoResponse(
-        id=str(tipo.id), nome=tipo.nome, ativo=tipo.ativo, roteiro=_roteiro_response(roteiro)
+        id=str(tipo.id),
+        nome=tipo.nome,
+        ativo=tipo.ativo,
+        roteiro=_roteiro_response(roteiro),
+        prazo_anonimizacao_anos=tipo.prazo_anonimizacao_anos,
+    )
+
+
+@router.patch("/{tipo_processo_id}", response_model=TipoProcessoResponse)
+def atualizar_tipo_processo(
+    tipo_processo_id: uuid.UUID,
+    payload: TipoProcessoUpdate,
+    _admin: Annotated[Usuario, Depends(_require_admin)],
+    db: Annotated[Session, Depends(get_db)],
+) -> TipoProcessoResponse:
+    """US 10.3 Cen.2/3 — configura o prazo de anonimização LGPD (Admin-only);
+    não retroativo (aplica-se só à avaliação seguinte da rotina/atendimento)."""
+    tipo = db.get(TipoProcesso, tipo_processo_id)
+    if tipo is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tipo de processo não encontrado.")
+
+    tipo.prazo_anonimizacao_anos = payload.prazo_anonimizacao_anos
+    db.commit()
+    db.refresh(tipo)
+
+    vigente = obter_roteiro_vigente(db, tipo.id)
+    return TipoProcessoResponse(
+        id=str(tipo.id),
+        nome=tipo.nome,
+        ativo=tipo.ativo,
+        roteiro=_roteiro_response(vigente),
+        prazo_anonimizacao_anos=tipo.prazo_anonimizacao_anos,
     )
 
 

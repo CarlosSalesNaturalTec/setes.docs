@@ -30,6 +30,7 @@ from app.routers import (
     dev_tools,
     documentos,
     documentos_removidos,
+    lgpd,
     notificacoes,
     processos,
     setup,
@@ -91,6 +92,7 @@ app.include_router(sistema_config.router)
 app.include_router(dashboard.router)
 app.include_router(auditoria.router)
 app.include_router(consulta_publica.router)
+app.include_router(lgpd.router)
 app.include_router(dev_tools.router)
 
 
