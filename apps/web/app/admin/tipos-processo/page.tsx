@@ -196,6 +196,52 @@ function EditorRoteiroExistente({
   );
 }
 
+function PrazoAnonimizacaoLgpd({ tipo, onAtualizado }: { tipo: TipoProcesso; onAtualizado: () => void }) {
+  const [valor, setValor] = useState(String(tipo.prazo_anonimizacao_anos));
+  const [erro, setErro] = useState<string | null>(null);
+  const [salvando, setSalvando] = useState(false);
+
+  async function salvar() {
+    const anos = Number(valor);
+    setErro(null);
+    setSalvando(true);
+    try {
+      await api.atualizarTipoProcesso(tipo.id, { prazo_anonimizacao_anos: anos });
+      onAtualizado();
+    } catch (err) {
+      setErro(
+        err instanceof ApiError
+          ? err.detail
+          : "Não foi possível salvar o prazo de anonimização.",
+      );
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  return (
+    <div className="mt-3 flex items-end gap-2 text-sm">
+      <div>
+        <label htmlFor={`prazo-${tipo.id}`} className="block text-gray-600">
+          Prazo de anonimização LGPD (anos)
+        </label>
+        <input
+          id={`prazo-${tipo.id}`}
+          type="number"
+          min={1}
+          value={valor}
+          onChange={(e) => setValor(e.target.value)}
+          className="mt-1 w-24 rounded border px-2 py-1"
+        />
+      </div>
+      <button type="button" onClick={() => void salvar()} disabled={salvando} className="text-blue-600">
+        {salvando ? "Salvando…" : "Salvar"}
+      </button>
+      {erro && <span className="text-red-600">{erro}</span>}
+    </div>
+  );
+}
+
 function AdminTiposProcessoConteudo() {
   const [tipos, setTipos] = useState<TipoProcesso[]>([]);
   const [unidades, setUnidades] = useState<Unidade[]>([]);
@@ -237,6 +283,7 @@ function AdminTiposProcessoConteudo() {
           <li key={tipo.id} className="rounded border p-4">
             <h2 className="font-medium">{tipo.nome}</h2>
             <EditorRoteiroExistente tipo={tipo} unidades={unidades} onAtualizado={carregar} />
+            <PrazoAnonimizacaoLgpd tipo={tipo} onAtualizado={carregar} />
           </li>
         ))}
       </ul>

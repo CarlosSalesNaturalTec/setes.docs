@@ -92,6 +92,45 @@
         "title": "Body_anexar_documento_processos__processo_id__documentos_post",
         "type": "object"
       },
+      "Body_criar_solicitacao_publico_lgpd_solicitacoes_post": {
+        "properties": {
+          "arquivo": {
+            "contentMediaType": "application/octet-stream",
+            "title": "Arquivo",
+            "type": "string"
+          },
+          "cpf": {
+            "default": "",
+            "title": "Cpf",
+            "type": "string"
+          },
+          "email": {
+            "default": "",
+            "title": "Email",
+            "type": "string"
+          },
+          "nome": {
+            "default": "",
+            "title": "Nome",
+            "type": "string"
+          },
+          "numero_processo": {
+            "default": "",
+            "title": "Numero Processo",
+            "type": "string"
+          },
+          "tipo": {
+            "default": "",
+            "title": "Tipo",
+            "type": "string"
+          }
+        },
+        "required": [
+          "arquivo"
+        ],
+        "title": "Body_criar_solicitacao_publico_lgpd_solicitacoes_post",
+        "type": "object"
+      },
       "CadastroUnidadeRequest": {
         "properties": {
           "gestor_responsavel_id": {
@@ -1760,6 +1799,20 @@
         "title": "RedefinirSenhaRequest",
         "type": "object"
       },
+      "RejeitarSolicitacaoLgpdRequest": {
+        "properties": {
+          "justificativa": {
+            "minLength": 1,
+            "title": "Justificativa",
+            "type": "string"
+          }
+        },
+        "required": [
+          "justificativa"
+        ],
+        "title": "RejeitarSolicitacaoLgpdRequest",
+        "type": "object"
+      },
       "RelatorioAuditoriaResponse": {
         "description": "US 9.2 Cen.1/Cen.2 — consolidado em tela, sem exportação.",
         "properties": {
@@ -1955,6 +2008,94 @@
         "title": "SistemaConfigResponse",
         "type": "object"
       },
+      "SolicitacaoLgpdCriadaResponse": {
+        "properties": {
+          "protocolo": {
+            "title": "Protocolo",
+            "type": "string"
+          }
+        },
+        "required": [
+          "protocolo"
+        ],
+        "title": "SolicitacaoLgpdCriadaResponse",
+        "type": "object"
+      },
+      "SolicitacaoLgpdResponse": {
+        "description": "Item da fila administrativa (US 10.2 Cen.1).",
+        "properties": {
+          "criado_em": {
+            "format": "date-time",
+            "title": "Criado Em",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "justificativa_rejeicao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Justificativa Rejeicao"
+          },
+          "nome_solicitante": {
+            "title": "Nome Solicitante",
+            "type": "string"
+          },
+          "processo_id": {
+            "title": "Processo Id",
+            "type": "string"
+          },
+          "processo_numero": {
+            "title": "Processo Numero",
+            "type": "string"
+          },
+          "protocolo": {
+            "title": "Protocolo",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "tipo": {
+            "title": "Tipo",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "protocolo",
+          "criado_em",
+          "nome_solicitante",
+          "processo_numero",
+          "processo_id",
+          "tipo",
+          "status",
+          "justificativa_rejeicao"
+        ],
+        "title": "SolicitacaoLgpdResponse",
+        "type": "object"
+      },
+      "SolicitacoesLgpdListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SolicitacaoLgpdResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "SolicitacoesLgpdListResponse",
+        "type": "object"
+      },
       "StatusProcesso": {
         "description": "Máquina de estados do processo (D4). `ARQUIVADO` só é alcançado pela\nrotina automática de arquivamento (change arquivamento-automatico).",
         "enum": [
@@ -1980,6 +2121,10 @@
             "title": "Nome",
             "type": "string"
           },
+          "prazo_anonimizacao_anos": {
+            "title": "Prazo Anonimizacao Anos",
+            "type": "integer"
+          },
           "roteiro": {
             "$ref": "#/components/schemas/RoteiroResponse"
           }
@@ -1988,9 +2133,25 @@
           "id",
           "nome",
           "ativo",
-          "roteiro"
+          "roteiro",
+          "prazo_anonimizacao_anos"
         ],
         "title": "TipoProcessoResponse",
+        "type": "object"
+      },
+      "TipoProcessoUpdate": {
+        "description": "US 10.3 Cen.2/3 — só o prazo de anonimização é editável por esta rota\n(nome/roteiro têm rotas próprias). Inteiro positivo (Cen.3).",
+        "properties": {
+          "prazo_anonimizacao_anos": {
+            "exclusiveMinimum": 0,
+            "title": "Prazo Anonimizacao Anos",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "prazo_anonimizacao_anos"
+        ],
+        "title": "TipoProcessoUpdate",
         "type": "object"
       },
       "TransferirUnidadeRequest": {
@@ -3202,6 +3363,202 @@
         ]
       }
     },
+    "/lgpd/solicitacoes": {
+      "get": {
+        "description": "US 10.2 Cen.1 — fila administrativa, com filtro opcional por status.",
+        "operationId": "listar_solicitacoes_lgpd_solicitacoes_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolicitacoesLgpdListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Listar Solicitacoes",
+        "tags": [
+          "lgpd"
+        ]
+      }
+    },
+    "/lgpd/solicitacoes/{solicitacao_id}/atender": {
+      "post": {
+        "description": "US 10.2 Cen.2 — anonimiza os interessados do processo indicado.",
+        "operationId": "atender_solicitacao_lgpd_solicitacoes__solicitacao_id__atender_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "solicitacao_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Solicitacao Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolicitacaoLgpdResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Atender Solicitacao",
+        "tags": [
+          "lgpd"
+        ]
+      }
+    },
+    "/lgpd/solicitacoes/{solicitacao_id}/rejeitar": {
+      "post": {
+        "description": "US 10.2 Cen.3/3b — exige justificativa não vazia.",
+        "operationId": "rejeitar_solicitacao_lgpd_solicitacoes__solicitacao_id__rejeitar_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "solicitacao_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Solicitacao Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejeitarSolicitacaoLgpdRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolicitacaoLgpdResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rejeitar Solicitacao",
+        "tags": [
+          "lgpd"
+        ]
+      }
+    },
     "/notificacoes": {
       "get": {
         "description": "US 5.1 Cen.4/4b — lidas ficam visíveis por 30 dias; não lidas, sempre.",
@@ -4388,6 +4745,48 @@
         ]
       }
     },
+    "/publico/lgpd/solicitacoes": {
+      "post": {
+        "description": "US 10.1 Cen.1/2/3/3b/4 — registra a solicitação e enfileira a confirmação.",
+        "operationId": "criar_solicitacao_publico_lgpd_solicitacoes_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_criar_solicitacao_publico_lgpd_solicitacoes_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolicitacaoLgpdCriadaResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Criar Solicitacao",
+        "tags": [
+          "lgpd"
+        ]
+      }
+    },
     "/publico/processos": {
       "get": {
         "description": "US 7.2 — pesquisa paginada (20/página); sigilosos sempre excluídos.",
@@ -4817,6 +5216,76 @@
           }
         },
         "summary": "Criar Tipo Processo",
+        "tags": [
+          "tipos-processo"
+        ]
+      }
+    },
+    "/tipos-processo/{tipo_processo_id}": {
+      "patch": {
+        "description": "US 10.3 Cen.2/3 — configura o prazo de anonimização LGPD (Admin-only);\nnão retroativo (aplica-se só à avaliação seguinte da rotina/atendimento).",
+        "operationId": "atualizar_tipo_processo_tipos_processo__tipo_processo_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tipo_processo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Tipo Processo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TipoProcessoUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoProcessoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Atualizar Tipo Processo",
         "tags": [
           "tipos-processo"
         ]

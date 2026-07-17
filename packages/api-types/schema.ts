@@ -352,6 +352,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/lgpd/solicitacoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Solicitacoes
+         * @description US 10.2 Cen.1 — fila administrativa, com filtro opcional por status.
+         */
+        get: operations["listar_solicitacoes_lgpd_solicitacoes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lgpd/solicitacoes/{solicitacao_id}/atender": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Atender Solicitacao
+         * @description US 10.2 Cen.2 — anonimiza os interessados do processo indicado.
+         */
+        post: operations["atender_solicitacao_lgpd_solicitacoes__solicitacao_id__atender_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lgpd/solicitacoes/{solicitacao_id}/rejeitar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rejeitar Solicitacao
+         * @description US 10.2 Cen.3/3b — exige justificativa não vazia.
+         */
+        post: operations["rejeitar_solicitacao_lgpd_solicitacoes__solicitacao_id__rejeitar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/notificacoes": {
         parameters: {
             query?: never;
@@ -666,6 +726,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/publico/lgpd/solicitacoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Criar Solicitacao
+         * @description US 10.1 Cen.1/2/3/3b/4 — registra a solicitação e enfileira a confirmação.
+         */
+        post: operations["criar_solicitacao_publico_lgpd_solicitacoes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/publico/processos": {
         parameters: {
             query?: never;
@@ -788,6 +868,27 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/tipos-processo/{tipo_processo_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Atualizar Tipo Processo
+         * @description US 10.3 Cen.2/3 — configura o prazo de anonimização LGPD (Admin-only);
+         *     não retroativo (aplica-se só à avaliação seguinte da rotina/atendimento).
+         */
+        patch: operations["atualizar_tipo_processo_tipos_processo__tipo_processo_id__patch"];
         trace?: never;
     };
     "/tipos-processo/{tipo_processo_id}/roteiro": {
@@ -1043,6 +1144,36 @@ export interface components {
         Body_anexar_documento_processos__processo_id__documentos_post: {
             /** Arquivo */
             arquivo: string;
+        };
+        /** Body_criar_solicitacao_publico_lgpd_solicitacoes_post */
+        Body_criar_solicitacao_publico_lgpd_solicitacoes_post: {
+            /** Arquivo */
+            arquivo: string;
+            /**
+             * Cpf
+             * @default
+             */
+            cpf: string;
+            /**
+             * Email
+             * @default
+             */
+            email: string;
+            /**
+             * Nome
+             * @default
+             */
+            nome: string;
+            /**
+             * Numero Processo
+             * @default
+             */
+            numero_processo: string;
+            /**
+             * Tipo
+             * @default
+             */
+            tipo: string;
         };
         /** CadastroUnidadeRequest */
         CadastroUnidadeRequest: {
@@ -1695,6 +1826,11 @@ export interface components {
             /** Senha */
             senha: string;
         };
+        /** RejeitarSolicitacaoLgpdRequest */
+        RejeitarSolicitacaoLgpdRequest: {
+            /** Justificativa */
+            justificativa: string;
+        };
         /**
          * RelatorioAuditoriaResponse
          * @description US 9.2 Cen.1/Cen.2 — consolidado em tela, sem exportação.
@@ -1772,6 +1908,43 @@ export interface components {
              */
             prazo_arquivamento_dias: number;
         };
+        /** SolicitacaoLgpdCriadaResponse */
+        SolicitacaoLgpdCriadaResponse: {
+            /** Protocolo */
+            protocolo: string;
+        };
+        /**
+         * SolicitacaoLgpdResponse
+         * @description Item da fila administrativa (US 10.2 Cen.1).
+         */
+        SolicitacaoLgpdResponse: {
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+            /** Id */
+            id: string;
+            /** Justificativa Rejeicao */
+            justificativa_rejeicao: string | null;
+            /** Nome Solicitante */
+            nome_solicitante: string;
+            /** Processo Id */
+            processo_id: string;
+            /** Processo Numero */
+            processo_numero: string;
+            /** Protocolo */
+            protocolo: string;
+            /** Status */
+            status: string;
+            /** Tipo */
+            tipo: string;
+        };
+        /** SolicitacoesLgpdListResponse */
+        SolicitacoesLgpdListResponse: {
+            /** Items */
+            items?: components["schemas"]["SolicitacaoLgpdResponse"][];
+        };
         /**
          * StatusProcesso
          * @description Máquina de estados do processo (D4). `ARQUIVADO` só é alcançado pela
@@ -1787,7 +1960,18 @@ export interface components {
             id: string;
             /** Nome */
             nome: string;
+            /** Prazo Anonimizacao Anos */
+            prazo_anonimizacao_anos: number;
             roteiro: components["schemas"]["RoteiroResponse"];
+        };
+        /**
+         * TipoProcessoUpdate
+         * @description US 10.3 Cen.2/3 — só o prazo de anonimização é editável por esta rota
+         *     (nome/roteiro têm rotas próprias). Inteiro positivo (Cen.3).
+         */
+        TipoProcessoUpdate: {
+            /** Prazo Anonimizacao Anos */
+            prazo_anonimizacao_anos: number;
         };
         /** TransferirUnidadeRequest */
         TransferirUnidadeRequest: {
@@ -2442,6 +2626,109 @@ export interface operations {
             };
         };
     };
+    listar_solicitacoes_lgpd_solicitacoes_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SolicitacoesLgpdListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    atender_solicitacao_lgpd_solicitacoes__solicitacao_id__atender_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                solicitacao_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SolicitacaoLgpdResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rejeitar_solicitacao_lgpd_solicitacoes__solicitacao_id__rejeitar_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                solicitacao_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejeitarSolicitacaoLgpdRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SolicitacaoLgpdResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listar_notificacoes_notificacoes_get: {
         parameters: {
             query?: never;
@@ -3052,6 +3339,39 @@ export interface operations {
             };
         };
     };
+    criar_solicitacao_publico_lgpd_solicitacoes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_criar_solicitacao_publico_lgpd_solicitacoes_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SolicitacaoLgpdCriadaResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     pesquisar_processos_publico_processos_get: {
         parameters: {
             query?: {
@@ -3285,6 +3605,43 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TipoProcessoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    atualizar_tipo_processo_tipos_processo__tipo_processo_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                tipo_processo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TipoProcessoUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -63,6 +63,9 @@ class TipoEventoLog(str, enum.Enum):
     USUARIO_DESATIVADO = "usuario_desativado"
     # Épico 9 (US 9.1, D3, auditoria-e-relatorios) — acesso de auditoria destravado fora da unidade.
     ACESSO_AUDITORIA = "acesso_auditoria"
+    # Épico 10 (D1, conformidade-lgpd) — anonimização irreversível de interessado
+    # (atendimento manual ou rotina automática trimestral).
+    INTERESSADO_ANONIMIZADO = "interessado_anonimizado"
 
 
 class StatusProcesso(str, enum.Enum):
@@ -116,6 +119,23 @@ class TipoNotificacao(str, enum.Enum):
     NOVO_PROCESSO = "novo_processo"
     CONCLUIDO = "concluido"
     ALERTA_PRAZO = "alerta_prazo"
+
+
+class TipoSolicitacaoLgpd(str, enum.Enum):
+    """Épico 10 (US 10.1) — tipo da solicitação registrada no canal público."""
+
+    EXCLUSAO = "exclusao"
+    ANONIMIZACAO = "anonimizacao"
+
+
+class StatusSolicitacaoLgpd(str, enum.Enum):
+    """Épico 10 (US 10.2, D8) — máquina de estados: pendente/em_analise só
+    transicionam para os estados terminais atendida/rejeitada, sem retorno."""
+
+    PENDENTE = "pendente"
+    EM_ANALISE = "em_analise"
+    ATENDIDA = "atendida"
+    REJEITADA = "rejeitada"
 
 
 def _uuid_pk() -> Mapped[uuid.UUID]:
@@ -197,6 +217,9 @@ class TipoProcesso(Base):
     id: Mapped[uuid.UUID] = _uuid_pk()
     nome: Mapped[str] = mapped_column(String(200), nullable=False, unique=True)
     ativo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    # US 10.3 Cen.2 (Épico 10) — prazo legal de anonimização LGPD, em anos,
+    # usado pela rotina automática trimestral; não retroativo (D-config runtime).
+    prazo_anonimizacao_anos: Mapped[int] = mapped_column(Integer, nullable=False, default=5)
 
 
 class Roteiro(Base):
@@ -409,6 +432,10 @@ class ProcessoInteressado(Base):
     tipo_participacao: Mapped[TipoParticipacaoInteressado | None] = mapped_column(
         _enum_col(TipoParticipacaoInteressado, "tipo_participacao_interessado"), nullable=True
     )
+    # Épico 10 (D2) — guard explícito de idempotência da anonimização: NULL =
+    # dado pessoal original; preenchida = nome/documento já sobrescritos com
+    # os marcadores irreversíveis.
+    anonimizado_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     processo: Mapped[Processo] = relationship("Processo", back_populates="interessados")
 
@@ -538,3 +565,50 @@ class Notificacao(Base):
         ),
         Index("ix_notificacao_lida_em", "lida_em"),
     )
+
+
+class SolicitacaoLgpdContadorAno(Base):
+    """Suporte à geração atômica do protocolo LGPD por ano (D5) — mesmo padrão
+    de `ProcessoContadorAno`, sequência independente."""
+
+    __tablename__ = "solicitacao_lgpd_contador_ano"
+
+    ano: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)
+    ultimo_sequencial: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class SolicitacaoLgpd(Base):
+    """Canal público de solicitação LGPD (US 10.1) e fila administrativa de
+    atendimento/rejeição (US 10.2). Dado pessoal do solicitante (nome/CPF/
+    e-mail) coletado só para validar a titularidade do pedido (proposal —
+    tratamento LGPD)."""
+
+    __tablename__ = "solicitacao_lgpd"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    protocolo: Mapped[str] = mapped_column(String(30), nullable=False, unique=True)
+    processo_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("processo.id"), nullable=False
+    )
+    nome_solicitante: Mapped[str] = mapped_column(String(200), nullable=False)
+    cpf_solicitante: Mapped[str] = mapped_column(String(11), nullable=False)
+    email_solicitante: Mapped[str] = mapped_column(String(320), nullable=False)
+    tipo: Mapped[TipoSolicitacaoLgpd] = mapped_column(
+        _enum_col(TipoSolicitacaoLgpd, "tipo_solicitacao_lgpd"), nullable=False
+    )
+    status: Mapped[StatusSolicitacaoLgpd] = mapped_column(
+        _enum_col(StatusSolicitacaoLgpd, "status_solicitacao_lgpd"),
+        nullable=False,
+        default=StatusSolicitacaoLgpd.PENDENTE,
+    )
+    documento_identificacao_chave: Mapped[str] = mapped_column(String(500), nullable=False)
+    justificativa_rejeicao: Mapped[str | None] = mapped_column(Text, nullable=True)
+    criado_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    atendido_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    atendido_por_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("usuario.id"), nullable=True
+    )
+
+    processo: Mapped[Processo] = relationship("Processo")

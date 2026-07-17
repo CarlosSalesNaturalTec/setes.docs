@@ -22,3 +22,18 @@ resource "google_storage_bucket" "documentos" {
 
   depends_on = [google_project_service.enabled]
 }
+
+# Bucket dedicado ao documento de identificação anexado ao canal público de
+# solicitação LGPD (Épico 10, D6). Dado de identidade civil de terceiro — não
+# compartilha retenção/acesso com o bucket de documentos de processo (sem
+# soft-delete/restauração administrativa; o PRD não pede isso aqui).
+resource "google_storage_bucket" "lgpd_solicitacoes" {
+  name     = "${var.project_id}-lgpd-solicitacoes"
+  location = var.region
+  project  = var.project_id
+
+  uniform_bucket_level_access = true
+  public_access_prevention    = "enforced" # bloqueia allUsers/allAuthenticatedUsers
+
+  depends_on = [google_project_service.enabled]
+}

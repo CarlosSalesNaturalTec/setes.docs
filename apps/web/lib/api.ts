@@ -244,6 +244,12 @@ export const api = {
       body,
       { auth: true },
     ),
+  atualizarTipoProcesso: (tipoProcessoId: string, body: Schemas["TipoProcessoUpdate"]) =>
+    patch<Schemas["TipoProcessoUpdate"], Schemas["TipoProcessoResponse"]>(
+      `/tipos-processo/${tipoProcessoId}`,
+      body,
+      { auth: true },
+    ),
 
   // Processos e workflow (Épico 2)
   criarProcesso: (body: Schemas["CriarProcessoRequest"]) =>
@@ -336,6 +342,43 @@ export const api = {
     unidade_id?: string;
     tipo_processo_id?: string;
   }) => get<Schemas["RelatorioAuditoriaResponse"]>("/auditoria/relatorio", { auth: true, query }),
+
+  // LGPD (Épico 10) — canal público de solicitação (US 10.1) e fila
+  // administrativa de atendimento/rejeição (US 10.2).
+  solicitarLgpd: (form: {
+    numero_processo: string;
+    nome: string;
+    cpf: string;
+    email: string;
+    tipo: "exclusao" | "anonimizacao";
+    arquivo: File;
+  }) => {
+    const data = new FormData();
+    data.append("numero_processo", form.numero_processo);
+    data.append("nome", form.nome);
+    data.append("cpf", form.cpf);
+    data.append("email", form.email);
+    data.append("tipo", form.tipo);
+    data.append("arquivo", form.arquivo);
+    return postMultipart<Schemas["SolicitacaoLgpdCriadaResponse"]>("/publico/lgpd/solicitacoes", data);
+  },
+  listarSolicitacoesLgpd: (status?: string) =>
+    get<Schemas["SolicitacoesLgpdListResponse"]>("/lgpd/solicitacoes", {
+      auth: true,
+      query: status ? { status } : undefined,
+    }),
+  atenderSolicitacaoLgpd: (solicitacaoId: string) =>
+    post<undefined, Schemas["SolicitacaoLgpdResponse"]>(
+      `/lgpd/solicitacoes/${solicitacaoId}/atender`,
+      undefined,
+      { auth: true },
+    ),
+  rejeitarSolicitacaoLgpd: (solicitacaoId: string, body: Schemas["RejeitarSolicitacaoLgpdRequest"]) =>
+    post<Schemas["RejeitarSolicitacaoLgpdRequest"], Schemas["SolicitacaoLgpdResponse"]>(
+      `/lgpd/solicitacoes/${solicitacaoId}/rejeitar`,
+      body,
+      { auth: true },
+    ),
 
   // Consulta Pública (Épico 7) — sem autenticação, para o Cidadão.
   consultarProcessoPublico: (numero: string) =>
