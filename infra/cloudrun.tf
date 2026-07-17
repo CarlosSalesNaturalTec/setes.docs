@@ -95,6 +95,14 @@ resource "google_cloud_run_v2_service" "api" {
         name  = "EMAIL_FROM"
         value = var.email_provider_from
       }
+      # Base dos links enviados por e-mail (primeiro acesso, recuperação de
+      # senha, reset por Admin, link direto para processo). SEM isso a app cai
+      # no default `http://localhost:3000` (app/config.py) e todos os links de
+      # e-mail saem quebrados em produção. Aponta para o próprio serviço `web`.
+      env {
+        name  = "FRONTEND_BASE_URL"
+        value = local.web_url
+      }
       # Browser do usuário (origem do `web`) chama a api diretamente -- sem essa
       # allow-list, o browser recebe "Disallowed CORS origin" mesmo com o
       # ingress público (app/config.py:75 default é só localhost:3000).
