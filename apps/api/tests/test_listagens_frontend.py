@@ -40,6 +40,31 @@ def test_listar_unidades(client, db):
     assert len(resp.json()) == 2
 
 
+def test_listar_unidades_permite_usuario_com_permissao_de_auditoria(client, db):
+    """Épico 9 (US 9.2) — o filtro de unidade do relatório de auditoria precisa
+    do catálogo mesmo quando o Auditor não é Administrador/Gestor."""
+    db.add_all([Unidade(nome="COFIN", sigla="COFIN", ativo=True)])
+    db.commit()
+    auditor = _usuario(db, perfil=PerfilUsuario.SERVIDOR, email="auditor@example.com")
+    auditor.pode_auditar = True
+    db.commit()
+    token = _login(client, "auditor@example.com")
+
+    resp = client.get("/unidades", headers=_auth(token))
+
+    assert resp.status_code == 200
+    assert len(resp.json()) == 1
+
+
+def test_listar_unidades_nega_servidor_sem_permissao_de_auditoria(client, db):
+    _usuario(db, perfil=PerfilUsuario.SERVIDOR, email="servidor@example.com")
+    token = _login(client, "servidor@example.com")
+
+    resp = client.get("/unidades", headers=_auth(token))
+
+    assert resp.status_code == 403
+
+
 def test_listar_tipos_processo_inclui_roteiro_vigente(client, db):
     cofin = Unidade(nome="COFIN", sigla="COFIN", ativo=True)
     db.add(cofin)

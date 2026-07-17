@@ -23,6 +23,7 @@ from app.config import Settings, get_settings
 from app.email.provider import EmailDeliveryError, EmailMessage, send_email
 from app.rate_limit import MSG_RATE_LIMIT_CONSULTA_PUBLICA, limiter
 from app.routers import (
+    auditoria,
     auth,
     consulta_publica,
     dashboard,
@@ -88,6 +89,7 @@ app.include_router(documentos_removidos.router)
 app.include_router(notificacoes.router)
 app.include_router(sistema_config.router)
 app.include_router(dashboard.router)
+app.include_router(auditoria.router)
 app.include_router(consulta_publica.router)
 app.include_router(dev_tools.router)
 

@@ -329,6 +329,14 @@ export const api = {
   obterProcessosParadosDashboard: (query?: { unidade_id?: string }) =>
     get<Schemas["ProcessosParadosResponse"]>("/dashboard/processos-parados", { auth: true, query }),
 
+  // Auditoria — relatório consolidado em tela (Épico 9, US 9.2).
+  obterRelatorioAuditoria: (query?: {
+    inicio?: string;
+    fim?: string;
+    unidade_id?: string;
+    tipo_processo_id?: string;
+  }) => get<Schemas["RelatorioAuditoriaResponse"]>("/auditoria/relatorio", { auth: true, query }),
+
   // Consulta Pública (Épico 7) — sem autenticação, para o Cidadão.
   consultarProcessoPublico: (numero: string) =>
     get<Schemas["ProcessoPublicoResponse"]>(`/publico/processos/${encodeURIComponent(numero)}`),

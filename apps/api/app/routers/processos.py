@@ -16,7 +16,16 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 
 from app.config import Settings, get_settings
-from app.db.models import Notificacao, PerfilUsuario, Processo, TipoNotificacao, Unidade, Usuario
+from app.db.models import (
+    LogSeguranca,
+    Notificacao,
+    PerfilUsuario,
+    Processo,
+    TipoEventoLog,
+    TipoNotificacao,
+    Unidade,
+    Usuario,
+)
 from app.db.session import get_db
 from app.email.provider import EmailMessage
 from app.email.queue import config_from_settings, enqueue_email_seguro
@@ -49,6 +58,7 @@ MSG_PROCESSO_NAO_ENCONTRADO = "Processo não encontrado."
 MSG_ACESSO_NEGADO_PROCESSO = (
     "Acesso negado — você não tem permissão para visualizar este processo"
 )
+MSG_ACESSO_RESTRITO_SIGILO = "Acesso restrito — solicite autorização ao Administrador"
 MSG_KANBAN_VAZIO_SERVIDOR = "Nenhum processo encontrado nesta unidade"
 MSG_KANBAN_VAZIO_GESTOR = "Nenhum processo encontrado nas unidades gerenciadas"
 MSG_BUSCA_VAZIA = "Nenhum processo encontrado para os filtros informados"
@@ -66,8 +76,59 @@ def _carregar_processo(db: Session, processo_id: uuid.UUID) -> Processo:
 def _exigir_acesso_ao_processo(
     db: Session, *, usuario: Usuario, processo: Processo, request: Request
 ) -> None:
-    """Nega acesso a processo de unidade fora do escopo, gravando log (US 1.4 Cen.2)."""
-    if not tem_acesso_a_unidade(db, usuario=usuario, unidade_id=processo.unidade_atual_id):
+    """Acesso de ESCRITA/operação: exige acesso à unidade atual (US 1.4 Cen.2).
+
+    A permissão de auditoria (`usuario.pode_auditar`) é **somente leitura**
+    (US 9.1) e NÃO concede escrita — por isso este seam, usado por endpoints
+    que modificam o processo (sigilo, anexar/remover documento), ignora
+    `pode_auditar` e mantém a checagem estrita por unidade. Para leitura, use
+    `_exigir_leitura_ao_processo`.
+    """
+    if tem_acesso_a_unidade(db, usuario=usuario, unidade_id=processo.unidade_atual_id):
+        return
+    registrar_acesso_negado(
+        db,
+        usuario=usuario,
+        rota=request.url.path,
+        contexto={"processo_id": str(processo.id), "unidade": str(processo.unidade_atual_id)},
+    )
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN, detail=MSG_ACESSO_NEGADO_PROCESSO
+    )
+
+
+def _exigir_leitura_ao_processo(
+    db: Session, *, usuario: Usuario, processo: Processo, request: Request
+) -> None:
+    """Acesso de LEITURA: visibilidade por unidade OU permissão de auditoria.
+
+    A permissão de auditoria (`usuario.pode_auditar`, Épico 9 US 9.1) é um
+    caminho de autorização paralelo à visibilidade por unidade (D1): libera a
+    leitura de qualquer processo, inclusive sigiloso, e registra o acesso
+    destravado em `log_seguranca` (`acesso_auditoria`, D3) — mas só quando a
+    permissão é o que de fato viabiliza o acesso, não quando o usuário já
+    teria acesso pela regra de unidade. Não concede escrita (ver
+    `_exigir_acesso_ao_processo`).
+    """
+    tem_acesso_unidade = tem_acesso_a_unidade(
+        db, usuario=usuario, unidade_id=processo.unidade_atual_id
+    )
+    if usuario.pode_auditar:
+        if not tem_acesso_unidade:
+            db.add(
+                LogSeguranca(
+                    usuario_id=usuario.id,
+                    tipo_evento=TipoEventoLog.ACESSO_AUDITORIA,
+                    contexto={"rota": request.url.path, "processo_id": str(processo.id)},
+                )
+            )
+            db.commit()
+        return
+
+    if tem_acesso_unidade:
+        return
+
+    if processo.sigiloso:
         registrar_acesso_negado(
             db,
             usuario=usuario,
@@ -75,8 +136,18 @@ def _exigir_acesso_ao_processo(
             contexto={"processo_id": str(processo.id), "unidade": str(processo.unidade_atual_id)},
         )
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail=MSG_ACESSO_NEGADO_PROCESSO
+            status_code=status.HTTP_403_FORBIDDEN, detail=MSG_ACESSO_RESTRITO_SIGILO
         )
+
+    registrar_acesso_negado(
+        db,
+        usuario=usuario,
+        rota=request.url.path,
+        contexto={"processo_id": str(processo.id), "unidade": str(processo.unidade_atual_id)},
+    )
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN, detail=MSG_ACESSO_NEGADO_PROCESSO
+    )
 
 
 @router.post("", response_model=ProcessoResponse, status_code=status.HTTP_201_CREATED)
@@ -151,7 +222,7 @@ def detalhe_processo(
 ) -> ProcessoResponse:
     """US 1.4 Cen.2 — detalhe por unidade; acesso fora do escopo é negado e logado."""
     processo = _carregar_processo(db, processo_id)
-    _exigir_acesso_ao_processo(db, usuario=usuario, processo=processo, request=request)
+    _exigir_leitura_ao_processo(db, usuario=usuario, processo=processo, request=request)
     return ProcessoResponse.de(processo)
 
 
@@ -164,7 +235,7 @@ def historico_processo(
 ) -> HistoricoResponse:
     """US 2.4 — linha do tempo imutável; vazia para processo recém-criado."""
     processo = _carregar_processo(db, processo_id)
-    _exigir_acesso_ao_processo(db, usuario=usuario, processo=processo, request=request)
+    _exigir_leitura_ao_processo(db, usuario=usuario, processo=processo, request=request)
     eventos = processo_consulta.historico(db, processo.id)
     return HistoricoResponse(
         processo_id=str(processo.id),

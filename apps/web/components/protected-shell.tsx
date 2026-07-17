@@ -15,6 +15,7 @@ type Perfil = Schemas["UsuarioResumo"]["perfil"];
 export function ProtectedShell({
   children,
   perfisPermitidos,
+  exigirAuditoria,
 }: {
   children: React.ReactNode;
   /** Restringe o conteúdo da página aos perfis informados. Um usuário
@@ -23,6 +24,9 @@ export function ProtectedShell({
    * o cenário de rejeição explícito exigido para toda regra de visibilidade
    * por perfil (US 8.2). Sem a prop, a página fica aberta a qualquer sessão. */
   perfisPermitidos?: Perfil[];
+  /** Restringe o conteúdo a usuários com `pode_auditar = true` — ortogonal ao
+   * perfil (Épico 9, US 9.1/9.2), ex.: o relatório de auditoria. */
+  exigirAuditoria?: boolean;
 }) {
   const { usuario, carregando, logout } = useAuth();
   const router = useRouter();
@@ -36,7 +40,9 @@ export function ProtectedShell({
   }
   if (!usuario) return null;
 
-  const acessoNegado = perfisPermitidos != null && !perfisPermitidos.includes(usuario.perfil);
+  const acessoNegadoPerfil = perfisPermitidos != null && !perfisPermitidos.includes(usuario.perfil);
+  const acessoNegadoAuditoria = exigirAuditoria === true && !usuario.pode_auditar;
+  const acessoNegado = acessoNegadoPerfil || acessoNegadoAuditoria;
 
   return (
     <div className="min-h-screen">
@@ -49,6 +55,9 @@ export function ProtectedShell({
             </Link>
             <Link href="/processos">Processos</Link>
             {usuario.perfil === "gestor" && <Link href="/dashboard">Dashboard</Link>}
+            {usuario.pode_auditar && (
+              <Link href="/auditoria/relatorios">Relatório de Auditoria</Link>
+            )}
             {(usuario.perfil === "administrador" || usuario.perfil === "gestor") && (
               <Link href="/admin/usuarios">Usuários</Link>
             )}
@@ -82,7 +91,11 @@ export function ProtectedShell({
       </header>
       <main className="mx-auto max-w-4xl p-6">
         {acessoNegado ? (
-          <p className="text-sm text-red-600">Acesso negado para o seu perfil.</p>
+          <p className="text-sm text-red-600">
+            {acessoNegadoAuditoria
+              ? "Acesso negado — permissão de auditoria necessária."
+              : "Acesso negado para o seu perfil."}
+          </p>
         ) : (
           children
         )}

@@ -33,7 +33,14 @@ describe("PrimeiroAcessoClient", () => {
   });
 
   it("ativa a conta, estabelece a sessão e navega para /perfil", async () => {
-    const usuario = { id: "u1", nome: "Fulano", email: "f@x.com", perfil: "servidor", status: "ativo" };
+    const usuario = {
+      id: "u1",
+      nome: "Fulano",
+      email: "f@x.com",
+      perfil: "servidor",
+      status: "ativo",
+      pode_auditar: false,
+    };
     vi.mocked(api.primeiroAcesso).mockResolvedValue({
       token: "jwt-emitido",
       exp: "2026-07-14T12:00:00Z",

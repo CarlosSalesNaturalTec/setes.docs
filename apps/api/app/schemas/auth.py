@@ -14,6 +14,9 @@ class UsuarioResumo(BaseModel):
     email: str
     perfil: str
     status: str
+    # Épico 9 — o frontend usa para exibir/ocultar a rota de relatório de
+    # auditoria (US 9.2); ortogonal ao perfil (D1, auditoria-e-relatorios).
+    pode_auditar: bool
 
     @classmethod
     def de(cls, usuario) -> "UsuarioResumo":  # usuario: app.db.models.Usuario
@@ -23,6 +26,7 @@ class UsuarioResumo(BaseModel):
             email=usuario.email,
             perfil=usuario.perfil.value,
             status=usuario.status.value,
+            pode_auditar=usuario.pode_auditar,
         )
 
 
