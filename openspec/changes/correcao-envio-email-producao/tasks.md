@@ -11,14 +11,14 @@
 
 ## 3. SendGrid + Secret Manager (manual, fora do VCS)
 
-- [ ] 3.1 Verificar uma Sender Identity **ou** autenticar um domínio no SendGrid e anotar o remetente resultante — aceite: remetente aparece como "Verified" no painel do SendGrid
-- [ ] 3.2 Confirmar que o secret `sendgrid-api-key` (Secret Manager) contém a API key real, não o placeholder `REPLACE_ME` de `infra/secrets.tf` — aceite: `gcloud secrets versions access latest --secret=sendgrid-api-key` retorna uma chave `SG.…` válida (não `REPLACE_ME`)
-- [ ] 3.3 Definir `email_provider_from = "<remetente do 3.1>"` em `infra/terraform.tfvars` (gitignored) — aceite: valor bate exatamente com o remetente verificado
+- [x] 3.1 Verificar uma Sender Identity **ou** autenticar um domínio no SendGrid e anotar o remetente resultante — aceite: remetente aparece como "Verified" no painel do SendGrid (remetente verificado: `naturalbahia@gmail.com`)
+- [x] 3.2 Confirmar que o secret `sendgrid-api-key` (Secret Manager) contém a API key real, não o placeholder `REPLACE_ME` de `infra/secrets.tf` — aceite: `gcloud secrets versions access latest --secret=sendgrid-api-key` retorna uma chave `SG.…` válida (não `REPLACE_ME`) — confirmado: prefixo `SG.`, 69 chars
+- [x] 3.3 Definir `email_provider_from = "<remetente do 3.1>"` em `infra/terraform.tfvars` (gitignored) — aceite: valor bate exatamente com o remetente verificado (`naturalbahia@gmail.com`)
 
 ## 4. Deploy
 
-- [ ] 4.1 `terraform plan` (em `infra/`) e revisar o diff — aceite: diff restrito ao template do serviço `api` (novo `FRONTEND_BASE_URL`, novo valor de `EMAIL_FROM`); qualquer outro recurso pausa o apply para investigação
-- [ ] 4.2 `terraform apply` — aceite: nova revisão do serviço `api` `Ready`, sem erro no startup probe (`/health`)
+- [x] 4.1 `terraform plan` (em `infra/`) e revisar o diff — aceite: diff restrito ao template do serviço `api` (novo `FRONTEND_BASE_URL`, novo valor de `EMAIL_FROM`); qualquer outro recurso pausa o apply para investigação — investigado: diff do `api` correto (EMAIL_FROM + FRONTEND_BASE_URL); recursos extras = infra do Épico 10 LGPD nunca aplicada (bucket `lgpd_solicitacoes` + IAM + `entrypoint_lgpd`), aceita conscientemente para full apply; `entrypoint_lgpd.py` confirmado no código
+- [x] 4.2 `terraform apply` — aceite: nova revisão do serviço `api` `Ready`, sem erro no startup probe (`/health`) — `Apply complete! 2 added, 3 changed`; revisão `api-00025-nxw` Ready; envs `FRONTEND_BASE_URL` e `EMAIL_FROM=naturalbahia@gmail.com` confirmados
 - [ ] 4.3 Publicar a imagem `api` com o código da seção 1 pelo fluxo normal (merge em `main` → `deploy.yml`) — aceite: revisão do serviço `api` com a tag = SHA do commit do fix (`gcloud run services describe api`)
 
 ## 5. Validação em produção
