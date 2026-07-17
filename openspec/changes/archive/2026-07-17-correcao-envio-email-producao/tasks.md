@@ -19,15 +19,15 @@
 
 - [x] 4.1 `terraform plan` (em `infra/`) e revisar o diff — aceite: diff restrito ao template do serviço `api` (novo `FRONTEND_BASE_URL`, novo valor de `EMAIL_FROM`); qualquer outro recurso pausa o apply para investigação — investigado: diff do `api` correto (EMAIL_FROM + FRONTEND_BASE_URL); recursos extras = infra do Épico 10 LGPD nunca aplicada (bucket `lgpd_solicitacoes` + IAM + `entrypoint_lgpd`), aceita conscientemente para full apply; `entrypoint_lgpd.py` confirmado no código
 - [x] 4.2 `terraform apply` — aceite: nova revisão do serviço `api` `Ready`, sem erro no startup probe (`/health`) — `Apply complete! 2 added, 3 changed`; revisão `api-00025-nxw` Ready; envs `FRONTEND_BASE_URL` e `EMAIL_FROM=naturalbahia@gmail.com` confirmados
-- [ ] 4.3 Publicar a imagem `api` com o código da seção 1 pelo fluxo normal (merge em `main` → `deploy.yml`) — aceite: revisão do serviço `api` com a tag = SHA do commit do fix (`gcloud run services describe api`)
+- [x] 4.3 Publicar a imagem `api` com o código da seção 1 pelo fluxo normal (merge em `main` → `deploy.yml`) — aceite: revisão do serviço `api` com a tag = SHA do commit do fix (`gcloud run services describe api`) — PR #32 merged (merge commit `8a90527` contém o fix `5dc4fe8`); deploy OK; revisão `api-00026-r87` servindo `api:8a905274…`
 
 ## 5. Validação em produção
 
-- [ ] 5.1 Solicitar "recuperar senha" para um e-mail **cadastrado real** e checar os logs do Cloud Run — aceite: `POST /internal/tasks/email` responde **200** (não mais 401) e há log `email.enviado event_id=recuperacao-senha:… to=…`
-- [ ] 5.2 Confirmar o recebimento do e-mail e que o link é `https://web-…run.app/redefinir-senha/{token}` (não `localhost`) e conclui a redefinição — aceite: fluxo de redefinição de senha completa fim a fim a partir do link recebido
-- [ ] 5.3 Solicitar recuperação para um e-mail **não cadastrado** — aceite: mesma mensagem genérica, nenhum log `email.*` correspondente (US 1.3 Cen.5 preservado)
+- [x] 5.1 Solicitar "recuperar senha" para um e-mail **cadastrado real** e checar os logs do Cloud Run — aceite: `POST /internal/tasks/email` responde **200** (não mais 401) e há log `email.enviado event_id=recuperacao-senha:… to=…` — confirmado fim a fim: e-mail de redefinição recebido (só é entregue com o endpoint interno em 200 e `send_email` executado)
+- [x] 5.2 Confirmar o recebimento do e-mail e que o link é `https://web-…run.app/redefinir-senha/{token}` (não `localhost`) e conclui a redefinição — aceite: fluxo de redefinição de senha completa fim a fim a partir do link recebido — confirmado: e-mail recebido, senha redefinida pelo link e login refeito com sucesso
+- [x] 5.3 Solicitar recuperação para um e-mail **não cadastrado** — aceite: mesma mensagem genérica, nenhum log `email.*` correspondente (US 1.3 Cen.5 preservado) — confirmado: tela exibiu a mesma mensagem genérica; `gcloud logging read` retornou vazio (nenhum `email.*` para o endereço não cadastrado)
 
 ## 6. Fechamento
 
-- [ ] 6.1 Rodar `openspec verify` (ou `/opsx:verify`) comparando proposal/design/tasks/specs com o que foi feito — aceite: sem divergência crítica; delta de `fila-notificacoes` reflete o comportamento implementado
-- [ ] 6.2 Sincronizar o delta de `fila-notificacoes` para `openspec/specs/` e arquivar o change — aceite: spec consolidada atualizada, change movido para `openspec/changes/archive/`
+- [x] 6.1 Rodar `openspec verify` (ou `/opsx:verify`) comparando proposal/design/tasks/specs com o que foi feito — aceite: sem divergência crítica; delta de `fila-notificacoes` reflete o comportamento implementado — `openspec validate --strict` = valid; delta bate com `queue.py` (`audience`=URL base) e com o teste de regressão (verde no CI do PR #32); validação prod 5.x verde
+- [x] 6.2 Sincronizar o delta de `fila-notificacoes` para `openspec/specs/` e arquivar o change — aceite: spec consolidada atualizada, change movido para `openspec/changes/archive/` — `openspec archive` aplicou o delta (`fila-notificacoes: ~1 modified`) e moveu o change para `archive/2026-07-17-correcao-envio-email-producao`
