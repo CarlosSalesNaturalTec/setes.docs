@@ -30,6 +30,7 @@ def _config() -> EnqueueConfig:
         queue="emails",
         target_url="https://api.example.run.app/internal/tasks/email",
         oidc_service_account_email="sa-tasks-invoker@proj.iam.gserviceaccount.com",
+        oidc_audience="https://api.example.run.app",
     )
 
 
@@ -54,7 +55,8 @@ def test_task_criada_aponta_para_endpoint_interno_com_oidc():
 
     task = client.created[0]["task"]
     assert task["http_request"]["url"] == "https://api.example.run.app/internal/tasks/email"
-    assert (
-        task["http_request"]["oidc_token"]["service_account_email"]
-        == "sa-tasks-invoker@proj.iam.gserviceaccount.com"
-    )
+    oidc = task["http_request"]["oidc_token"]
+    assert oidc["service_account_email"] == "sa-tasks-invoker@proj.iam.gserviceaccount.com"
+    # `aud` assinado DEVE ser a URL base (o que require_tasks_invoker valida),
+    # não a URL do alvo com o path — senão a validação OIDC falha com 401.
+    assert oidc["audience"] == "https://api.example.run.app"

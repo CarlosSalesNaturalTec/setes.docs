@@ -46,6 +46,13 @@ variable "api_pool_size" {
 
 variable "email_provider_from" {
   type        = string
-  description = "Endereço remetente dos e-mails transacionais."
-  default     = "no-reply@setes.docs"
+  description = <<-EOT
+    Endereço remetente dos e-mails transacionais. DEVE ser uma Sender Identity
+    verificada (ou pertencer a um domínio autenticado) no SendGrid — senão o
+    provedor recusa o envio com HTTP 403 e o e-mail nunca é entregue, sem
+    aparecer no Activity Feed. Definir o valor real (ex.: no-reply@dominio.gov.br)
+    em `infra/terraform.tfvars` (gitignored). O default vazio força a
+    configuração explícita em vez de deixar um placeholder inválido.
+  EOT
+  default     = ""
 }

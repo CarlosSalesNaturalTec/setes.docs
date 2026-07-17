@@ -29,6 +29,12 @@ class EnqueueConfig:
     queue: str
     target_url: str  # https://.../internal/tasks/email
     oidc_service_account_email: str
+    # `aud` a assinar no token OIDC. DEVE bater com o que o endpoint interno
+    # valida (Settings.oidc_audience — a URL base do serviço, SEM o path). Se
+    # `audience` for omitido no oidc_token, o Cloud Tasks assina com a URL do
+    # alvo (target_url, COM o path) e a validação falha com 401. Ver
+    # security/oidc.py:require_tasks_invoker.
+    oidc_audience: str
     # Dev/E2E only (Settings.dev_email_inbox) — ver `_DEV_INBOX` abaixo.
     dev_inbox: bool = False
 
@@ -40,6 +46,7 @@ def config_from_settings(settings: Settings) -> EnqueueConfig:
         queue=settings.cloud_tasks_queue,
         target_url=f"{settings.oidc_audience}/internal/tasks/email",
         oidc_service_account_email=settings.tasks_invoker_sa_email,
+        oidc_audience=settings.oidc_audience,
         dev_inbox=settings.dev_email_inbox,
     )
 
@@ -107,7 +114,10 @@ def enqueue_email(
             "url": config.target_url,
             "headers": {"Content-Type": "application/json"},
             "body": body,
-            "oidc_token": {"service_account_email": config.oidc_service_account_email},
+            "oidc_token": {
+                "service_account_email": config.oidc_service_account_email,
+                "audience": config.oidc_audience,
+            },
         },
     }
 
