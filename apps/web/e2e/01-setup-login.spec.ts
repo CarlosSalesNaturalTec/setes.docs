@@ -25,6 +25,8 @@ test("setup inicial e login do Administrador root", async ({ page }) => {
   await page.getByLabel("Senha", { exact: true }).fill(ADMIN_ROOT.senha);
   await page.getByRole("button", { name: "Entrar" }).click();
 
-  await expect(page).toHaveURL(/\/perfil$/);
+  // Administrador aterrissa em /admin/unidades — sua "razão de ser" é a
+  // configuração do sistema, não há dashboard para esse perfil (US 1.3 Cen.1).
+  await expect(page).toHaveURL(/\/admin\/unidades$/);
   await expect(page.getByText(`${ADMIN_ROOT.nome} · administrador`)).toBeVisible();
 });

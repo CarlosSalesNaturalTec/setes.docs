@@ -11,7 +11,7 @@ interface AuthContextValue {
   usuario: Usuario | null;
   token: string | null;
   carregando: boolean;
-  login: (email: string, senha: string) => Promise<void>;
+  login: (email: string, senha: string) => Promise<Usuario>;
   logout: () => Promise<void>;
   recarregar: () => Promise<void>;
   /** Estabelece a sessão a partir de uma LoginResponse já obtida fora de
@@ -53,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const resp = await api.login({ email, senha });
     setToken(resp.token);
     setUsuario(resp.usuario);
+    return resp.usuario;
   }, []);
 
   const definirSessao = useCallback((usuarioResp: Usuario, tokenResp: string) => {

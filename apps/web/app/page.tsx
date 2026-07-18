@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/components/auth-provider";
 import { api } from "@/lib/api";
+import { rotaInicial } from "@/lib/rota-inicial";
 
 export default function Home() {
   const router = useRouter();
@@ -13,7 +14,7 @@ export default function Home() {
   useEffect(() => {
     if (carregando) return;
     if (usuario) {
-      router.replace("/perfil");
+      router.replace(rotaInicial(usuario));
       return;
     }
     void (async () => {
