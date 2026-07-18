@@ -2,30 +2,27 @@
 
 import { useEffect, useState } from "react";
 
+import { IconButton } from "@/components/icon-button";
+import { IconEdit, IconPowerOff, IconPowerOn } from "@/components/icons";
 import { ProtectedShell } from "@/components/protected-shell";
 import { ApiError, api, type Schemas } from "@/lib/api";
 
 type Unidade = Schemas["UnidadeResponse"];
-type Usuario = Schemas["UsuarioResponse"];
 
-function CadastroUnidadeForm({ usuarios, onCriada }: { usuarios: Usuario[]; onCriada: () => void }) {
+function CadastroUnidadeForm({ onCriada }: { onCriada: () => void }) {
   const [nome, setNome] = useState("");
   const [sigla, setSigla] = useState("");
-  const [gestorId, setGestorId] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
-
-  const gestores = usuarios.filter((u) => u.perfil === "gestor" || u.perfil === "administrador");
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErro(null);
     setEnviando(true);
     try {
-      await api.cadastrarUnidade({ nome, sigla, gestor_responsavel_id: gestorId || null });
+      await api.cadastrarUnidade({ nome, sigla });
       setNome("");
       setSigla("");
-      setGestorId("");
       onCriada();
     } catch (err) {
       setErro(err instanceof ApiError ? err.detail : "Não foi possível cadastrar a unidade.");
@@ -59,24 +56,6 @@ function CadastroUnidadeForm({ usuarios, onCriada }: { usuarios: Usuario[]; onCr
           required
           className="mt-1 rounded border px-3 py-2 text-sm"
         />
-      </div>
-      <div>
-        <label htmlFor="gestor" className="block text-sm">
-          Gestor responsável
-        </label>
-        <select
-          id="gestor"
-          value={gestorId}
-          onChange={(e) => setGestorId(e.target.value)}
-          className="mt-1 rounded border px-3 py-2 text-sm"
-        >
-          <option value="">(nenhum)</option>
-          {gestores.map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.nome}
-            </option>
-          ))}
-        </select>
       </div>
       <button
         type="submit"
@@ -117,17 +96,27 @@ function LinhaUnidade({ unidade, onAlterada }: { unidade: Unidade; onAlterada: (
     }
   }
 
+  async function reativar() {
+    setErro(null);
+    try {
+      await api.reativarUnidade(unidade.id);
+      onAlterada();
+    } catch (err) {
+      setErro(err instanceof ApiError ? err.detail : "Não foi possível reativar.");
+    }
+  }
+
   if (editando) {
     return (
-      <tr className="border-t">
-        <td className="p-2">
+      <tr className="border-t bg-blue-50/30">
+        <td className="px-3 py-2">
           <input value={nome} onChange={(e) => setNome(e.target.value)} className="rounded border px-2 py-1 text-sm" />
         </td>
-        <td className="p-2">
+        <td className="px-3 py-2">
           <input value={sigla} onChange={(e) => setSigla(e.target.value)} className="rounded border px-2 py-1 text-sm" />
         </td>
-        <td className="p-2">{unidade.ativo ? "Ativa" : "Inativa"}</td>
-        <td className="p-2 space-x-2">
+        <td className="px-3 py-2">{unidade.ativo ? "Ativa" : "Inativa"}</td>
+        <td className="space-x-2 px-3 py-2">
           <button onClick={salvar} className="text-sm text-blue-600">
             Salvar
           </button>
@@ -140,20 +129,26 @@ function LinhaUnidade({ unidade, onAlterada }: { unidade: Unidade; onAlterada: (
   }
 
   return (
-    <tr className="border-t align-top">
-      <td className="p-2">{unidade.nome}</td>
-      <td className="p-2">{unidade.sigla}</td>
-      <td className="p-2">{unidade.ativo ? "Ativa" : "Inativa"}</td>
-      <td className="p-2 space-x-2">
-        <button onClick={() => setEditando(true)} className="text-sm text-blue-600">
-          Editar
-        </button>
-        {unidade.ativo && (
-          <button onClick={desativar} className="text-sm text-red-600">
-            Desativar
-          </button>
-        )}
-        {erro && <p className="text-xs text-red-600">{erro}</p>}
+    <tr className="border-t align-top odd:bg-white even:bg-gray-50/50 hover:bg-blue-50/50">
+      <td className="px-3 py-2">{unidade.nome}</td>
+      <td className="px-3 py-2">{unidade.sigla}</td>
+      <td className="px-3 py-2">{unidade.ativo ? "Ativa" : "Inativa"}</td>
+      <td className="px-3 py-2">
+        <div className="flex items-center gap-1">
+          <IconButton label="Editar" onClick={() => setEditando(true)} className="text-blue-600">
+            <IconEdit />
+          </IconButton>
+          {unidade.ativo ? (
+            <IconButton label="Desativar" onClick={desativar} className="text-red-600">
+              <IconPowerOff />
+            </IconButton>
+          ) : (
+            <IconButton label="Reativar" onClick={reativar} className="text-green-600">
+              <IconPowerOn />
+            </IconButton>
+          )}
+        </div>
+        {erro && <p className="mt-1 text-xs text-red-600">{erro}</p>}
       </td>
     </tr>
   );
@@ -161,15 +156,12 @@ function LinhaUnidade({ unidade, onAlterada }: { unidade: Unidade; onAlterada: (
 
 function AdminUnidadesConteudo() {
   const [unidades, setUnidades] = useState<Unidade[]>([]);
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(true);
 
   async function carregar() {
     try {
-      const [listaUnidades, listaUsuarios] = await Promise.all([api.listarUnidades(), api.listarUsuarios()]);
-      setUnidades(listaUnidades);
-      setUsuarios(listaUsuarios.items);
+      setUnidades(await api.listarUnidades());
     } catch (err) {
       setErro(err instanceof ApiError ? err.detail : "Não foi possível carregar as unidades.");
     } finally {
@@ -186,19 +178,19 @@ function AdminUnidadesConteudo() {
       <h1 className="text-2xl font-semibold">Unidades administrativas</h1>
 
       <div className="mt-4">
-        <CadastroUnidadeForm usuarios={usuarios} onCriada={carregar} />
+        <CadastroUnidadeForm onCriada={carregar} />
       </div>
 
       {erro && <p className="mt-4 text-sm text-red-600">{erro}</p>}
       {carregando && <p className="mt-4 text-sm text-gray-500">Carregando…</p>}
 
-      <table className="mt-6 w-full text-left text-sm">
+      <table className="mt-6 w-full overflow-hidden rounded border text-left text-sm">
         <thead>
-          <tr className="border-b font-medium">
-            <th className="p-2">Nome</th>
-            <th className="p-2">Sigla</th>
-            <th className="p-2">Status</th>
-            <th className="p-2">Ações</th>
+          <tr className="border-b bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+            <th className="px-3 py-2">Nome</th>
+            <th className="px-3 py-2">Sigla</th>
+            <th className="px-3 py-2">Status</th>
+            <th className="px-3 py-2">Ações</th>
           </tr>
         </thead>
         <tbody>

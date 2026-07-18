@@ -121,6 +121,73 @@ def test_alteracao_de_roteiro_preserva_versao_vigente_no_momento_da_criacao_do_p
     assert str(v1.etapas[0].unidade_id) == str(cofin.id)  # "processo" mock ainda enxerga o roteiro original
 
 
+def test_unidade_inativa_no_roteiro_e_rejeitada_na_criacao(client, db):
+    cofin = _unidade(db, "COFIN")
+    cofin.ativo = False
+    db.commit()
+    _usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin@example.com")
+    token = _login(client, "admin@example.com")
+
+    resp = client.post(
+        "/tipos-processo",
+        json={"nome": "Licitação", "unidade_ids": [str(cofin.id)]},
+        headers=_auth(token),
+    )
+
+    assert resp.status_code == 422
+    assert resp.json()["detail"] == "Unidade inválida no roteiro."
+    from app.db.models import TipoProcesso
+
+    assert db.query(TipoProcesso).filter(TipoProcesso.nome == "Licitação").first() is None
+
+
+def test_unidade_inativa_no_roteiro_e_rejeitada_no_versionamento(client, db):
+    cofin = _unidade(db, "COFIN")
+    ajur = _unidade(db, "AJUR")
+    _usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin@example.com")
+    token = _login(client, "admin@example.com")
+
+    criado = client.post(
+        "/tipos-processo",
+        json={"nome": "Licitação", "unidade_ids": [str(cofin.id)]},
+        headers=_auth(token),
+    ).json()
+    tipo_id = criado["id"]
+    roteiro_vigente_id = criado["roteiro"]["id"]
+
+    ajur.ativo = False
+    db.commit()
+
+    resp = client.put(
+        f"/tipos-processo/{tipo_id}/roteiro",
+        json={"unidade_ids": [str(cofin.id), str(ajur.id)]},
+        headers=_auth(token),
+    )
+
+    assert resp.status_code == 422
+    assert resp.json()["detail"] == "Unidade inválida no roteiro."
+
+    from app.db.models import Roteiro
+
+    vigente = db.get(Roteiro, __import__("uuid").UUID(roteiro_vigente_id))
+    assert vigente.vigente is True
+
+
+def test_roteiro_so_com_unidades_ativas_tem_sucesso(client, db):
+    cofin = _unidade(db, "COFIN")
+    ajur = _unidade(db, "AJUR")
+    _usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin@example.com")
+    token = _login(client, "admin@example.com")
+
+    resp = client.post(
+        "/tipos-processo",
+        json={"nome": "Licitação", "unidade_ids": [str(cofin.id), str(ajur.id)]},
+        headers=_auth(token),
+    )
+
+    assert resp.status_code == 201
+
+
 def test_acesso_negado_para_gestor_e_servidor(client, db):
     cofin = _unidade(db, "COFIN")
     _usuario(db, perfil=PerfilUsuario.GESTOR, email="gestor@example.com")

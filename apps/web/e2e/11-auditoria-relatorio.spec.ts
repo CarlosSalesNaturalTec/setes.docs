@@ -35,7 +35,7 @@ async function cadastrarEAtivarServidor(
   await page.goto("/admin/usuarios");
   await page.getByLabel("Nome", { exact: true }).fill(usuario.nome);
   await page.getByLabel("E-mail").fill(usuario.email);
-  await page.getByLabel("Unidade").selectOption({ label: unidade.nome });
+  await page.getByLabel("Unidade", { exact: true }).selectOption({ label: unidade.nome });
   await page.getByRole("button", { name: "Cadastrar usuário" }).click();
   await expect(
     page.getByText(`Usuário cadastrado. Um e-mail de primeiro acesso foi enviado para ${usuario.email}.`),
@@ -88,7 +88,7 @@ test("Auditor autorizado acessa processo sigiloso de outra unidade; usuário sem
   await page.goto("/admin/usuarios");
   await page.getByLabel("Nome", { exact: true }).fill(AUDITOR.nome);
   await page.getByLabel("E-mail").fill(AUDITOR.email);
-  await page.getByLabel("Unidade").selectOption({ label: UNIDADE_B.nome });
+  await page.getByLabel("Unidade", { exact: true }).selectOption({ label: UNIDADE_B.nome });
   await page.getByRole("button", { name: "Cadastrar usuário" }).click();
   await expect(
     page.getByText(`Usuário cadastrado. Um e-mail de primeiro acesso foi enviado para ${AUDITOR.email}.`),
@@ -147,7 +147,7 @@ test("Auditor gera relatório consolidado com filtros e vê o estado vazio", asy
   await page.getByRole("link", { name: "Relatório de Auditoria" }).click();
   await expect(page).toHaveURL(/\/auditoria\/relatorios$/);
 
-  await page.getByLabel("Unidade").selectOption({ label: UNIDADE_A.nome });
+  await page.getByLabel("Unidade", { exact: true }).selectOption({ label: UNIDADE_A.nome });
   await page.getByRole("button", { name: "Gerar relatório" }).click();
   await expect(page.getByTestId("relatorio-total")).toContainText("1");
   await expect(page.getByTestId("relatorio-lista")).toContainText("Processo Confidencial de Auditoria");

@@ -17,6 +17,22 @@
         "title": "AckResponse",
         "type": "object"
       },
+      "AtualizarMeuPerfilRequest": {
+        "description": "US 1.5 — auto-serviço restrito ao próprio nome (task 2.1).",
+        "properties": {
+          "nome": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Nome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nome"
+        ],
+        "title": "AtualizarMeuPerfilRequest",
+        "type": "object"
+      },
       "AtualizarRoteiroRequest": {
         "properties": {
           "unidade_ids": {
@@ -5600,6 +5616,66 @@
         ]
       }
     },
+    "/unidades/{unidade_id}/reativar": {
+      "post": {
+        "description": "US 8.1 — reativa (idempotente); não repovoa `Usuario.unidade_id` dos\nservidores desvinculados na desativação (revínculo permanece manual).",
+        "operationId": "reativar_unidade_unidades__unidade_id__reativar_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "unidade_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Unidade Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnidadeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reativar Unidade",
+        "tags": [
+          "unidades"
+        ]
+      }
+    },
     "/usuarios": {
       "get": {
         "description": "Administrador lista todos; Gestor só lista usuários das unidades que gerencia.",
@@ -5773,6 +5849,64 @@
           }
         },
         "summary": "Meu Perfil",
+        "tags": [
+          "usuarios"
+        ]
+      },
+      "patch": {
+        "description": "US 1.5 — auto-serviço restrito ao próprio nome (task 2.2); e-mail e\nperfil permanecem sob gestão exclusiva do Administrador.",
+        "operationId": "atualizar_meu_perfil_usuarios_me_perfil_patch",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizarMeuPerfilRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeuPerfilResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Atualizar Meu Perfil",
         "tags": [
           "usuarios"
         ]

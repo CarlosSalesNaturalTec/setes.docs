@@ -27,7 +27,7 @@ async function cadastrarEAtivar(
   await page.goto("/admin/usuarios");
   await page.getByLabel("Nome", { exact: true }).fill(servidor.nome);
   await page.getByLabel("E-mail").fill(servidor.email);
-  await page.getByLabel("Unidade").selectOption({ label: unidadeNome });
+  await page.getByLabel("Unidade", { exact: true }).selectOption({ label: unidadeNome });
   await page.getByRole("button", { name: "Cadastrar usuário" }).click();
   await expect(
     page.getByText(`Usuário cadastrado. Um e-mail de primeiro acesso foi enviado para ${servidor.email}.`),

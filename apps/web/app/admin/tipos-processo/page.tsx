@@ -22,6 +22,7 @@ function EditorRoteiro({
   onChange: (etapas: string[]) => void;
 }) {
   const [selecionada, setSelecionada] = useState("");
+  const unidadesAtivas = unidades.filter((u) => u.ativo);
 
   function adicionar() {
     if (!selecionada) return;
@@ -55,7 +56,7 @@ function EditorRoteiro({
             className="mt-1 rounded border px-3 py-2 text-sm"
           >
             <option value="">Selecione…</option>
-            {unidades.map((u) => (
+            {unidadesAtivas.map((u) => (
               <option key={u.id} value={u.id}>
                 {u.nome}
               </option>

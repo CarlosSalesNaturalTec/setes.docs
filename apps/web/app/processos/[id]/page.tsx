@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { useAuth } from "@/components/auth-provider";
 import { ProtectedShell } from "@/components/protected-shell";
 import { ApiError, api, type Schemas } from "@/lib/api";
 import { MOTIVOS_DEVOLUCAO, rotuloEvento, rotuloStatus } from "@/lib/processo-ui";
@@ -119,6 +120,8 @@ function ModalDevolucao({
 }
 
 function DetalheConteudo({ id }: { id: string }) {
+  const { usuario } = useAuth();
+  const ehServidor = usuario?.perfil === "servidor";
   const [processo, setProcesso] = useState<Processo | null>(null);
   const [historico, setHistorico] = useState<Historico | null>(null);
   const [unidades, setUnidades] = useState<Unidade[]>([]);
@@ -223,7 +226,7 @@ function DetalheConteudo({ id }: { id: string }) {
           <p className="text-sm text-gray-600">{processo.assunto}</p>
         </div>
         <div className="flex gap-2">
-          {!concluido && (
+          {ehServidor && !concluido && (
             <>
               <button
                 type="button"
@@ -241,25 +244,26 @@ function DetalheConteudo({ id }: { id: string }) {
               </button>
             </>
           )}
-          {processo.sigiloso ? (
-            <button
-              type="button"
-              onClick={() => void alternarSigilo(false)}
-              disabled={alterandoSigilo}
-              className="rounded border px-3 py-1 text-sm"
-            >
-              Remover Sigilo
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => void alternarSigilo(true)}
-              disabled={alterandoSigilo}
-              className="rounded border px-3 py-1 text-sm"
-            >
-              Marcar como Sigiloso
-            </button>
-          )}
+          {ehServidor &&
+            (processo.sigiloso ? (
+              <button
+                type="button"
+                onClick={() => void alternarSigilo(false)}
+                disabled={alterandoSigilo}
+                className="rounded border px-3 py-1 text-sm"
+              >
+                Remover Sigilo
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => void alternarSigilo(true)}
+                disabled={alterandoSigilo}
+                className="rounded border px-3 py-1 text-sm"
+              >
+                Marcar como Sigiloso
+              </button>
+            ))}
         </div>
       </div>
 

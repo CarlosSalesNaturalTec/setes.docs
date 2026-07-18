@@ -45,7 +45,7 @@ def _validar_unidades(db: Session, unidade_ids: list[str]) -> list[uuid.UUID]:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=MSG_ROTEIRO_VAZIO)
 
     ids = [uuid.UUID(u) for u in unidade_ids]
-    encontradas = db.query(Unidade.id).filter(Unidade.id.in_(ids)).count()
+    encontradas = db.query(Unidade.id).filter(Unidade.id.in_(ids), Unidade.ativo.is_(True)).count()
     if encontradas != len(set(ids)):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Unidade inválida no roteiro."

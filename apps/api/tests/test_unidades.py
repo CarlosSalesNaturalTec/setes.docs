@@ -98,6 +98,79 @@ def test_desativa_unidade_com_processos_pendentes_e_bloqueada(client, db, monkey
     assert unidade.ativo is True
 
 
+def test_reativa_unidade_inativa(client, db):
+    unidade = Unidade(nome="COFIN", sigla="COFIN", ativo=False)
+    db.add(unidade)
+    db.commit()
+    _usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin@example.com")
+    token = _login(client, "admin@example.com")
+
+    resp = client.post(f"/unidades/{unidade.id}/reativar", headers=_auth(token))
+
+    assert resp.status_code == 200
+    assert resp.json()["ativo"] is True
+
+
+def test_reativar_unidade_nao_revincula_servidores_desvinculados(client, db):
+    unidade = Unidade(nome="COFIN", sigla="COFIN", ativo=True)
+    db.add(unidade)
+    db.commit()
+    _usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin@example.com")
+    servidor = _usuario(db, perfil=PerfilUsuario.SERVIDOR, email="s2@example.com", unidade_id=unidade.id)
+    token = _login(client, "admin@example.com")
+
+    client.post(f"/unidades/{unidade.id}/desativar", headers=_auth(token))
+    db.refresh(servidor)
+    assert servidor.unidade_id is None
+
+    resp = client.post(f"/unidades/{unidade.id}/reativar", headers=_auth(token))
+
+    assert resp.status_code == 200
+    assert resp.json()["ativo"] is True
+    db.refresh(servidor)
+    assert servidor.unidade_id is None
+
+
+def test_reativar_unidade_ja_ativa_e_idempotente(client, db):
+    unidade = Unidade(nome="COFIN", sigla="COFIN", ativo=True)
+    db.add(unidade)
+    db.commit()
+    _usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin@example.com")
+    token = _login(client, "admin@example.com")
+
+    resp = client.post(f"/unidades/{unidade.id}/reativar", headers=_auth(token))
+
+    assert resp.status_code == 200
+    assert resp.json()["ativo"] is True
+
+
+def test_reativar_unidade_inexistente_retorna_404(client, db):
+    _usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin@example.com")
+    token = _login(client, "admin@example.com")
+
+    resp = client.post("/unidades/00000000-0000-0000-0000-000000000000/reativar", headers=_auth(token))
+
+    assert resp.status_code == 404
+
+
+def test_gestor_e_servidor_recebem_403_ao_reativar_unidade(client, db):
+    unidade = Unidade(nome="COFIN", sigla="COFIN", ativo=False)
+    db.add(unidade)
+    db.commit()
+    _usuario(db, perfil=PerfilUsuario.GESTOR, email="gestor2@example.com")
+    _usuario(db, perfil=PerfilUsuario.SERVIDOR, email="srv2@example.com")
+    token_gestor = _login(client, "gestor2@example.com")
+    token_servidor = _login(client, "srv2@example.com")
+
+    assert client.post(f"/unidades/{unidade.id}/reativar", headers=_auth(token_gestor)).status_code == 403
+    assert client.post(f"/unidades/{unidade.id}/reativar", headers=_auth(token_servidor)).status_code == 403
+
+    from app.db.models import LogSeguranca, TipoEventoLog
+
+    logs = db.query(LogSeguranca).filter(LogSeguranca.tipo_evento == TipoEventoLog.ACESSO_NEGADO).all()
+    assert len(logs) >= 2
+
+
 def test_gestor_recebe_403_em_todos_os_endpoints_de_unidade(client, db):
     unidade = Unidade(nome="COFIN", sigla="COFIN", ativo=True)
     db.add(unidade)

@@ -116,3 +116,21 @@ def desativar_unidade(
     db.commit()
 
     return UnidadeResponse.de(unidade)
+
+
+@router.post("/{unidade_id}/reativar", response_model=UnidadeResponse)
+def reativar_unidade(
+    unidade_id: uuid.UUID,
+    _admin: Annotated[Usuario, Depends(_require_admin)],
+    db: Annotated[Session, Depends(get_db)],
+) -> UnidadeResponse:
+    """US 8.1 — reativa (idempotente); não repovoa `Usuario.unidade_id` dos
+    servidores desvinculados na desativação (revínculo permanece manual)."""
+    unidade = db.get(Unidade, unidade_id)
+    if unidade is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unidade não encontrada.")
+
+    unidade.ativo = True
+    db.commit()
+
+    return UnidadeResponse.de(unidade)

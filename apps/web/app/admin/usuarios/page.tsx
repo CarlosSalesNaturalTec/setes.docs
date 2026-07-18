@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 
 import { useAuth } from "@/components/auth-provider";
+import { IconButton } from "@/components/icon-button";
+import { IconBuildings, IconKey, IconShield, IconTransfer, IconUserMinus } from "@/components/icons";
 import { ProtectedShell } from "@/components/protected-shell";
 import { ApiError, api, type Schemas } from "@/lib/api";
 
@@ -156,9 +158,9 @@ function AcaoTransferirUnidade({
 
   if (!aberto) {
     return (
-      <button onClick={() => setAberto(true)} className="text-sm text-blue-600">
-        Transferir unidade
-      </button>
+      <IconButton label="Transferir unidade" onClick={() => setAberto(true)} className="text-blue-600">
+        <IconTransfer />
+      </IconButton>
     );
   }
 
@@ -219,9 +221,9 @@ function AcaoUnidadesGeridas({ usuario, unidades }: { usuario: Usuario; unidades
 
   if (!aberto) {
     return (
-      <button onClick={abrir} className="text-sm text-blue-600">
-        Unidades geridas
-      </button>
+      <IconButton label="Unidades geridas" onClick={abrir} className="text-blue-600">
+        <IconBuildings />
+      </IconButton>
     );
   }
 
@@ -273,9 +275,9 @@ function AcaoResetarSenha({ usuario }: { usuario: Usuario }) {
 
   return (
     <div>
-      <button onClick={resetar} className="text-sm text-orange-600">
-        Resetar senha
-      </button>
+      <IconButton label="Resetar senha" onClick={resetar} className="text-orange-600">
+        <IconKey />
+      </IconButton>
       {mensagem && <p className="text-xs text-green-700">{mensagem}</p>}
       {erro && <p className="text-xs text-red-600">{erro}</p>}
     </div>
@@ -305,9 +307,14 @@ function AcaoPermissaoAuditoria({ usuario, onAlterado }: { usuario: Usuario; onA
 
   return (
     <div>
-      <button onClick={alternar} disabled={enviando} className="text-sm text-purple-600 disabled:opacity-50">
-        {usuario.pode_auditar ? "Revogar Permissão de Auditoria" : "Conceder Permissão de Auditoria"}
-      </button>
+      <IconButton
+        label={usuario.pode_auditar ? "Revogar Permissão de Auditoria" : "Conceder Permissão de Auditoria"}
+        onClick={alternar}
+        disabled={enviando}
+        className="text-purple-600"
+      >
+        <IconShield />
+      </IconButton>
       {erro && <p className="text-xs text-red-600">{erro}</p>}
     </div>
   );
@@ -334,9 +341,9 @@ function AcaoDesativarUsuario({ usuario, onAlterado }: { usuario: Usuario; onAlt
 
   return (
     <div>
-      <button onClick={desativar} disabled={enviando} className="text-sm text-red-600 disabled:opacity-50">
-        Desativar Usuário
-      </button>
+      <IconButton label="Desativar Usuário" onClick={desativar} disabled={enviando} className="text-red-600">
+        <IconUserMinus />
+      </IconButton>
       {erro && <p className="text-xs text-red-600">{erro}</p>}
     </div>
   );
@@ -379,35 +386,37 @@ function AdminUsuariosConteudo() {
       {erro && <p className="mt-4 text-sm text-red-600">{erro}</p>}
       {carregando && <p className="mt-4 text-sm text-gray-500">Carregando…</p>}
 
-      <table className="mt-6 w-full text-left text-sm">
+      <table className="mt-6 w-full overflow-hidden rounded border text-left text-sm">
         <thead>
-          <tr className="border-b font-medium">
-            <th className="p-2">Nome</th>
-            <th className="p-2">E-mail</th>
-            <th className="p-2">Perfil</th>
-            <th className="p-2">Status</th>
-            <th className="p-2">Unidade</th>
-            <th className="p-2">Ações</th>
+          <tr className="border-b bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+            <th className="px-3 py-2">Nome</th>
+            <th className="px-3 py-2">E-mail</th>
+            <th className="px-3 py-2">Perfil</th>
+            <th className="px-3 py-2">Status</th>
+            <th className="px-3 py-2">Unidade</th>
+            <th className="px-3 py-2">Ações</th>
           </tr>
         </thead>
         <tbody>
           {usuarios.map((u) => (
-            <tr key={u.id} className="border-t align-top">
-              <td className="p-2">{u.nome}</td>
-              <td className="p-2">{u.email}</td>
-              <td className="p-2 capitalize">{u.perfil}</td>
-              <td className="p-2 capitalize">{u.status.replaceAll("_", " ")}</td>
-              <td className="p-2">{nomeUnidade(unidades, u.unidade_id)}</td>
-              <td className="space-y-1 p-2">
-                {souAdministrador && u.perfil === "servidor" && (
-                  <AcaoTransferirUnidade usuario={u} unidades={unidades} onAlterado={carregar} />
-                )}
-                {souAdministrador && u.perfil === "gestor" && (
-                  <AcaoUnidadesGeridas usuario={u} unidades={unidades} />
-                )}
-                {souAdministrador && <AcaoResetarSenha usuario={u} />}
-                {souAdministrador && <AcaoPermissaoAuditoria usuario={u} onAlterado={carregar} />}
-                {souAdministrador && <AcaoDesativarUsuario usuario={u} onAlterado={carregar} />}
+            <tr key={u.id} className="border-t align-top odd:bg-white even:bg-gray-50/50 hover:bg-blue-50/50">
+              <td className="px-3 py-2">{u.nome}</td>
+              <td className="px-3 py-2">{u.email}</td>
+              <td className="px-3 py-2 capitalize">{u.perfil}</td>
+              <td className="px-3 py-2 capitalize">{u.status.replaceAll("_", " ")}</td>
+              <td className="px-3 py-2">{nomeUnidade(unidades, u.unidade_id)}</td>
+              <td className="px-3 py-2">
+                <div className="flex flex-wrap items-center gap-1">
+                  {souAdministrador && u.perfil === "servidor" && (
+                    <AcaoTransferirUnidade usuario={u} unidades={unidades} onAlterado={carregar} />
+                  )}
+                  {souAdministrador && u.perfil === "gestor" && (
+                    <AcaoUnidadesGeridas usuario={u} unidades={unidades} />
+                  )}
+                  {souAdministrador && <AcaoResetarSenha usuario={u} />}
+                  {souAdministrador && <AcaoPermissaoAuditoria usuario={u} onAlterado={carregar} />}
+                  {souAdministrador && <AcaoDesativarUsuario usuario={u} onAlterado={carregar} />}
+                </div>
               </td>
             </tr>
           ))}
