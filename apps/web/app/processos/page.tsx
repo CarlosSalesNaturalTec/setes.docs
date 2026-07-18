@@ -40,6 +40,7 @@ function CardProcesso({ card, nomeUnidade }: { card: Card; nomeUnidade: (id: str
 function KanbanConteudo() {
   const { usuario } = useAuth();
   const ehGestor = usuario?.perfil === "gestor";
+  const ehServidor = usuario?.perfil === "servidor";
   const [cards, setCards] = useState<Card[]>([]);
   const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [filtroUnidade, setFiltroUnidade] = useState("");
@@ -113,12 +114,14 @@ function KanbanConteudo() {
           >
             Atualizar
           </button>
-          <Link
-            href="/processos/novo"
-            className="rounded bg-blue-600 px-3 py-1 text-sm font-medium text-white"
-          >
-            Novo processo
-          </Link>
+          {ehServidor && (
+            <Link
+              href="/processos/novo"
+              className="rounded bg-blue-600 px-3 py-1 text-sm font-medium text-white"
+            >
+              Novo processo
+            </Link>
+          )}
         </div>
       </div>
 

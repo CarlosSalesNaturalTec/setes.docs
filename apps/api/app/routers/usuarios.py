@@ -26,6 +26,7 @@ from app.email.provider import EmailMessage
 from app.email.queue import config_from_settings, enqueue_email_seguro
 from app.schemas.auth import MensagemResponse
 from app.schemas.usuarios import (
+    AtualizarMeuPerfilRequest,
     CadastroUsuarioRequest,
     ListaUsuariosResponse,
     MeuPerfilResponse,
@@ -380,6 +381,28 @@ def meu_perfil(
     parâmetro de ID manipulável, então não existe rota que permita ver o
     perfil de terceiros (US 1.5 Cen.2 / task 10.2). A lista de processos atuados
     (Cen.1) acompanha o usuário mesmo após transferência (US 1.4 Cen.3)."""
+    processos = processo_consulta.processos_atuados(db, usuario_atual)
+    return MeuPerfilResponse(
+        usuario=UsuarioResponse.de(usuario_atual),
+        processos=processos,
+        mensagem_processos=(
+            "Nenhum processo registrado" if not processos else ""
+        ),
+    )
+
+
+@router.patch("/usuarios/me/perfil", response_model=MeuPerfilResponse)
+def atualizar_meu_perfil(
+    payload: AtualizarMeuPerfilRequest,
+    usuario_atual: Annotated[Usuario, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> MeuPerfilResponse:
+    """US 1.5 — auto-serviço restrito ao próprio nome (task 2.2); e-mail e
+    perfil permanecem sob gestão exclusiva do Administrador."""
+    usuario_atual.nome = payload.nome.strip()
+    db.commit()
+    db.refresh(usuario_atual)
+
     processos = processo_consulta.processos_atuados(db, usuario_atual)
     return MeuPerfilResponse(
         usuario=UsuarioResponse.de(usuario_atual),

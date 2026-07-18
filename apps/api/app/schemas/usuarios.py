@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class UsuarioResponse(BaseModel):
@@ -34,6 +34,19 @@ class CadastroUsuarioRequest(BaseModel):
     email: str
     perfil: Literal["servidor", "gestor", "administrador"]
     unidade_id: str | None = None
+
+
+class AtualizarMeuPerfilRequest(BaseModel):
+    """US 1.5 — auto-serviço restrito ao próprio nome (task 2.1)."""
+
+    nome: str = Field(min_length=1, max_length=200)
+
+    @field_validator("nome")
+    @classmethod
+    def nome_nao_vazio(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("Nome é obrigatório")
+        return v
 
 
 class TransferirUnidadeRequest(BaseModel):

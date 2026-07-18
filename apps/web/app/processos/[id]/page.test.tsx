@@ -30,6 +30,10 @@ vi.mock("@/components/protected-shell", () => ({
   ProtectedShell: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+vi.mock("@/components/auth-provider", () => ({
+  useAuth: () => ({ usuario: { id: "u-1", nome: "Servidor", email: "s@example.com", perfil: "servidor" } }),
+}));
+
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
   return {

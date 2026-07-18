@@ -968,6 +968,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/unidades/{unidade_id}/reativar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reativar Unidade
+         * @description US 8.1 — reativa (idempotente); não repovoa `Usuario.unidade_id` dos
+         *     servidores desvinculados na desativação (revínculo permanece manual).
+         */
+        post: operations["reativar_unidade_unidades__unidade_id__reativar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/usuarios": {
         parameters: {
             query?: never;
@@ -1012,7 +1033,12 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Atualizar Meu Perfil
+         * @description US 1.5 — auto-serviço restrito ao próprio nome (task 2.2); e-mail e
+         *     perfil permanecem sob gestão exclusiva do Administrador.
+         */
+        patch: operations["atualizar_meu_perfil_usuarios_me_perfil_patch"];
         trace?: never;
     };
     "/usuarios/{usuario_id}/desativar": {
@@ -1116,6 +1142,14 @@ export interface components {
              * @example acked
              */
             status: string;
+        };
+        /**
+         * AtualizarMeuPerfilRequest
+         * @description US 1.5 — auto-serviço restrito ao próprio nome (task 2.1).
+         */
+        AtualizarMeuPerfilRequest: {
+            /** Nome */
+            nome: string;
         };
         /** AtualizarRoteiroRequest */
         AtualizarRoteiroRequest: {
@@ -3833,6 +3867,39 @@ export interface operations {
             };
         };
     };
+    reativar_unidade_unidades__unidade_id__reativar_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                unidade_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnidadeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listar_usuarios_usuarios_get: {
         parameters: {
             query?: {
@@ -3912,6 +3979,41 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeuPerfilResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    atualizar_meu_perfil_usuarios_me_perfil_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AtualizarMeuPerfilRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

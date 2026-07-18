@@ -188,6 +188,12 @@ export const api = {
 
   // Meu Perfil
   meuPerfil: () => get<Schemas["MeuPerfilResponse"]>("/usuarios/me/perfil", { auth: true }),
+  atualizarMeuPerfil: (body: Schemas["AtualizarMeuPerfilRequest"]) =>
+    patch<Schemas["AtualizarMeuPerfilRequest"], Schemas["MeuPerfilResponse"]>(
+      "/usuarios/me/perfil",
+      body,
+      { auth: true },
+    ),
 
   // Gestão de usuários
   listarUsuarios: (page = 1) =>
@@ -231,6 +237,8 @@ export const api = {
     }),
   desativarUnidade: (unidadeId: string) =>
     post<undefined, Schemas["UnidadeResponse"]>(`/unidades/${unidadeId}/desativar`, undefined, { auth: true }),
+  reativarUnidade: (unidadeId: string) =>
+    post<undefined, Schemas["UnidadeResponse"]>(`/unidades/${unidadeId}/reativar`, undefined, { auth: true }),
 
   // Tipos de processo e roteiros
   listarTiposProcesso: () => get<Schemas["TipoProcessoResponse"][]>("/tipos-processo", { auth: true }),

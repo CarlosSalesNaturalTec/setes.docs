@@ -46,7 +46,7 @@ test("Gestora vê os KPIs das unidades geridas, filtra por unidade e aciona o dr
   await page.goto("/admin/usuarios");
   await page.getByLabel("Nome", { exact: true }).fill(SERVIDOR_DASHBOARD.nome);
   await page.getByLabel("E-mail").fill(SERVIDOR_DASHBOARD.email);
-  await page.getByLabel("Unidade").selectOption({ label: UNIDADE_DASHBOARD.nome });
+  await page.getByLabel("Unidade", { exact: true }).selectOption({ label: UNIDADE_DASHBOARD.nome });
   await page.getByRole("button", { name: "Cadastrar usuário" }).click();
   await expect(
     page.getByText(

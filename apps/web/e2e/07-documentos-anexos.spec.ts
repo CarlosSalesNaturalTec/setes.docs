@@ -44,7 +44,7 @@ test("Servidor anexa, visualiza inline, baixa e remove um documento; remoção �
   await page.goto("/admin/usuarios");
   await page.getByLabel("Nome", { exact: true }).fill(SERVIDOR_DOCUMENTOS.nome);
   await page.getByLabel("E-mail").fill(SERVIDOR_DOCUMENTOS.email);
-  await page.getByLabel("Unidade").selectOption({ label: UNIDADE_DOCUMENTOS.nome });
+  await page.getByLabel("Unidade", { exact: true }).selectOption({ label: UNIDADE_DOCUMENTOS.nome });
   await page.getByRole("button", { name: "Cadastrar usuário" }).click();
   await expect(
     page.getByText(

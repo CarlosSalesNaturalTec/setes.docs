@@ -42,7 +42,7 @@ test("Servidor cria processo e despacha até a conclusão, com registro no hist�
   await page.goto("/admin/usuarios");
   await page.getByLabel("Nome", { exact: true }).fill(SERVIDOR_PROTOCOLO.nome);
   await page.getByLabel("E-mail").fill(SERVIDOR_PROTOCOLO.email);
-  await page.getByLabel("Unidade").selectOption({ label: UNIDADE_PROCESSO.nome });
+  await page.getByLabel("Unidade", { exact: true }).selectOption({ label: UNIDADE_PROCESSO.nome });
   await page.getByRole("button", { name: "Cadastrar usuário" }).click();
   await expect(
     page.getByText(

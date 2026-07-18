@@ -5,6 +5,9 @@ import { AuthProvider } from "@/components/auth-provider";
 export const metadata: Metadata = {
   title: "SETES.DOCS",
   description: "Gestor de processos e tramitação",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
