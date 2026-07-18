@@ -21,7 +21,7 @@
 
 ## 5. Contrato
 
-- [ ] 5.1 Rodar `pnpm gen:types` e commitar o snapshot atualizado em `packages/api-types`. Aceite: `pnpm gen:types:check` passa (sem defasagem) incluindo os novos endpoints.
+- [x] 5.1 Rodar `pnpm gen:types` e commitar o snapshot atualizado em `packages/api-types`. Aceite: `pnpm gen:types:check` passa (sem defasagem) incluindo os novos endpoints.
 
 ## 6. Frontend — Meu Perfil (editar nome)
 
@@ -43,7 +43,7 @@
 
 - [x] 9.1 Em `app/processos/page.tsx`, condicionar "Novo processo" a `perfil === "servidor"`. Aceite: Admin não vê o botão.
 - [x] 9.2 Em `app/processos/[id]/page.tsx`, condicionar "Despachar", "Devolver" e toggle de sigilo a `perfil === "servidor"`. Aceite: Admin vê o processo mas sem controles de ação.
-- [ ] 9.3 (altera superfície de despacho — obrigatório) E2E Playwright: Admin autenticado abre Processos e o detalhe, e nenhum controle de ação (Novo/Despachar/Devolver/sigilo) é exibido. Aceite: teste passa.
+- [x] 9.3 (altera superfície de despacho — obrigatório) E2E Playwright: Admin autenticado abre Processos e o detalhe, e nenhum controle de ação (Novo/Despachar/Devolver/sigilo) é exibido. Aceite: teste passa.
 
 ## 10. Frontend — polimento das tabelas de admin
 
@@ -53,4 +53,4 @@
 
 ## 11. Verificação final
 
-- [ ] 11.1 Rodar `uv run ruff check .`, `uv run pytest`, `pnpm --filter @setes/web typecheck`, `pnpm --filter @setes/web test`, `pnpm gen:types:check`. Aceite: tudo verde.
+- [x] 11.1 Rodar `uv run ruff check .`, `uv run pytest`, `pnpm --filter @setes/web typecheck`, `pnpm --filter @setes/web test`, `pnpm gen:types:check`. Aceite: tudo verde.
