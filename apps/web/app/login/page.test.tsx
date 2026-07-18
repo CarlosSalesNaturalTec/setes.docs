@@ -35,8 +35,15 @@ describe("LoginPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("faz login com sucesso e navega para /perfil", async () => {
-    login.mockResolvedValue(undefined);
+  it("faz login com sucesso e navega para a rota inicial do perfil (US 1.3 Cen.1)", async () => {
+    login.mockResolvedValue({
+      id: "id-1",
+      nome: "Servidor Teste",
+      email: "usuario@setes.gov.br",
+      perfil: "servidor",
+      pode_auditar: false,
+      status: "ativo",
+    });
     render(<LoginPage />);
 
     await userEvent.type(screen.getByLabelText("E-mail"), "usuario@setes.gov.br");
@@ -44,7 +51,7 @@ describe("LoginPage", () => {
     await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
 
     await waitFor(() => expect(login).toHaveBeenCalledWith("usuario@setes.gov.br", "Senha123"));
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/perfil"));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/processos"));
   });
 
   it("exibe a mensagem de erro da API em caso de falha (ex.: bloqueio/conta desativada)", async () => {

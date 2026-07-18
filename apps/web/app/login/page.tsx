@@ -6,6 +6,7 @@ import { Suspense, useState } from "react";
 
 import { useAuth } from "@/components/auth-provider";
 import { ApiError } from "@/lib/api";
+import { rotaInicial } from "@/lib/rota-inicial";
 
 const MENSAGENS_MOTIVO: Record<string, string> = {
   inatividade: "Sua sessão expirou por inatividade. Faça login novamente.",
@@ -29,8 +30,8 @@ function LoginForm() {
     setErro(null);
     setEnviando(true);
     try {
-      await login(email, senha);
-      router.push("/perfil");
+      const usuario = await login(email, senha);
+      router.push(rotaInicial(usuario));
     } catch (err) {
       setErro(err instanceof ApiError ? err.detail : "Falha ao entrar.");
     } finally {
