@@ -35,15 +35,16 @@
   cobrir: campos e botão presentes, ausência de opção de SSO, e o fluxo de
   submit inalterado.
   **Aceite**: `pnpm --filter @setes/web test -- login/page.test.tsx` verde.
-- [ ] 3.3 Revalidar o E2E de login `apps/web/e2e/01-setup-login.spec.ts`
+- [x] 3.3 Revalidar o E2E de login `apps/web/e2e/01-setup-login.spec.ts`
   (Playwright), ajustando seletores só se estritamente necessário — login altera
   a tela de autenticação, então o E2E é obrigatório.
   **Aceite**: `cd apps/web && pnpm test:e2e -- 01-setup-login` verde.
-  **Status**: NÃO executado neste ambiente (sem Docker/Postgres disponível na
-  sessão remota). Por revisão de código, os seletores usados pelo spec
-  (`getByLabel("E-mail")`, `getByLabel("Senha")`, `getByRole("button", {name:
-  "Entrar"})`, texto `"{nome} · {perfil}"`) permanecem inalterados no diff.
-  **Pendente**: rodar localmente/CI antes do merge.
+  **Resultado**: EXECUTADO e verde — `1 passed` (setup inicial + login do
+  Administrador root, aterrissando em `/admin/unidades`), contra Postgres real
+  (container `setes-pg-dev`) com `DEV_EMAIL_INBOX`/`DEV_DB_RESET`. Nenhum
+  seletor precisou de ajuste: `getByLabel("E-mail")`, `getByLabel("Senha")`,
+  `getByRole("button", { name: "Entrar" })` e o texto `"{nome} · {perfil}"`
+  seguem válidos após o restyle.
 
 ## 4. Shell / sidebar (`components/protected-shell.tsx`)
 
