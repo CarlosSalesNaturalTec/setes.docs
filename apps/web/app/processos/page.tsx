@@ -15,7 +15,7 @@ function CardProcesso({ card, nomeUnidade }: { card: Card; nomeUnidade: (id: str
   return (
     <Link
       href={`/processos/${card.id}`}
-      className={`block rounded border bg-white p-3 text-sm shadow-sm hover:bg-gray-50 ${
+      className={`block rounded-card border border-navy-50 bg-superficie-card p-3 text-sm shadow-card hover:bg-navy-50/40 ${
         card.vencido ? "border-l-4 border-l-red-600 font-bold" : ""
       }`}
     >
@@ -117,7 +117,7 @@ function KanbanConteudo() {
           {ehServidor && (
             <Link
               href="/processos/novo"
-              className="rounded bg-blue-600 px-3 py-1 text-sm font-medium text-white"
+              className="rounded-card bg-navy-900 px-3 py-1 text-sm font-medium text-white hover:bg-navy-700"
             >
               Novo processo
             </Link>

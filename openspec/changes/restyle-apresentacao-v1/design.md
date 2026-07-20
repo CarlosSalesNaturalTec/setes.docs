@@ -69,8 +69,6 @@ alterado**; só migram de JSX condicional para campo do item.
 │ │▣ Painel  │ │   <main> (children)                       │
 │ └──────────┘ │   cards / tabelas herdando tokens         │
 │  🗀 Processos │                                           │
-│  ⨁ Novo…     │                                           │
-│  🌐 Consulta │                                           │
 │  📊 Relat.   │                                           │
 │  🏢 Unidades │                                           │
 │  👤 Perfil   │                                           │
@@ -92,7 +90,6 @@ adota o **layout** da v1 e o **conteúdo/visibilidade** da v2:
 |-----------------------|-------------------------------|----------------------------------------|
 | Meu Perfil            | `/perfil`                     | qualquer sessão                        |
 | Processos             | `/processos`                  | qualquer sessão                        |
-| Consulta Pública      | `/consulta-publica`           | qualquer sessão                        |
 | Dashboard             | `/dashboard`                  | `perfil === "gestor"`                  |
 | Relatório de Auditoria| `/auditoria/relatorios`       | `pode_auditar`                         |
 | Usuários              | `/admin/usuarios`             | `administrador` ou `gestor`            |

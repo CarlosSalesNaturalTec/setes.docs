@@ -35,6 +35,17 @@ describe("LoginPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("renderiza o card de credenciais sem qualquer opção de SSO", () => {
+    render(<LoginPage />);
+
+    expect(screen.getByLabelText("E-mail")).toBeInTheDocument();
+    expect(screen.getByLabelText("Senha")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Entrar" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Esqueci minha senha" })).toBeInTheDocument();
+    expect(screen.queryByText(/google/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^ou$/i)).not.toBeInTheDocument();
+  });
+
   it("faz login com sucesso e navega para a rota inicial do perfil (US 1.3 Cen.1)", async () => {
     login.mockResolvedValue({
       id: "id-1",
