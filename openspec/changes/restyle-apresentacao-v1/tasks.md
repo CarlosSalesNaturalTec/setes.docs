@@ -54,9 +54,11 @@
 - [ ] 4.3 Destacar o item ativo via `usePathname()` (match por prefixo para
   subrotas), estado ativo = `bg-navy-50` + `text-navy-900`.
   **Aceite**: em `/processos`, o item "Processos" aparece ativo; demais normais.
-- [ ] 4.4 Colapso/ocultação simples da sidebar em telas estreitas, sem bloquear o
-  conteúdo.
-  **Aceite**: em viewport móvel o conteúdo permanece acessível.
+- [ ] 4.4 Sidebar como **drawer** em telas estreitas: oculta por padrão, botão
+  "hambúrguer" no header a abre, overlay fecha ao clicar fora. Não listar "Novo
+  Processo" na sidebar.
+  **Aceite**: em viewport móvel o drawer abre/fecha e o conteúdo permanece
+  acessível; sidebar não contém item "Novo Processo".
 - [ ] 4.5 Teste do shell (Vitest + RTL) cobrindo os cenários da spec: servidor vê
   só seus itens; item de auditoria oculto sem `pode_auditar`; administrador vê os
   itens administrativos; item ativo destacado.
@@ -69,7 +71,12 @@
   alterar dados nem KPIs exibidos.
   **Aceite**: cards com a nova casca; conjunto de dados idêntico; teste do
   dashboard (`app/dashboard/page.test.tsx`) verde.
-- [ ] 5.2 Aplicar os tokens às tabelas/contêineres das telas de admin
+- [ ] 5.2 Garantir na página `app/processos/page.tsx` um botão "Novo Processo"
+  (estilizado com o token primário navy) apontando para `/processos/novo` — a
+  criação vive aqui, não na sidebar (Q1). Se o botão já existir, apenas reestilizar.
+  **Aceite**: botão visível em `/processos` leva a `/processos/novo`; sem novo
+  item na sidebar; testes da tela verdes.
+- [ ] 5.3 Aplicar os tokens às tabelas/contêineres das telas de admin
   (`app/admin/unidades`, `app/admin/usuarios`, `app/admin/tipos-processo`,
   `app/admin/documentos-removidos`, `app/admin/lgpd`) e de processos
   (`app/processos`, `app/processos/[id]`). Sem alterar colunas, ações ou RBAC.

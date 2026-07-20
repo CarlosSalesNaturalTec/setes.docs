@@ -80,9 +80,9 @@ alterado**; só migram de JSX condicional para campo do item.
 
 - **Item ativo**: `usePathname()` comparado ao `href` do item (match por prefixo
   para subrotas). Client component — o shell já é `"use client"`.
-- **Responsivo**: no MVP a sidebar pode colapsar/ocultar em telas estreitas
-  (drawer simples ou esconder), sem bloquear o conteúdo. Detalhe de implementação,
-  não requisito.
+- **Responsivo** (resolve Q3): em telas estreitas a sidebar vira um **drawer** —
+  oculta por padrão, aberta por um botão "hambúrguer" no header, com overlay que
+  a fecha ao clicar fora. O conteúdo nunca é bloqueado.
 
 ### D3 — Reconciliação dos itens de menu (sidebar da v1 × rotas reais da v2)
 A sidebar da v1 lista itens que não mapeiam 1:1 nas rotas da v2. A lista final
@@ -92,7 +92,6 @@ adota o **layout** da v1 e o **conteúdo/visibilidade** da v2:
 |-----------------------|-------------------------------|----------------------------------------|
 | Meu Perfil            | `/perfil`                     | qualquer sessão                        |
 | Processos             | `/processos`                  | qualquer sessão                        |
-| Novo Processo         | `/processos/novo`             | qualquer sessão *(confirmar — ver Q1)* |
 | Consulta Pública      | `/consulta-publica`           | qualquer sessão                        |
 | Dashboard             | `/dashboard`                  | `perfil === "gestor"`                  |
 | Relatório de Auditoria| `/auditoria/relatorios`       | `pode_auditar`                         |
@@ -104,9 +103,12 @@ adota o **layout** da v1 e o **conteúdo/visibilidade** da v2:
 
 - **"Painel" da v1 → "Dashboard"**: mantém-se o label/rota que existe. Não se
   cria uma rota `/painel`.
+- **"Novo Processo" NÃO é item de sidebar** (resolve Q1): a criação continua
+  como **botão dentro de `/processos`**, apontando para `/processos/novo`. A
+  sidebar não lista esse item.
 - **"Modelos" e "Relatórios" genéricos da v1**: fora — não há rota no MVP.
-- Itens administrativos podem ser agrupados visualmente sob um rótulo
-  "Administração" na sidebar (separador), sem virar submenu funcional.
+- **Itens administrativos ficam planos na sidebar** (resolve Q2): sem rótulo
+  "Administração" agrupando — cada item é de primeiro nível, na ordem da tabela.
 
 ### D4 — Login: reestilizar o markup, congelar a lógica
 Reescrever apenas a árvore JSX de `LoginForm` (card, logo, ícones nos inputs,
@@ -167,10 +169,11 @@ Rollback: reverter o commit da etapa — não há estado persistente afetado.
 
 ## Open Questions
 
-- **Q1 — "Novo Processo" na sidebar**: é item de primeiro nível para todos os
-  perfis (como na v1) ou só um botão dentro de `/processos`? A v1 mostra como
-  item de menu; confirmar com o cliente antes de fixar.
-- **Q2 — Agrupar itens administrativos** sob um rótulo "Administração" na sidebar,
-  ou listar plano? (Preferência: agrupar, por clareza — mas é decisão de UX.)
-- **Q3 — Comportamento responsivo da sidebar** (drawer vs. ocultar) — definir na
-  implementação conforme o alvo de dispositivos do órgão.
+Todas resolvidas (decisões do cliente, incorporadas às Decisions acima):
+
+- **Q1 — "Novo Processo" na sidebar** → **RESOLVIDO**: não é item de sidebar;
+  permanece como botão dentro de `/processos` (ver D3).
+- **Q2 — Agrupar itens administrativos** → **RESOLVIDO**: não agrupar; itens
+  administrativos ficam planos, de primeiro nível (ver D3).
+- **Q3 — Responsivo da sidebar** → **RESOLVIDO**: drawer (oculta por padrão em
+  telas estreitas, aberta por botão no header, com overlay) (ver D2).
