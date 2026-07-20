@@ -38,7 +38,7 @@ function ModalConclusao({
           <button
             type="button"
             onClick={onConfirmar}
-            className="rounded bg-blue-600 px-3 py-1 text-sm font-medium text-white"
+            className="rounded-card bg-navy-900 px-3 py-1 text-sm font-medium text-white"
           >
             Concluir processo
           </button>
@@ -109,7 +109,7 @@ function ModalDevolucao({
           <button
             type="button"
             onClick={confirmar}
-            className="rounded bg-blue-600 px-3 py-1 text-sm font-medium text-white"
+            className="rounded-card bg-navy-900 px-3 py-1 text-sm font-medium text-white"
           >
             Confirmar devolução
           </button>
@@ -231,7 +231,7 @@ function DetalheConteudo({ id }: { id: string }) {
               <button
                 type="button"
                 onClick={() => void despachar(false)}
-                className="rounded bg-blue-600 px-3 py-1 text-sm font-medium text-white"
+                className="rounded-card bg-navy-900 px-3 py-1 text-sm font-medium text-white"
               >
                 Despachar
               </button>
@@ -273,21 +273,21 @@ function DetalheConteudo({ id }: { id: string }) {
         <button
           type="button"
           onClick={() => setAba("detalhe")}
-          className={`pb-2 ${aba === "detalhe" ? "border-b-2 border-blue-600 font-medium" : "text-gray-500"}`}
+          className={`pb-2 ${aba === "detalhe" ? "border-b-2 border-navy-600 font-medium" : "text-gray-500"}`}
         >
           Detalhes
         </button>
         <button
           type="button"
           onClick={() => setAba("documentos")}
-          className={`pb-2 ${aba === "documentos" ? "border-b-2 border-blue-600 font-medium" : "text-gray-500"}`}
+          className={`pb-2 ${aba === "documentos" ? "border-b-2 border-navy-600 font-medium" : "text-gray-500"}`}
         >
           Documentos
         </button>
         <button
           type="button"
           onClick={() => setAba("historico")}
-          className={`pb-2 ${aba === "historico" ? "border-b-2 border-blue-600 font-medium" : "text-gray-500"}`}
+          className={`pb-2 ${aba === "historico" ? "border-b-2 border-navy-600 font-medium" : "text-gray-500"}`}
         >
           Histórico
         </button>
@@ -338,7 +338,7 @@ function DetalheConteudo({ id }: { id: string }) {
           ) : (
             <ol className="space-y-2 text-sm">
               {(historico.eventos ?? []).map((e) => (
-                <li key={e.id} className="rounded border p-2">
+                <li key={e.id} className="rounded-card border border-navy-50 bg-superficie-card p-2 shadow-card">
                   <div className="font-medium">{rotuloEvento(e.tipo_evento)}</div>
                   <div className="text-gray-600">
                     {nomeUnidade(e.unidade_origem_id)} → {nomeUnidade(e.unidade_destino_id)}

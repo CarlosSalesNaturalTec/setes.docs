@@ -211,7 +211,7 @@ export function DocumentosSection({
     <section>
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-medium">Documentos</h2>
-        <label className="cursor-pointer rounded bg-blue-600 px-3 py-1 text-sm font-medium text-white">
+        <label className="cursor-pointer rounded-card bg-navy-900 px-3 py-1 text-sm font-medium text-white">
           {enviando ? "Enviando…" : "Anexar Documento"}
           <input
             type="file"
@@ -240,7 +240,7 @@ export function DocumentosSection({
               <button
                 type="button"
                 onClick={() => void abrir(doc)}
-                className="truncate text-left text-blue-700 underline"
+                className="truncate text-left text-navy-700 underline"
               >
                 {doc.nome_exibicao}
               </button>

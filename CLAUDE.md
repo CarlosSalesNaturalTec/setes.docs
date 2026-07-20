@@ -2,207 +2,148 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## O que é
+## Projeto
 
 SETES.DOCS — sistema de gestão de processos administrativos (workflow roteirizado,
-assinatura digital ICP-Brasil, consulta pública) para um órgão da administração pública
-da Bahia. Digitaliza o trâmite de processos entre unidades, elimina o papel e dá métricas
-de eficiência a gestores. Monorepo **poliglota**: Next.js (`apps/web`) + FastAPI
-(`apps/api`) + Terraform GCP (`infra`). Código de domínio em **português brasileiro**
-(Processo, Unidade, Tramitação, Despacho, Roteiro); termos técnicos de infra em inglês
-(Repository, Service, Router). Comentários e docstrings em português.
+sigilo, consulta pública, LGPD) para um órgão da administração pública da Bahia.
+Monorepo poliglota: **Next.js (web) + FastAPI (api) + Terraform (infra)** em GCP.
 
-## PRD é a fonte da verdade do produto
+Linguagem de código: **português brasileiro** para entidades e regras de negócio
+(Processo, Unidade, Tramitação, Despacho, Roteiro); inglês só para termos técnicos
+de infra (Repository, Service, Router). Comentários e docstrings em português.
 
-**`docs/PRD.md` é o documento mestre** — define personas, escopo do MVP, 10 épicos e os
-critérios de aceite (Dado/Quando/Então) de cada história de usuário (US x.y). Todo change
-OpenSpec implementa um recorte do PRD, e as specs **referenciam a US correspondente** em
-vez de reescrever critérios já definidos. Ao planejar ou implementar qualquer feature de
-domínio, leia a US relevante no PRD primeiro — os cenários de erro e casos de borda ali
-são vinculantes, não sugestões.
+## Documento mestre: `docs/PRD.md`
 
-### Perfis (a base de todo controle de acesso)
+`docs/PRD.md` é o documento mestre — define personas, escopo do
+MVP, épicos e os critérios de aceite (Dado/Quando/Então) de cada história de usuário
+(US x.y). **Ao planejar ou implementar qualquer feature de domínio, leia a US
+relevante no PRD primeiro** — os cenários de erro e casos de borda ali são
+vinculantes, não sugestões. Specs OpenSpec referenciam a US correspondente em vez de
+reescrever os critérios.
 
-- **Servidor** — vinculado a **exatamente uma** unidade; só vê/movimenta processos da
-  própria unidade. Executor do dia a dia (cria, despacha, devolve, anexa, assina).
-- **Gestor** — gerencia **uma ou mais** unidades; vê Kanban consolidado + dashboards
-  delas e cadastra Servidores nelas.
-- **Administrador** — acesso irrestrito; guardião da configuração (unidades, tipos de
-  processo, roteiros, usuários, parâmetros do sistema).
-- **Auditor** — permissão concedida pelo Administrador; enxerga qualquer processo,
-  inclusive sigilosos, e gera relatórios consolidados.
-- **Cidadão** — sem autenticação; usa a consulta pública e o canal LGPD.
+## Fluxo de trabalho OpenSpec (spec-driven)
 
-### Roadmap por épicos
+Todo trabalho de domínio passa por um *change* em `openspec/changes/`. As regras
+(`openspec/config.yaml`) são vinculantes — destaques:
 
-O MVP é entregue por changes incrementais, um recorte de épico por vez. Os 10 épicos são:
-1 (autenticação + controle de acesso), 2 (processos + workflow Kanban), 3 (gestão
-documental / Cloud Storage), 4 (assinatura ICP-Brasil — *condicional a Discovery
-Técnico*), 5 (notificações internas + e-mail), 6 (dashboard de KPIs), 7 (consulta
-pública), 8 (administração do sistema), 9 (auditoria/relatórios), 10 (canal e rotinas
-LGPD). Os critérios de cada um vivem no `docs/PRD.md`.
+- **Histórico de tramitação é imutável**: modelar como INSERT de novo evento, nunca
+  UPDATE. Estados de processo (Aberto, Em Tramitação, Concluído, Arquivado) são
+  máquina de estados explícita, nunca campo de texto livre.
+- Toda regra de visibilidade por unidade/perfil precisa de cenário de **"acesso
+  negado" explícito**, não só o caminho feliz.
+- Features que tocam dados pessoais (CPF/CNPJ, nome de interessado) ou histórico de
+  tramitação **exigem** teste automatizado correspondente; login/despacho/assinatura/
+  consulta pública exigem **teste E2E Playwright** (não opcional).
+- Conformidade LGPD (Lei 13.709/2018) obrigatória ao tocar dados pessoais/documentos.
 
-**O estado (o que já está pronto vs. pendente) muda a cada branch — não é mantido aqui.**
-A fonte da verdade do que foi construído é o próprio repositório: os changes arquivados em
-`openspec/changes/archive/` e as specs consolidadas em `openspec/specs/`. Consulte-os antes
-de planejar. Ao criar um novo change, situe-o no roadmap acima e declare de qual change
-anterior ele depende (regra do `proposal` em `openspec/config.yaml`).
-
-### Invariantes de domínio (valem para todos os épicos)
-
-Regras estruturais que atravessam o produto — respeite-as ao modelar qualquer feature:
-
-- **Histórico de tramitação é imutável**: cada movimentação (despacho, devolução,
-  arquivamento, sigilo, assinatura) é um INSERT de evento, nunca UPDATE. Guarda data,
-  hora, unidade origem/destino, responsável e ação. Já há o precedente `log_seguranca`.
-- **Status do processo é máquina de estados explícita**: `Aberto → Em Tramitação →
-  Concluído → Arquivado`. Transições só por ação explícita (Despachar/Concluir) ou pela
-  rotina automática de arquivamento — nunca campo de texto livre, nunca drag-and-drop no
-  Kanban (que é só visualização no MVP).
-- **Roteiros são lineares e versionados por snapshot**: sequência ordenada de unidades
-  por tipo de processo; alterá-lo afeta só processos **novos** — os em andamento mantêm o
-  roteiro vigente na criação. (O código já versiona roteiros.)
-- **Número do processo**: `AAAA/NNNNNN` (sequencial de 6 dígitos, reinicia por ano,
-  expande dígitos sem limite superior).
-- **Visibilidade por unidade tem sempre o caminho de "acesso negado"**: toda regra de
-  acesso precisa do cenário de rejeição explícito, registrado em log de segurança — não
-  só o caminho feliz.
-- **LGPD é requisito, não opcional**: dados pessoais (CPF/CNPJ, nome de interessado)
-  nunca aparecem na consulta pública; anonimização é **irreversível**; há canal público
-  de solicitação e rotina automática de anonimização de arquivados. Assinatura segue
-  MP 2.200-2/2001 / ICP-Brasil.
-- **Parâmetros operacionais são configuráveis em runtime** (não hardcoded): prazo de
-  arquivamento, timeout de sessão, tentativas de login, validade de links, etc. vivem em
-  configuração do sistema (`sistema_config`, já singleton id=1), editável pelo Admin.
-- **Endpoints públicos têm rate limiting**: consulta pública ≤ 60 req/min por IP (a infra
-  do `slowapi` já está montada — ver `app/rate_limit.py`).
-
-## Fluxo de trabalho: OpenSpec (spec-driven)
-
-Este repo usa OpenSpec — **nenhum código de feature é escrito sem um change**. Antes de
-tocar código de negócio, leia o change em `openspec/changes/<nome>/` (`proposal.md`,
-`design.md`, `tasks.md`, `specs/`). As convenções obrigatórias de cada artefato vivem em
-`openspec/config.yaml` (`rules:`) — em resumo:
-
-- **proposal** — declara de qual change anterior depende, tabelas PostgreSQL novas/
-  afetadas (com FKs), novos segredos/buckets e o tratamento LGPD quando houver dado pessoal.
-- **specs** — Dado/Quando/Então referenciando a US do PRD; estados de processo como
-  máquina de estados; toda visibilidade por unidade/perfil com cenário de "acesso negado".
-- **design** — diagrama de sequência para fluxos que cruzam front/back/job; migrations
-  Alembic descritas **antes** dos endpoints; para rotinas automáticas, documentar gatilho,
-  janela e idempotência (retomada após falha).
-- **tasks** — atômicas (≤ 2h). Tarefa que toque histórico/dado pessoal exige tarefa de
-  teste automatizado; tarefa que altere login/despacho/assinatura/consulta pública exige
-  teste **E2E Playwright** — ambos obrigatórios, não opcionais.
-
-Specs consolidadas ficam em `openspec/specs/`; changes concluídos vão para
-`openspec/changes/archive/`. Use os skills `opsx:*` / `openspec-*` para operar o fluxo.
-As invariantes de domínio acima valem para todos eles.
-
-Branches: `feature/<nome-do-change>` → `main` (GitHub Flow, sem staging). Merge `--no-ff`
-obrigatório. Validação pré-produção via traffic splitting do Cloud Run, não por branch.
-
-## Contrato frontend↔backend (crítico)
-
-O contrato é **gerado**, não escrito à mão. O FastAPI é a fonte da verdade do OpenAPI;
-`packages/api-types` contém o snapshot commitado (`openapi.json` + `schema.ts`) que
-`apps/web` consome via `@setes/api-types`. **Ao mudar qualquer schema/rota do FastAPI,
-regenere:**
-
-```bash
-pnpm gen:types          # regenera o snapshot commitado (chama uv/python por baixo)
-pnpm gen:types:check    # o CI roda isto e FALHA se o snapshot estiver defasado
-```
-
-`apps/web/lib/api.ts` é o único cliente HTTP tipado — sem `any` nos payloads. Toda
-resposta autenticada pode trazer um JWT renovado no header `X-Renewed-Token` (sliding
-window); o cliente captura e persiste automaticamente.
+Skills OpenSpec disponíveis via Skill tool: `opsx:new`, `opsx:propose`, `opsx:apply`,
+`opsx:continue`, `opsx:verify`, `opsx:archive` (e variantes). `openspec/specs/` guarda
+as specs consolidadas por capability; `openspec/changes/archive/` os changes concluídos.
 
 ## Comandos
 
-**Web (`apps/web`, workspace pnpm — rode da raiz ou com `--filter @setes/web`):**
+### Raiz do monorepo (pnpm)
 ```bash
-pnpm dev                                 # next dev (atalho da raiz p/ @setes/web)
-pnpm --filter @setes/web typecheck       # tsc --noEmit
-pnpm --filter @setes/web test            # vitest run (unit + RTL)
-pnpm --filter @setes/web test -- <file>  # um arquivo/teste específico
-pnpm --filter @setes/web lint            # next lint
-cd apps/web && pnpm test:e2e             # Playwright (sobe api+web contra Postgres local)
+pnpm install                 # instala deps do workspace web (a api é separada, ver abaixo)
+pnpm dev                     # Next.js dev (apps/web) em :3000
+pnpm build                   # build do web
+pnpm gen:types               # regenera packages/api-types a partir do OpenAPI do FastAPI
+pnpm gen:types:check         # falha se o snapshot de tipos estiver defasado (roda no CI)
 ```
 
-**API (`apps/api` — gerenciada por `uv`, FORA do workspace pnpm):**
+### Frontend — `apps/web` (pnpm)
+```bash
+pnpm --filter @setes/web dev        # ou: pnpm dev na raiz
+pnpm --filter @setes/web typecheck  # tsc --noEmit (o CI usa isto, não `lint`)
+pnpm --filter @setes/web test       # Vitest (unit/component)
+cd apps/web && pnpm vitest run lib/api.test.ts   # um único arquivo de teste
+cd apps/web && pnpm test:e2e        # Playwright — sobe api+web e roda contra Postgres local
+```
+
+### Backend — `apps/api` (uv, **fora do workspace pnpm**)
 ```bash
 cd apps/api
-uv sync --extra dev
-uv run alembic upgrade head              # migrations (precisa de Postgres — ver abaixo)
-uv run uvicorn app.main:app --reload     # http://localhost:8000/health
-uv run pytest                            # suíte completa
-uv run pytest tests/test_auth_login.py   # um arquivo
-uv run pytest -k <expr>                  # por expressão
-uv run ruff check .                      # lint (line-length 100)
+uv sync --extra dev                 # instala deps + dev (pytest, ruff)
+uv run alembic upgrade head         # aplica migrations
+uv run uvicorn app.main:app --reload   # API em :8000 (/health)
+uv run ruff check .                  # lint (CI roda isto)
+uv run pytest                        # suíte completa
+uv run pytest tests/test_auth_login.py -q          # um arquivo
+uv run pytest tests/test_auth_login.py::test_nome -q  # um teste
+uv run python scripts/export_openapi.py            # exporta o contrato OpenAPI (stdout)
 ```
 
-Os testes pytest usam **Postgres real** (fixture `db` em `tests/conftest.py`), não
-sqlite/mocks. Suba um local:
+Requer Postgres local — a suíte pytest usa **Postgres real** (fixture `db` em
+`tests/conftest.py`), não sqlite/mocks:
 ```bash
 docker run -d --name setes-postgres-dev -e POSTGRES_USER=app \
   -e POSTGRES_PASSWORD=senha -e POSTGRES_DB=setes -p 5433:5432 postgres:16-alpine
 ```
-A fixture trunca as tabelas após cada teste. Config via `.env` (gitignored) —
-ver `apps/api/.env.example` e `app/config.py`.
+Variáveis do `.env` (gitignored) documentadas em `apps/api/README.md` / `app/config.py`.
 
-**Infra (`infra` — Terraform, state em GCS):**
-```bash
-cd infra
-terraform init -backend-config=backend.hcl
-terraform plan && terraform apply
-```
-Ver `infra/README.md` para bootstrap do state, ordem de dependências e notas de
-residência de dados (tudo em `southamerica-east1`).
+## Arquitetura
 
-## Arquitetura da API
+### Contrato frontend-backend (tipos gerados)
+O front **não escreve tipos de API à mão**. `apps/api` (FastAPI) é a fonte da verdade:
+`pnpm gen:types` exporta o OpenAPI e roda `openapi-typescript` para
+`packages/api-types/` (`openapi.json` + `schema.ts`, **ambos commitados**). O CI roda
+`gen:types:check` e falha se o contrato do FastAPI mudou sem regenerar os tipos.
+**Toda mudança de rota/schema no backend exige `pnpm gen:types` + commit de
+`packages/api-types`.** O cliente HTTP tipado do front vive em `apps/web/lib/api.ts`
+(objeto `api`), consumindo `@setes/api-types` — sem `any` nos payloads.
 
-FastAPI em camadas explícitas (`apps/api/app/`):
-- `routers/` — endpoints por domínio (`auth`, `usuarios`, `unidades`, `tipos_processo`,
-  `setup`, `dev_tools`). Montados em `main.py`.
-- `security/` — `sessao` (JWT HS256 + tabela `sessao`), `autorizacao`, `jwt`, `senha`,
-  `oidc` (verifica tokens do Cloud Tasks nos endpoints `/internal/*`).
-- `services/`, `schemas/` (Pydantic), `db/` (SQLAlchemy 2.x `Mapped[...]` + `models.py`,
-  `session.py`, `migrations/` Alembic), `email/` (fila Cloud Tasks), `jobs/`
-  (Cloud Run Jobs — manutenção diária).
+### Sessão (D1) — sliding window via header
+Autenticação própria (login/senha, JWT HS256, sem SSO). Toda resposta autenticada
+pode reemitir um JWT renovado no header **`X-Renewed-Token`**; `apps/web/lib/api.ts`
+captura e persiste silenciosamente, e o backend (`app/security/autorizacao.py`
+`get_current_user`) o reemite a cada chamada válida. Sessão é **Bearer token, não
+cookie** — CORS com `allow_credentials=False`. `Content-Disposition` também é exposto
+(download de documentos, D5). Camada de autorização compõe:
+`get_current_user` → `require_perfil(*perfis)` → `require_acesso_unidade`; toda
+rejeição grava `log_seguranca` (`acesso_negado`).
 
-**Autorização por perfil e unidade** (`security/autorizacao.py`) é central: composição
-`get_current_user → require_perfil(*perfis) → require_acesso_unidade`. Perfis:
-`SERVIDOR` (só a própria unidade), `GESTOR` (unidades geridas), `ADMINISTRADOR` (todas).
-Toda rejeição grava uma linha imutável em `log_seguranca` (`tipo_evento=acesso_negado`).
-PKs são UUID gerados na aplicação; `sistema_config` é singleton (id=1).
+### Backend `apps/api/app`
+- `routers/` — endpoints FastAPI, um por área de domínio (auth, processos, documentos,
+  lgpd, consulta_publica, auditoria, dashboard, …). Montados em `main.py`.
+- `services/` — regras de negócio (processo_estado = máquina de estados, arquivamento,
+  anonimizacao_lgpd, numero_processo, sigilo, …). Routers finos, lógica no service.
+- `db/models.py` — SQLAlchemy 2.x; enums de domínio (`StatusProcesso`,
+  `PerfilUsuario`, `TipoEventoTramitacao`, …) no topo. `migrations/` é Alembic.
+- `security/` — jwt, sessao, senha (bcrypt), oidc (endpoints internos), autorizacao.
+- `jobs/` — Cloud Run Jobs. `entrypoint.py` = manutenção diária (arquivamento, purga
+  de documentos, verificação de prazos, expurgo de notificações), idempotente por
+  seleção de estado. `entrypoint_lgpd.py` = anonimização trimestral.
+- Endpoints `/internal/*` são OIDC-only (chamados por Cloud Tasks/Scheduler);
+  `/publico/*` são sem-auth com rate limiting (`app/rate_limit.py`, slowapi).
 
-Endpoints `/internal/*` são OIDC-only (chamados pelo Cloud Tasks), sem sessão de usuário.
-Endpoints de e-mail seguem contrato de falha: SEMPRE ACK (200) mesmo em erro de entrega,
-para não redespachar (fila com `maxAttempts=1`).
+### Frontend `apps/web` (Next.js App Router)
+Rotas em `app/` espelham o domínio (`/processos`, `/admin/*`, `/consulta-publica`,
+`/lgpd`, `/auditoria`, `/setup`, `/primeiro-acesso/[token]`). `lib/` = client HTTP,
+session-store, validação, rota-inicial (redirect por perfil). `components/` = shell
+protegido, auth-provider, session-watcher, sino de notificações.
 
-`DEV_EMAIL_INBOX` / `DEV_DB_RESET` são flags **dev/E2E-only** (nunca em produção):
-habilitam `GET /internal/dev/emails` e `POST /internal/dev/reset`, usados pelo Playwright
-para ler links de e-mail e limpar o banco. Cada endpoint responde 404 com a flag desligada.
+### Infra `infra/` (Terraform, GCP)
+Cloud Run (web + api), Cloud SQL (Postgres, IP privado), Cloud Storage (documentos),
+Secret Manager (`db-password`, `jwt-signing-key`, `sendgrid-api-key`), Cloud Tasks
+(fila `emails` assíncrona), Cloud Scheduler + Cloud Run Jobs (manutenção/LGPD). Deploy
+via **Workload Identity Federation** (sem chave JSON). `terraform.tfvars` e
+`backend.hcl` são gitignored (ver `.example`).
 
-## Arquitetura do frontend
+### CI/CD
+- `.github/workflows/ci.yml` — path-filtered por app. Job **api**: Postgres service
+  container real + `ruff check` + `pytest`. Job **web**: `typecheck` + `vitest`. Job
+  **types-drift**: `gen:types:check`.
+- `.github/workflows/deploy.yml` — push em `main`, path-filtered. Deploy da api roda
+  **migrations num Cloud Run Job efêmero ANTES** de publicar o serviço; deploy via WIF.
 
-Next.js 15 App Router (`apps/web/app/`), React 19, Tailwind. Rotas por pasta:
-`login`, `setup`, `primeiro-acesso/[token]`, `recuperar-senha`, `redefinir-senha/[token]`,
-`perfil`, `admin/{unidades,usuarios,tipos-processo}`. Sessão via Bearer token em
-`lib/session-store.ts` (não cookies). `components/auth-provider.tsx` +
-`protected-shell.tsx` guardam rotas autenticadas. Build usa `output: standalone`.
+### Testes E2E (Playwright)
+`apps/web/playwright.config.ts` sobe a API com `DEV_EMAIL_INBOX=true` e
+`DEV_DB_RESET=true` — flags **dev/E2E-only, nunca em produção** — que habilitam
+`GET /internal/dev/emails` (lê link de primeiro-acesso/recuperação sem provedor real)
+e `POST /internal/dev/reset` (banco limpo antes da suíte). Sem a flag, cada endpoint
+responde 404.
 
-## CI/CD
+## Convenções de git
 
-- **CI** (`.github/workflows/ci.yml`): path-filtered por app (`dorny/paths-filter`). Job
-  `api` (Postgres service container → migrations → ruff → pytest), job `web` (typecheck +
-  vitest), job `types-drift` (`pnpm gen:types:check`). Rode os equivalentes locais antes
-  de abrir PR.
-- **Deploy** (`.github/workflows/deploy.yml`, só em `main`): autentica no GCP via
-  **Workload Identity Federation (WIF, sem chave JSON)**. `deploy-api` roda migrations num
-  Cloud Run Job efêmero **antes** de trocar o serviço. `NEXT_PUBLIC_API_URL` não é
-  configurado em build-time (gap conhecido — ver `infra/README.md`).
-
-O `github_repository` no WIF (`infra/terraform.tfvars`, gitignored) precisa casar com o
-nome real do repo GitHub, senão a autenticação de deploy falha com `unauthorized_client`.
+Branches `feature/<nome-do-change>`; merge para `main` com **`--no-ff` obrigatório**
+(GitHub Flow, sem staging). Commit/push só quando o usuário pedir.

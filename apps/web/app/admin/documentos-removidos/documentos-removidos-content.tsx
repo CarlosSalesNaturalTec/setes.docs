@@ -49,7 +49,7 @@ function ConfirmacaoRestauracao({
             type="button"
             onClick={onConfirmar}
             disabled={restaurando}
-            className="rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+            className="rounded-card bg-navy-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
           >
             {restaurando ? "Restaurando…" : "Restaurar"}
           </button>
@@ -126,7 +126,7 @@ export function DocumentosRemovidosConteudo() {
       )}
 
       {documentos.length > 0 && (
-        <table className="mt-6 w-full text-left text-sm">
+        <table className="mt-6 w-full overflow-hidden rounded-card border border-navy-50 text-left text-sm shadow-card">
           <thead>
             <tr className="border-b text-gray-500">
               <th className="py-2 pr-4 font-medium">Documento</th>
@@ -153,7 +153,7 @@ export function DocumentosRemovidosConteudo() {
                       setAviso(null);
                       setConfirmando(doc);
                     }}
-                    className="text-blue-600"
+                    className="text-navy-600"
                   >
                     Restaurar
                   </button>

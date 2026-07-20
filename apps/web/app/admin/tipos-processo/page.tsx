@@ -113,7 +113,7 @@ function CadastroTipoProcessoForm({ unidades, onCriado }: { unidades: Unidade[];
   }
 
   return (
-    <form onSubmit={onSubmit} className="rounded border p-4">
+    <form onSubmit={onSubmit} className="rounded-card border border-navy-50 bg-superficie-card p-4 shadow-card">
       <div>
         <label htmlFor="nome-tipo" className="block text-sm">
           Nome do tipo de processo
@@ -136,7 +136,7 @@ function CadastroTipoProcessoForm({ unidades, onCriado }: { unidades: Unidade[];
       <button
         type="submit"
         disabled={enviando}
-        className="mt-4 rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+        className="mt-4 rounded-card bg-navy-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
       >
         {enviando ? "Salvando…" : "Cadastrar tipo de processo"}
       </button>
@@ -174,7 +174,7 @@ function EditorRoteiroExistente({
         <p className="text-gray-700">
           {tipo.roteiro.etapas.map((e) => nomeUnidade(unidades, e.unidade_id)).join(" → ")}
         </p>
-        <button onClick={() => setEditando(true)} className="mt-1 text-blue-600">
+        <button onClick={() => setEditando(true)} className="mt-1 text-navy-600">
           Editar roteiro
         </button>
       </div>
@@ -186,7 +186,7 @@ function EditorRoteiroExistente({
       <EditorRoteiro unidades={unidades} etapas={etapas} onChange={setEtapas} />
       {erro && <p className="mt-2 text-sm text-red-600">{erro}</p>}
       <div className="mt-2 space-x-2">
-        <button onClick={salvar} className="text-sm text-blue-600">
+        <button onClick={salvar} className="text-sm text-navy-600">
           Salvar nova versão
         </button>
         <button onClick={() => setEditando(false)} className="text-sm text-gray-500">
@@ -235,7 +235,7 @@ function PrazoAnonimizacaoLgpd({ tipo, onAtualizado }: { tipo: TipoProcesso; onA
           className="mt-1 w-24 rounded border px-2 py-1"
         />
       </div>
-      <button type="button" onClick={() => void salvar()} disabled={salvando} className="text-blue-600">
+      <button type="button" onClick={() => void salvar()} disabled={salvando} className="text-navy-600">
         {salvando ? "Salvando…" : "Salvar"}
       </button>
       {erro && <span className="text-red-600">{erro}</span>}
@@ -281,7 +281,7 @@ function AdminTiposProcessoConteudo() {
 
       <ul className="mt-6 space-y-4">
         {tipos.map((tipo) => (
-          <li key={tipo.id} className="rounded border p-4">
+          <li key={tipo.id} className="rounded-card border border-navy-50 bg-superficie-card p-4 shadow-card">
             <h2 className="font-medium">{tipo.nome}</h2>
             <EditorRoteiroExistente tipo={tipo} unidades={unidades} onAtualizado={carregar} />
             <PrazoAnonimizacaoLgpd tipo={tipo} onAtualizado={carregar} />

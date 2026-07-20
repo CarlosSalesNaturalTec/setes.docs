@@ -112,13 +112,13 @@ function DashboardConteudo() {
               type="button"
               data-testid="kpi-ativos"
               onClick={() => void abrirDrillDown("ativos", "Processos Ativos")}
-              className="rounded border bg-white p-4 text-left shadow-sm hover:bg-gray-50"
+              className="rounded-card border border-navy-50 bg-superficie-card p-4 text-left shadow-card hover:bg-navy-50/40"
             >
               <div className="text-xs text-gray-500">Total de Processos Ativos</div>
               <div className="mt-1 text-2xl font-semibold">{kpis.total_processos_ativos}</div>
             </button>
 
-            <div data-testid="kpi-tempo-medio" className="rounded border bg-white p-4 shadow-sm">
+            <div data-testid="kpi-tempo-medio" className="rounded-card border border-navy-50 bg-superficie-card p-4 shadow-card">
               <div className="text-xs text-gray-500">Tempo Médio de Tramitação</div>
               {kpis.tempo_medio_tramitacao_dias === null ? (
                 <p className="mt-1 text-sm text-gray-500">{MSG_VAZIO}</p>
@@ -133,13 +133,13 @@ function DashboardConteudo() {
               type="button"
               data-testid="kpi-parados"
               onClick={() => void abrirDrillDown("parados", "Processos Parados")}
-              className="rounded border bg-white p-4 text-left shadow-sm hover:bg-gray-50"
+              className="rounded-card border border-navy-50 bg-superficie-card p-4 text-left shadow-card hover:bg-navy-50/40"
             >
               <div className="text-xs text-gray-500">Processos Parados</div>
               <div className="mt-1 text-2xl font-semibold">{kpis.total_processos_parados}</div>
             </button>
 
-            <div data-testid="kpi-produtividade" className="rounded border bg-white p-4 shadow-sm">
+            <div data-testid="kpi-produtividade" className="rounded-card border border-navy-50 bg-superficie-card p-4 shadow-card">
               <div className="text-xs text-gray-500">Produtividade por Unidade</div>
               {(kpis.produtividade_por_unidade ?? []).length === 0 ? (
                 <p className="mt-1 text-sm text-gray-500">{MSG_VAZIO}</p>
@@ -155,7 +155,7 @@ function DashboardConteudo() {
             </div>
           </div>
 
-          <section className="mt-6 rounded border bg-white p-4 shadow-sm">
+          <section className="mt-6 rounded-card border border-navy-50 bg-superficie-card p-4 shadow-card">
             <h2 className="text-sm font-medium text-gray-700">Prazos em Risco</h2>
             {(kpis.prazos_em_risco ?? []).length === 0 ? (
               <p className="mt-2 text-sm text-gray-500">{MSG_VAZIO}</p>
@@ -182,7 +182,7 @@ function DashboardConteudo() {
       {carregandoDrillDown && <p className="mt-4 text-sm text-gray-500">Carregando listagem…</p>}
 
       {drillDown && !carregandoDrillDown && (
-        <section className="mt-6 rounded border bg-white p-4 shadow-sm">
+        <section className="mt-6 rounded-card border border-navy-50 bg-superficie-card p-4 shadow-card">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-medium text-gray-700">{drillDown.titulo}</h2>
             <button

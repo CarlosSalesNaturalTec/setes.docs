@@ -144,7 +144,7 @@ export function SolicitacoesLgpdConteudo() {
       )}
 
       {solicitacoes.length > 0 && (
-        <table className="mt-6 w-full text-left text-sm">
+        <table className="mt-6 w-full overflow-hidden rounded-card border border-navy-50 text-left text-sm shadow-card">
           <thead>
             <tr className="border-b text-gray-500">
               <th className="py-2 pr-4 font-medium">Protocolo</th>
@@ -172,7 +172,7 @@ export function SolicitacoesLgpdConteudo() {
                         type="button"
                         onClick={() => void atender(s)}
                         disabled={processandoId === s.id}
-                        className="text-blue-600 disabled:opacity-50"
+                        className="text-navy-600 disabled:opacity-50"
                       >
                         Atender
                       </button>

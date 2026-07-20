@@ -58,7 +58,7 @@ function CadastroUsuarioForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-wrap items-end gap-3 rounded border p-4">
+    <form onSubmit={onSubmit} className="flex flex-wrap items-end gap-3 rounded-card border border-navy-50 bg-superficie-card p-4 shadow-card">
       <div>
         <label htmlFor="nome" className="block text-sm">
           Nome
@@ -122,7 +122,7 @@ function CadastroUsuarioForm({
       <button
         type="submit"
         disabled={enviando}
-        className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+        className="rounded-card bg-navy-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
       >
         {enviando ? "Salvando…" : "Cadastrar usuário"}
       </button>
@@ -158,7 +158,7 @@ function AcaoTransferirUnidade({
 
   if (!aberto) {
     return (
-      <IconButton label="Transferir unidade" onClick={() => setAberto(true)} className="text-blue-600">
+      <IconButton label="Transferir unidade" onClick={() => setAberto(true)} className="text-navy-600">
         <IconTransfer />
       </IconButton>
     );
@@ -174,7 +174,7 @@ function AcaoTransferirUnidade({
           </option>
         ))}
       </select>
-      <button onClick={confirmar} className="ml-2 text-blue-600">
+      <button onClick={confirmar} className="ml-2 text-navy-600">
         Confirmar
       </button>
       <button onClick={() => setAberto(false)} className="ml-2 text-gray-500">
@@ -221,7 +221,7 @@ function AcaoUnidadesGeridas({ usuario, unidades }: { usuario: Usuario; unidades
 
   if (!aberto) {
     return (
-      <IconButton label="Unidades geridas" onClick={abrir} className="text-blue-600">
+      <IconButton label="Unidades geridas" onClick={abrir} className="text-navy-600">
         <IconBuildings />
       </IconButton>
     );
@@ -244,7 +244,7 @@ function AcaoUnidadesGeridas({ usuario, unidades }: { usuario: Usuario; unidades
             </label>
           ))}
           <div>
-            <button onClick={salvar} className="text-blue-600">
+            <button onClick={salvar} className="text-navy-600">
               Salvar
             </button>
             <button onClick={() => setAberto(false)} className="ml-2 text-gray-500">
@@ -386,7 +386,7 @@ function AdminUsuariosConteudo() {
       {erro && <p className="mt-4 text-sm text-red-600">{erro}</p>}
       {carregando && <p className="mt-4 text-sm text-gray-500">Carregando…</p>}
 
-      <table className="mt-6 w-full overflow-hidden rounded border text-left text-sm">
+      <table className="mt-6 w-full overflow-hidden rounded-card border border-navy-50 text-left text-sm shadow-card">
         <thead>
           <tr className="border-b bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
             <th className="px-3 py-2">Nome</th>
@@ -399,7 +399,7 @@ function AdminUsuariosConteudo() {
         </thead>
         <tbody>
           {usuarios.map((u) => (
-            <tr key={u.id} className="border-t align-top odd:bg-white even:bg-gray-50/50 hover:bg-blue-50/50">
+            <tr key={u.id} className="border-t align-top odd:bg-white even:bg-gray-50/50 hover:bg-navy-50/50">
               <td className="px-3 py-2">{u.nome}</td>
               <td className="px-3 py-2">{u.email}</td>
               <td className="px-3 py-2 capitalize">{u.perfil}</td>

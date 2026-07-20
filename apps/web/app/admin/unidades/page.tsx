@@ -32,7 +32,7 @@ function CadastroUnidadeForm({ onCriada }: { onCriada: () => void }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-wrap items-end gap-3 rounded border p-4">
+    <form onSubmit={onSubmit} className="flex flex-wrap items-end gap-3 rounded-card border border-navy-50 bg-superficie-card p-4 shadow-card">
       <div>
         <label htmlFor="nome" className="block text-sm">
           Nome
@@ -60,7 +60,7 @@ function CadastroUnidadeForm({ onCriada }: { onCriada: () => void }) {
       <button
         type="submit"
         disabled={enviando}
-        className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+        className="rounded-card bg-navy-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
       >
         {enviando ? "Salvando…" : "Cadastrar unidade"}
       </button>
@@ -108,7 +108,7 @@ function LinhaUnidade({ unidade, onAlterada }: { unidade: Unidade; onAlterada: (
 
   if (editando) {
     return (
-      <tr className="border-t bg-blue-50/30">
+      <tr className="border-t bg-navy-50/30">
         <td className="px-3 py-2">
           <input value={nome} onChange={(e) => setNome(e.target.value)} className="rounded border px-2 py-1 text-sm" />
         </td>
@@ -117,7 +117,7 @@ function LinhaUnidade({ unidade, onAlterada }: { unidade: Unidade; onAlterada: (
         </td>
         <td className="px-3 py-2">{unidade.ativo ? "Ativa" : "Inativa"}</td>
         <td className="space-x-2 px-3 py-2">
-          <button onClick={salvar} className="text-sm text-blue-600">
+          <button onClick={salvar} className="text-sm text-navy-600">
             Salvar
           </button>
           <button onClick={() => setEditando(false)} className="text-sm text-gray-500">
@@ -129,13 +129,13 @@ function LinhaUnidade({ unidade, onAlterada }: { unidade: Unidade; onAlterada: (
   }
 
   return (
-    <tr className="border-t align-top odd:bg-white even:bg-gray-50/50 hover:bg-blue-50/50">
+    <tr className="border-t align-top odd:bg-white even:bg-gray-50/50 hover:bg-navy-50/50">
       <td className="px-3 py-2">{unidade.nome}</td>
       <td className="px-3 py-2">{unidade.sigla}</td>
       <td className="px-3 py-2">{unidade.ativo ? "Ativa" : "Inativa"}</td>
       <td className="px-3 py-2">
         <div className="flex items-center gap-1">
-          <IconButton label="Editar" onClick={() => setEditando(true)} className="text-blue-600">
+          <IconButton label="Editar" onClick={() => setEditando(true)} className="text-navy-600">
             <IconEdit />
           </IconButton>
           {unidade.ativo ? (
@@ -184,7 +184,7 @@ function AdminUnidadesConteudo() {
       {erro && <p className="mt-4 text-sm text-red-600">{erro}</p>}
       {carregando && <p className="mt-4 text-sm text-gray-500">Carregando…</p>}
 
-      <table className="mt-6 w-full overflow-hidden rounded border text-left text-sm">
+      <table className="mt-6 w-full overflow-hidden rounded-card border border-navy-50 text-left text-sm shadow-card">
         <thead>
           <tr className="border-b bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
             <th className="px-3 py-2">Nome</th>

@@ -138,7 +138,10 @@ function NovoProcessoConteudo() {
   return (
     <div>
       <h1 className="text-2xl font-semibold">Novo processo</h1>
-      <form onSubmit={onSubmit} className="mt-4 space-y-4">
+      <form
+        onSubmit={onSubmit}
+        className="mt-4 space-y-4 rounded-card border border-navy-50 bg-superficie-card p-4 shadow-card"
+      >
         <div>
           <label htmlFor="assunto" className="block text-sm">
             Assunto
@@ -193,7 +196,7 @@ function NovoProcessoConteudo() {
             <button
               type="button"
               onClick={() => setInteressados([...interessados, { nome: "", tipo_documento: "cpf" }])}
-              className="text-sm text-blue-600"
+              className="text-sm text-navy-600"
             >
               Adicionar interessado
             </button>
@@ -220,7 +223,7 @@ function NovoProcessoConteudo() {
         <button
           type="submit"
           disabled={enviando}
-          className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+          className="rounded-card bg-navy-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
         >
           {enviando ? "Criando…" : "Criar processo"}
         </button>
