@@ -11,7 +11,7 @@ import uuid
 from datetime import date
 
 from sqlalchemy import or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.db.models import (
     PerfilUsuario,
@@ -52,7 +52,9 @@ def listar_kanban(
 ) -> tuple[list[Processo], int]:
     """Cards do Kanban no escopo do usuário, ordenados por prazo (vencido primeiro)."""
     escopo = unidades_visiveis(db, usuario)
-    query = db.query(Processo)
+    query = db.query(Processo).options(
+        joinedload(Processo.tipo_processo), joinedload(Processo.unidade_atual)
+    )
     if escopo is not None:
         if not escopo:
             return [], 0
@@ -84,7 +86,9 @@ def buscar(
 ) -> list[Processo]:
     """Busca interna restrita ao escopo de unidade (US 2.7)."""
     escopo = unidades_visiveis(db, usuario)
-    query = db.query(Processo)
+    query = db.query(Processo).options(
+        joinedload(Processo.tipo_processo), joinedload(Processo.unidade_atual)
+    )
     if escopo is not None:
         if not escopo:
             return []

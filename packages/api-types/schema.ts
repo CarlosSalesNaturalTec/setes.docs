@@ -1259,6 +1259,11 @@ export interface components {
         CardProcessoResponse: {
             /** Assunto */
             assunto: string;
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
             /** Dias Restantes */
             dias_restantes: number;
             /** Id */
@@ -1274,8 +1279,12 @@ export interface components {
             sigiloso: boolean;
             /** Status */
             status: string;
+            /** Tipo Processo Nome */
+            tipo_processo_nome: string;
             /** Unidade Atual Id */
             unidade_atual_id: string;
+            /** Unidade Atual Nome */
+            unidade_atual_nome: string;
             /** Vencido */
             vencido: boolean;
         };

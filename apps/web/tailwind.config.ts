@@ -15,6 +15,19 @@ export default {
           app: "#f5f7fa",
           card: "#ffffff",
         },
+        // Tokens semânticos de status do processo (D3, change
+        // ajustar-visualizacao-processos) — cabeçalho de coluna do Kanban e
+        // pill de status na Lista compartilham a mesma paleta.
+        status: {
+          aberto: "#1d4ed8",
+          "aberto-bg": "#dbeafe",
+          tramitacao: "#92400e",
+          "tramitacao-bg": "#fef3c7",
+          concluido: "#166534",
+          "concluido-bg": "#dcfce7",
+          arquivado: "#374151",
+          "arquivado-bg": "#f3f4f6",
+        },
       },
       borderRadius: {
         card: "0.75rem",
