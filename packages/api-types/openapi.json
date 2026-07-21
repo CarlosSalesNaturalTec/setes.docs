@@ -5509,7 +5509,7 @@
     },
     "/unidades": {
       "get": {
-        "description": "Catálogo de unidades — usado pelos formulários de cadastro/CRUD do frontend.",
+        "description": "Catálogo de unidades (nome/sigla/ativo) — qualquer usuário autenticado\npode listar: dado não sensível, usado pelos formulários de cadastro/CRUD\n(Administrador/Gestor) e para o Servidor resolver o nome da unidade de\ndestino após despachar/devolver um processo (ver openspec/changes/\ncorrigir-feedback-despacho-devolucao). Cadastro/edição/desativação\ncontinuam restritos ao Administrador (`_require_admin`, capability\n`unidades-administrativas`).",
         "operationId": "listar_unidades_unidades_get",
         "parameters": [
           {

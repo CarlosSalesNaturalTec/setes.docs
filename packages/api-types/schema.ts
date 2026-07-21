@@ -942,7 +942,13 @@ export interface paths {
         };
         /**
          * Listar Unidades
-         * @description Catálogo de unidades — usado pelos formulários de cadastro/CRUD do frontend.
+         * @description Catálogo de unidades (nome/sigla/ativo) — qualquer usuário autenticado
+         *     pode listar: dado não sensível, usado pelos formulários de cadastro/CRUD
+         *     (Administrador/Gestor) e para o Servidor resolver o nome da unidade de
+         *     destino após despachar/devolver um processo (ver openspec/changes/
+         *     corrigir-feedback-despacho-devolucao). Cadastro/edição/desativação
+         *     continuam restritos ao Administrador (`_require_admin`, capability
+         *     `unidades-administrativas`).
          */
         get: operations["listar_unidades_unidades_get"];
         put?: never;
