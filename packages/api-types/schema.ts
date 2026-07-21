@@ -217,6 +217,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/dashboard/distribuicoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Obter Distribuicoes
+         * @description US 6.2 — distribuição de processos ativos por unidade, por tipo e por usuário.
+         */
+        get: operations["obter_distribuicoes_dashboard_distribuicoes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/dashboard/kpis": {
         parameters: {
             query?: never;
@@ -1326,6 +1346,28 @@ export interface components {
             justificativa?: string | null;
             /** Motivo */
             motivo?: string | null;
+        };
+        /**
+         * DistribuicaoItem
+         * @description Item de distribuição por dimensão (unidade/tipo/usuário) — US 6.2.
+         */
+        DistribuicaoItem: {
+            /** Quantidade */
+            quantidade: number;
+            /** Rotulo */
+            rotulo: string;
+        };
+        /**
+         * DistribuicoesResponse
+         * @description US 6.2 — distribuição de processos ativos por unidade, por tipo e por usuário.
+         */
+        DistribuicoesResponse: {
+            /** Por Tipo */
+            por_tipo?: components["schemas"]["DistribuicaoItem"][];
+            /** Por Unidade */
+            por_unidade?: components["schemas"]["DistribuicaoItem"][];
+            /** Por Usuario */
+            por_usuario?: components["schemas"]["DistribuicaoItem"][];
         };
         /**
          * DocumentoRemovidoResponse
@@ -2444,6 +2486,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MensagemResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obter_distribuicoes_dashboard_distribuicoes_get: {
+        parameters: {
+            query?: {
+                unidade_id?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DistribuicoesResponse"];
                 };
             };
             /** @description Validation Error */

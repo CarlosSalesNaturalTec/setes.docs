@@ -98,3 +98,18 @@ class ProcessosAtivosResponse(BaseModel):
 class ProcessosParadosResponse(BaseModel):
     items: list[ProcessoParadoItem] = Field(default_factory=list)
     total: int
+
+
+class DistribuicaoItem(BaseModel):
+    """Item de distribuição por dimensão (unidade/tipo/usuário) — US 6.2."""
+
+    rotulo: str
+    quantidade: int
+
+
+class DistribuicoesResponse(BaseModel):
+    """US 6.2 — distribuição de processos ativos por unidade, por tipo e por usuário."""
+
+    por_unidade: list[DistribuicaoItem] = Field(default_factory=list)
+    por_tipo: list[DistribuicaoItem] = Field(default_factory=list)
+    por_usuario: list[DistribuicaoItem] = Field(default_factory=list)

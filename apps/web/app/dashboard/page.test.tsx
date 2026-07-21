@@ -4,11 +4,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
   obterDashboardKpis,
+  obterDashboardDistribuicoes,
   obterProcessosAtivosDashboard,
   obterProcessosParadosDashboard,
   listarUnidades,
 } = vi.hoisted(() => ({
   obterDashboardKpis: vi.fn(),
+  obterDashboardDistribuicoes: vi.fn(),
   obterProcessosAtivosDashboard: vi.fn(),
   obterProcessosParadosDashboard: vi.fn(),
   listarUnidades: vi.fn(),
@@ -24,6 +26,7 @@ vi.mock("@/lib/api", async () => {
     ...actual,
     api: {
       obterDashboardKpis,
+      obterDashboardDistribuicoes,
       obterProcessosAtivosDashboard,
       obterProcessosParadosDashboard,
       listarUnidades,
@@ -41,9 +44,16 @@ const KPIS_VAZIO = {
   prazos_em_risco: [],
 };
 
+const DISTRIBUICOES_VAZIO = {
+  por_unidade: [],
+  por_tipo: [],
+  por_usuario: [],
+};
+
 describe("DashboardPage", () => {
   beforeEach(() => {
     obterDashboardKpis.mockReset();
+    obterDashboardDistribuicoes.mockReset().mockResolvedValue(DISTRIBUICOES_VAZIO);
     obterProcessosAtivosDashboard.mockReset();
     obterProcessosParadosDashboard.mockReset();
     listarUnidades.mockReset().mockResolvedValue([
@@ -167,5 +177,51 @@ describe("DashboardPage", () => {
     expect(screen.getByTestId("kpi-produtividade").querySelector("button")).toBeNull();
     expect(obterProcessosAtivosDashboard).not.toHaveBeenCalled();
     expect(obterProcessosParadosDashboard).not.toHaveBeenCalled();
+  });
+
+  it("exibe estado vazio nos três gráficos de distribuição sem dados (US 6.2)", async () => {
+    obterDashboardKpis.mockResolvedValue(KPIS_VAZIO);
+
+    render(<DashboardPage />);
+    await screen.findByTestId("kpi-ativos");
+
+    expect(await screen.findByText("Processos por Unidade")).toBeInTheDocument();
+    expect(screen.getByText("Processos por Tipo")).toBeInTheDocument();
+    expect(screen.getByText("Processos por Usuário")).toBeInTheDocument();
+    expect(screen.getAllByText("Nenhum dado disponível para o período")).toHaveLength(6);
+  });
+
+  it("renderiza os três gráficos de distribuição com dados (US 6.2 Cen.1)", async () => {
+    obterDashboardKpis.mockResolvedValue(KPIS_VAZIO);
+    obterDashboardDistribuicoes.mockResolvedValue({
+      por_unidade: [{ rotulo: "COFIN", quantidade: 5 }],
+      por_tipo: [{ rotulo: "Licitação", quantidade: 3 }],
+      por_usuario: [
+        { rotulo: "Ricardo Pita", quantidade: 5 },
+        { rotulo: "Ana Souza", quantidade: 2 },
+      ],
+    });
+
+    render(<DashboardPage />);
+    await screen.findByTestId("kpi-ativos");
+
+    expect(await screen.findByText("COFIN", { selector: "td" })).toBeInTheDocument();
+    expect(screen.getByText("Licitação", { selector: "td" })).toBeInTheDocument();
+    expect(screen.getByText("Ricardo Pita", { selector: "td" })).toBeInTheDocument();
+    expect(screen.getByText("Ana Souza", { selector: "td" })).toBeInTheDocument();
+  });
+
+  it("recarrega as distribuições ao selecionar o filtro por unidade (US 6.2)", async () => {
+    obterDashboardKpis.mockResolvedValue(KPIS_VAZIO);
+
+    render(<DashboardPage />);
+    await screen.findByTestId("kpi-ativos");
+
+    const filtro = screen.getByLabelText("Filtrar por unidade");
+    await userEvent.selectOptions(filtro, "un-1");
+
+    await waitFor(() =>
+      expect(obterDashboardDistribuicoes).toHaveBeenLastCalledWith({ unidade_id: "un-1" }),
+    );
   });
 });

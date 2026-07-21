@@ -151,3 +151,88 @@ def test_gestor_consulta_unidade_nao_gerida_nos_drill_downs_recebe_acesso_negado
     )
     assert resp_ativos.status_code == 403
     assert resp_parados.status_code == 403
+
+
+def test_gestor_recebe_distribuicoes_do_escopo(client, db):
+    cofin = unidade(db, "COFIN")
+    ajur = unidade(db, "AJUR")
+    gestor = gestor_de(db, cofin, email="gestor-dist@example.com")
+    criador = usuario(db, unidade_id=cofin.id, email="criador-dist@example.com")
+    tipo_cofin = tipo_com_roteiro(db, cofin)
+    tipo_ajur = tipo_com_roteiro(db, ajur)
+
+    hoje = date.today()
+    processo_ativo(db, unidade=cofin, criador=criador, tipo=tipo_cofin, prazo_em=hoje + timedelta(days=10))
+    processo_ativo(db, unidade=ajur, criador=criador, tipo=tipo_ajur, prazo_em=hoje + timedelta(days=10))
+
+    token = login(client, gestor.email)
+    resp = client.get("/dashboard/distribuicoes", headers=auth(token))
+    assert resp.status_code == 200, resp.text
+    corpo = resp.json()
+    assert corpo["por_unidade"] == [{"rotulo": cofin.nome, "quantidade": 1}]
+    assert corpo["por_tipo"] == [{"rotulo": tipo_cofin.nome, "quantidade": 1}]
+    assert corpo["por_usuario"] == [{"rotulo": criador.nome, "quantidade": 1}]
+
+
+def test_filtro_por_unidade_restringe_distribuicoes(client, db):
+    cofin = unidade(db, "COFIN")
+    ajur = unidade(db, "AJUR")
+    gestor = gestor_de(db, cofin, ajur, email="gestor-dist-filtro@example.com")
+    criador = usuario(db, unidade_id=cofin.id, email="criador-dist-filtro@example.com")
+    tipo_cofin = tipo_com_roteiro(db, cofin)
+    tipo_ajur = tipo_com_roteiro(db, ajur)
+
+    hoje = date.today()
+    processo_ativo(db, unidade=cofin, criador=criador, tipo=tipo_cofin, prazo_em=hoje + timedelta(days=10))
+    processo_ativo(db, unidade=ajur, criador=criador, tipo=tipo_ajur, prazo_em=hoje + timedelta(days=10))
+
+    token = login(client, gestor.email)
+    resp = client.get(
+        "/dashboard/distribuicoes", params={"unidade_id": str(cofin.id)}, headers=auth(token)
+    )
+    assert resp.status_code == 200, resp.text
+    corpo = resp.json()
+    assert corpo["por_unidade"] == [{"rotulo": cofin.nome, "quantidade": 1}]
+
+
+def test_distribuicoes_estado_vazio(client, db):
+    cofin = unidade(db, "COFIN")
+    gestor = gestor_de(db, cofin, email="gestor-dist-vazio@example.com")
+
+    token = login(client, gestor.email)
+    resp = client.get("/dashboard/distribuicoes", headers=auth(token))
+    assert resp.status_code == 200, resp.text
+    corpo = resp.json()
+    assert corpo["por_unidade"] == []
+    assert corpo["por_tipo"] == []
+    assert corpo["por_usuario"] == []
+
+
+def test_gestor_consulta_distribuicoes_unidade_nao_gerida_recebe_acesso_negado_e_loga(client, db):
+    cofin = unidade(db, "COFIN")
+    dirad = unidade(db, "DIRAD")
+    gestor = gestor_de(db, cofin, email="gestor-dist-negado@example.com")
+
+    token = login(client, gestor.email)
+    resp = client.get(
+        "/dashboard/distribuicoes", params={"unidade_id": str(dirad.id)}, headers=auth(token)
+    )
+    assert resp.status_code == 403
+
+    log = (
+        db.query(LogSeguranca)
+        .filter(
+            LogSeguranca.usuario_id == gestor.id,
+            LogSeguranca.tipo_evento == TipoEventoLog.ACESSO_NEGADO,
+        )
+        .first()
+    )
+    assert log is not None
+
+
+def test_nao_gestor_recebe_acesso_negado_nas_distribuicoes(client, db):
+    servidor = usuario(db, perfil=PerfilUsuario.SERVIDOR, email="servidor-dist@example.com")
+    token = login(client, servidor.email)
+
+    resp = client.get("/dashboard/distribuicoes", headers=auth(token))
+    assert resp.status_code == 403

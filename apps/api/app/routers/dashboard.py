@@ -19,6 +19,8 @@ from app.db.models import PerfilUsuario, Usuario
 from app.db.session import get_db
 from app.schemas.dashboard import (
     DashboardKpisResponse,
+    DistribuicaoItem,
+    DistribuicoesResponse,
     PrazoRiscoItem,
     ProcessoAtivoItem,
     ProcessoParadoItem,
@@ -119,4 +121,29 @@ def obter_processos_parados(
     itens = dashboard_service.listar_parados(db, unidades, dias_limiar=limiar_parado, hoje=hoje)
     return ProcessosParadosResponse(
         items=[ProcessoParadoItem.de(p, dias_parados=dias) for p, dias in itens], total=len(itens)
+    )
+
+
+@router.get("/distribuicoes", response_model=DistribuicoesResponse)
+def obter_distribuicoes(
+    request: Request,
+    gestor: Annotated[Usuario, Depends(_require_gestor)],
+    db: Annotated[Session, Depends(get_db)],
+    unidade_id: uuid.UUID | None = Query(default=None),
+) -> DistribuicoesResponse:
+    """US 6.2 — distribuição de processos ativos por unidade, por tipo e por usuário."""
+    unidades = _resolver_escopo_ou_negar(db, gestor=gestor, unidade_id=unidade_id, request=request)
+    return DistribuicoesResponse(
+        por_unidade=[
+            DistribuicaoItem(rotulo=rotulo, quantidade=quantidade)
+            for rotulo, quantidade in dashboard_service.distribuicao_por_unidade(db, unidades)
+        ],
+        por_tipo=[
+            DistribuicaoItem(rotulo=rotulo, quantidade=quantidade)
+            for rotulo, quantidade in dashboard_service.distribuicao_por_tipo(db, unidades)
+        ],
+        por_usuario=[
+            DistribuicaoItem(rotulo=rotulo, quantidade=quantidade)
+            for rotulo, quantidade in dashboard_service.distribuicao_por_usuario(db, unidades)
+        ],
     )

@@ -5,7 +5,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ProtectedShell } from "@/components/protected-shell";
 import { ApiError, api, type Schemas } from "@/lib/api";
 
+import { GraficoDistribuicao } from "./grafico-distribuicao";
+
 type Kpis = Schemas["DashboardKpisResponse"];
+type Distribuicoes = Schemas["DistribuicoesResponse"];
 type Unidade = Schemas["UnidadeResponse"];
 type ProcessoAtivoItem = Schemas["ProcessoAtivoItem"];
 type ProcessoParadoItem = Schemas["ProcessoParadoItem"];
@@ -18,6 +21,7 @@ type DrillDown =
 
 function DashboardConteudo() {
   const [kpis, setKpis] = useState<Kpis | null>(null);
+  const [distribuicoes, setDistribuicoes] = useState<Distribuicoes | null>(null);
   const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [filtroUnidade, setFiltroUnidade] = useState("");
   const [erro, setErro] = useState<string | null>(null);
@@ -45,6 +49,21 @@ function DashboardConteudo() {
   useEffect(() => {
     void carregar();
   }, [carregar]);
+
+  const carregarDistribuicoes = useCallback(async () => {
+    try {
+      const resp = await api.obterDashboardDistribuicoes(
+        filtroUnidade ? { unidade_id: filtroUnidade } : undefined,
+      );
+      setDistribuicoes(resp);
+    } catch {
+      setDistribuicoes(null);
+    }
+  }, [filtroUnidade]);
+
+  useEffect(() => {
+    void carregarDistribuicoes();
+  }, [carregarDistribuicoes]);
 
   useEffect(() => {
     void (async () => {
@@ -177,6 +196,14 @@ function DashboardConteudo() {
             )}
           </section>
         </>
+      )}
+
+      {distribuicoes && (
+        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <GraficoDistribuicao titulo="Processos por Unidade" itens={distribuicoes.por_unidade ?? []} />
+          <GraficoDistribuicao titulo="Processos por Tipo" itens={distribuicoes.por_tipo ?? []} />
+          <GraficoDistribuicao titulo="Processos por Usuário" itens={distribuicoes.por_usuario ?? []} />
+        </div>
       )}
 
       {carregandoDrillDown && <p className="mt-4 text-sm text-gray-500">Carregando listagem…</p>}

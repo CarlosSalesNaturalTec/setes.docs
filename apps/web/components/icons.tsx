@@ -78,6 +78,25 @@ export function IconUserMinus({ className = "" }: IconProps) {
   );
 }
 
+// Marca institucional (US 6.2/D5) — mesmo glifo de documento do favicon
+// (`app/icon.svg`), sem o retângulo de fundo navy: o chip circular do Login e
+// da sidebar já provê o fundo, e o traço herda `currentColor` do texto do chip.
+export function IconMarca({ className = "" }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 32 32"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      className={`h-6 w-6 ${className}`}
+      aria-hidden
+    >
+      <path d="M9 8h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2z" />
+      <path d="M11 13h9M11 17h9M11 21h6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // Ícones de navegação da sidebar (restyle-apresentacao-v1) — mesmo padrão
 // inline, 18–20px, `currentColor`.
 const NAV_BASE = "h-5 w-5";
