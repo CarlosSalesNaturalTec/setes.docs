@@ -143,6 +143,27 @@ describe("ProcessosPage (Kanban)", () => {
     );
   });
 
+  it("não lista unidades inativas no filtro do Gestor", async () => {
+    usuario = { perfil: "gestor" };
+    listarKanban.mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      page_size: 50,
+      mensagem_vazio: "Nenhum processo encontrado nas unidades gerenciadas",
+    });
+    listarUnidades.mockResolvedValue([
+      { id: "un-1", nome: "COFIN", sigla: "COFIN", ativo: true },
+      { id: "un-2", nome: "AJUR", sigla: "AJUR", ativo: false },
+    ]);
+
+    render(<ProcessosPage />);
+
+    const filtro = await screen.findByLabelText("Filtrar por unidade");
+    expect(within(filtro).getByRole("option", { name: "COFIN" })).toBeInTheDocument();
+    expect(within(filtro).queryByRole("option", { name: "AJUR" })).not.toBeInTheDocument();
+  });
+
   it("não exibe o filtro por unidade para o Servidor", async () => {
     listarKanban.mockResolvedValue({
       items: [],

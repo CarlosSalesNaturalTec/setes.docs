@@ -70,6 +70,30 @@ describe("PerfilPage — editar o próprio nome (US 1.5)", () => {
     await waitFor(() => expect(recarregar).toHaveBeenCalled());
   });
 
+  it("lista os processos atuados com número, assunto, ação e data — não JSON cru (US 1.5 Cen.1)", async () => {
+    meuPerfil.mockResolvedValue({
+      ...PERFIL,
+      processos: [
+        {
+          processo_id: "p-1",
+          numero: "2026/000042",
+          assunto: "Solicitação de férias",
+          data_acao: "2026-07-10T12:00:00Z",
+          tipo_acao: "despacho",
+        },
+      ],
+    });
+
+    render(<PerfilPage />);
+
+    expect(await screen.findByText("2026/000042")).toBeInTheDocument();
+    expect(screen.getByText(/Solicitação de férias/)).toBeInTheDocument();
+    expect(screen.getByText(/Despacho/)).toBeInTheDocument();
+    expect(screen.getByText(/10\/07\/2026/)).toBeInTheDocument();
+    // Não deve renderizar o objeto serializado.
+    expect(screen.queryByText(/"processo_id"/)).toBeNull();
+  });
+
   it("exibe o erro de validação retornado pela API e mantém o nome anterior", async () => {
     atualizarMeuPerfil.mockRejectedValue(new ApiError(422, "Nome é obrigatório"));
 

@@ -374,13 +374,16 @@ function AdminUsuariosConteudo() {
 
   if (!usuarioAtual) return null;
   const souAdministrador = usuarioAtual.perfil === "administrador";
+  // Selects de atribuição só oferecem unidades ativas; a lista cheia fica
+  // reservada ao lookup de nome na tabela (usuário pode exibir unidade extinta).
+  const unidadesAtivas = unidades.filter((u) => u.ativo);
 
   return (
     <div>
       <h1 className="text-2xl font-semibold">Usuários</h1>
 
       <div className="mt-4">
-        <CadastroUsuarioForm unidades={unidades} perfilAtual={usuarioAtual.perfil as Perfil} onCriado={carregar} />
+        <CadastroUsuarioForm unidades={unidadesAtivas} perfilAtual={usuarioAtual.perfil as Perfil} onCriado={carregar} />
       </div>
 
       {erro && <p className="mt-4 text-sm text-red-600">{erro}</p>}
@@ -408,10 +411,10 @@ function AdminUsuariosConteudo() {
               <td className="px-3 py-2">
                 <div className="flex flex-wrap items-center gap-1">
                   {souAdministrador && u.perfil === "servidor" && (
-                    <AcaoTransferirUnidade usuario={u} unidades={unidades} onAlterado={carregar} />
+                    <AcaoTransferirUnidade usuario={u} unidades={unidadesAtivas} onAlterado={carregar} />
                   )}
                   {souAdministrador && u.perfil === "gestor" && (
-                    <AcaoUnidadesGeridas usuario={u} unidades={unidades} />
+                    <AcaoUnidadesGeridas usuario={u} unidades={unidadesAtivas} />
                   )}
                   {souAdministrador && <AcaoResetarSenha usuario={u} />}
                   {souAdministrador && <AcaoPermissaoAuditoria usuario={u} onAlterado={carregar} />}

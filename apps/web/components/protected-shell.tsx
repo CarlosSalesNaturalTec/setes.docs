@@ -34,28 +34,27 @@ type ItemMenu = {
   visivel: (usuario: Usuario) => boolean;
 };
 
-// Mesmos predicados de visibilidade da top-nav anterior — só migram de JSX
-// condicional para dado (task 4.1). Nenhuma regra é adicionada ou removida.
+// Predicados de visibilidade preservados da versão anterior — só a ordem de
+// exibição muda. Nenhuma regra de RBAC é adicionada ou removida.
 const ITENS_MENU: ItemMenu[] = [
-  { href: "/perfil", label: "Meu Perfil", Icon: IconPerfil, visivel: () => true },
-  { href: "/processos", label: "Processos", Icon: IconProcessos, visivel: () => true },
   {
     href: "/dashboard",
     label: "Dashboard",
     Icon: IconPainel,
     visivel: (u) => u.perfil === "gestor",
   },
+  { href: "/processos", label: "Processos", Icon: IconProcessos, visivel: () => true },
   {
-    href: "/auditoria/relatorios",
-    label: "Relatório de Auditoria",
-    Icon: IconRelatorios,
-    visivel: (u) => u.pode_auditar,
+    href: "/admin/documentos-removidos",
+    label: "Documentos Removidos",
+    Icon: IconDocumentos,
+    visivel: (u) => u.perfil === "administrador",
   },
   {
-    href: "/admin/usuarios",
-    label: "Usuários",
-    Icon: IconUsuarios,
-    visivel: (u) => u.perfil === "administrador" || u.perfil === "gestor",
+    href: "/admin/lgpd",
+    label: "Solicitações LGPD",
+    Icon: IconLgpd,
+    visivel: (u) => u.perfil === "administrador",
   },
   {
     href: "/admin/unidades",
@@ -70,17 +69,18 @@ const ITENS_MENU: ItemMenu[] = [
     visivel: (u) => u.perfil === "administrador",
   },
   {
-    href: "/admin/documentos-removidos",
-    label: "Documentos Removidos",
-    Icon: IconDocumentos,
-    visivel: (u) => u.perfil === "administrador",
+    href: "/admin/usuarios",
+    label: "Usuários",
+    Icon: IconUsuarios,
+    visivel: (u) => u.perfil === "administrador" || u.perfil === "gestor",
   },
   {
-    href: "/admin/lgpd",
-    label: "Solicitações LGPD",
-    Icon: IconLgpd,
-    visivel: (u) => u.perfil === "administrador",
+    href: "/auditoria/relatorios",
+    label: "Relatório de Auditoria",
+    Icon: IconRelatorios,
+    visivel: (u) => u.pode_auditar,
   },
+  { href: "/perfil", label: "Meu Perfil", Icon: IconPerfil, visivel: () => true },
 ];
 
 function itemAtivo(pathname: string, href: string): boolean {

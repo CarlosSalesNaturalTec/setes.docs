@@ -128,7 +128,8 @@ function KanbanConteudo() {
     if (!ehGestor) return;
     void (async () => {
       try {
-        setUnidades(await api.listarUnidades());
+        const todas = await api.listarUnidades();
+        setUnidades(todas.filter((u) => u.ativo));
       } catch {
         // filtro opcional — silencia
       }

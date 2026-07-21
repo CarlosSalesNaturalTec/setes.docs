@@ -9,6 +9,27 @@ import { ApiError, api, type Schemas } from "@/lib/api";
 
 const NOME_MAX_LENGTH = 200;
 
+const TIPO_ACAO_ROTULO: Record<string, string> = {
+  criacao: "Criação",
+  despacho: "Despacho",
+  encaminhamento: "Encaminhamento",
+  recebimento: "Recebimento",
+  arquivamento: "Arquivamento",
+  desarquivamento: "Desarquivamento",
+  conclusao: "Conclusão",
+};
+
+function rotuloTipoAcao(tipo: unknown): string {
+  if (typeof tipo !== "string") return "";
+  return TIPO_ACAO_ROTULO[tipo] ?? tipo.replaceAll("_", " ");
+}
+
+function formatarData(valor: unknown): string {
+  if (typeof valor !== "string") return "";
+  const data = new Date(valor);
+  return Number.isNaN(data.getTime()) ? "" : data.toLocaleDateString("pt-BR");
+}
+
 function EditarNomeForm({
   nomeAtual,
   onSalvo,
@@ -123,10 +144,27 @@ function PerfilConteudo() {
         {processos.length === 0 ? (
           <p className="mt-2 text-sm text-gray-500">{perfil.mensagem_processos}</p>
         ) : (
-          <ul className="mt-2 text-sm">
-            {processos.map((p, i) => (
-              <li key={i}>{JSON.stringify(p)}</li>
-            ))}
+          <ul className="mt-2 divide-y rounded border text-sm">
+            {processos.map((p, i) => {
+              const item = p as Record<string, unknown>;
+              const numero = typeof item.numero === "string" ? item.numero : "";
+              const assunto = typeof item.assunto === "string" ? item.assunto : "";
+              const acao = rotuloTipoAcao(item.tipo_acao);
+              const data = formatarData(item.data_acao);
+              return (
+                <li key={i} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-3 py-2">
+                  <div>
+                    <span className="font-medium">{numero}</span>
+                    {assunto && <span className="text-gray-600"> — {assunto}</span>}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {acao}
+                    {acao && data && " · "}
+                    {data}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
@@ -136,10 +174,21 @@ function PerfilConteudo() {
         {documentosAssinados.length === 0 ? (
           <p className="mt-2 text-sm text-gray-500">{perfil.mensagem_documentos}</p>
         ) : (
-          <ul className="mt-2 text-sm">
-            {documentosAssinados.map((d, i) => (
-              <li key={i}>{JSON.stringify(d)}</li>
-            ))}
+          <ul className="mt-2 divide-y rounded border text-sm">
+            {documentosAssinados.map((d, i) => {
+              const item = d as Record<string, unknown>;
+              const titulo =
+                (typeof item.titulo === "string" && item.titulo) ||
+                (typeof item.nome === "string" && item.nome) ||
+                "Documento";
+              const data = formatarData(item.data_assinatura ?? item.assinado_em);
+              return (
+                <li key={i} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-3 py-2">
+                  <span className="font-medium">{titulo}</span>
+                  {data && <span className="text-xs text-gray-500">{data}</span>}
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
