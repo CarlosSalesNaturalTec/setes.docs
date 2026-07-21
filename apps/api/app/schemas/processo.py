@@ -99,6 +99,9 @@ class CardProcessoResponse(BaseModel):
     assunto: str
     status: str
     unidade_atual_id: str
+    tipo_processo_nome: str
+    unidade_atual_nome: str
+    criado_em: datetime
     prazo_em: date
     dias_restantes: int
     vencido: bool
@@ -113,6 +116,9 @@ class CardProcessoResponse(BaseModel):
             assunto=processo.assunto,
             status=processo.status.value,
             unidade_atual_id=str(processo.unidade_atual_id),
+            tipo_processo_nome=processo.tipo_processo.nome,
+            unidade_atual_nome=processo.unidade_atual.nome,
+            criado_em=processo.criado_em,
             prazo_em=processo.prazo_em,
             dias_restantes=dias,
             vencido=dias < 0,

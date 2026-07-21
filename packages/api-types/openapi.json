@@ -225,6 +225,11 @@
             "title": "Assunto",
             "type": "string"
           },
+          "criado_em": {
+            "format": "date-time",
+            "title": "Criado Em",
+            "type": "string"
+          },
           "dias_restantes": {
             "title": "Dias Restantes",
             "type": "integer"
@@ -250,8 +255,16 @@
             "title": "Status",
             "type": "string"
           },
+          "tipo_processo_nome": {
+            "title": "Tipo Processo Nome",
+            "type": "string"
+          },
           "unidade_atual_id": {
             "title": "Unidade Atual Id",
+            "type": "string"
+          },
+          "unidade_atual_nome": {
+            "title": "Unidade Atual Nome",
             "type": "string"
           },
           "vencido": {
@@ -265,6 +278,9 @@
           "assunto",
           "status",
           "unidade_atual_id",
+          "tipo_processo_nome",
+          "unidade_atual_nome",
+          "criado_em",
           "prazo_em",
           "dias_restantes",
           "vencido",

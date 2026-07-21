@@ -6,12 +6,33 @@ import type { Schemas } from "@/lib/api";
 
 export type StatusProcesso = "aberto" | "em_tramitacao" | "concluido" | "arquivado";
 
-export const COLUNAS_KANBAN: { status: StatusProcesso; titulo: string }[] = [
-  { status: "aberto", titulo: "Aberto" },
-  { status: "em_tramitacao", titulo: "Em Tramitação" },
-  { status: "concluido", titulo: "Concluído" },
-  { status: "arquivado", titulo: "Arquivado" },
+// Mapeamento status→cor centralizado (D3): alimenta tanto o cabeçalho de
+// coluna do Kanban quanto a pill de status da Lista, a partir dos tokens
+// semânticos de `tailwind.config.ts` (`status.*`).
+export const COLUNAS_KANBAN: { status: StatusProcesso; titulo: string; corClasse: string }[] = [
+  { status: "aberto", titulo: "Aberto", corClasse: "bg-status-aberto-bg text-status-aberto" },
+  {
+    status: "em_tramitacao",
+    titulo: "Em Tramitação",
+    corClasse: "bg-status-tramitacao-bg text-status-tramitacao",
+  },
+  {
+    status: "concluido",
+    titulo: "Concluído",
+    corClasse: "bg-status-concluido-bg text-status-concluido",
+  },
+  {
+    status: "arquivado",
+    titulo: "Arquivado",
+    corClasse: "bg-status-arquivado-bg text-status-arquivado",
+  },
 ];
+
+export function corStatus(status: string): string {
+  return (
+    COLUNAS_KANBAN.find((c) => c.status === status)?.corClasse ?? "bg-gray-100 text-gray-700"
+  );
+}
 
 export const MOTIVOS_DEVOLUCAO: { valor: string; rotulo: string }[] = [
   { valor: "documentacao_insuficiente", rotulo: "Documentação insuficiente" },
@@ -47,6 +68,16 @@ export function agruparPorStatus(itens: Card[]): Record<StatusProcesso, Card[]> 
     if (grupos[status]) grupos[status].push(item);
   }
   return grupos;
+}
+
+// "Criado em dd/mm/aaaa hh:mm" para o card (Kanban e Lista).
+export function textoCriadoEm(card: Card): string {
+  const d = new Date(card.criado_em);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `Criado em ${dd}/${mm}/${d.getFullYear()} ${hh}:${min}`;
 }
 
 // Texto de "dias restantes"/"vencido" para o card (US 2.3 Cen.4).

@@ -1,10 +1,6 @@
 # quadro-kanban
 
-## Purpose
-
-Visualização Kanban por unidade (Servidor) e consolidada por unidades geridas (Gestor), com ordenação por prazo e filtro (US 2.3, 2.8).
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Quadro Kanban da unidade (Servidor)
 O sistema SHALL exibir ao Servidor um quadro Kanban **de visualização** (não manipulável por drag-and-drop) com as colunas "Aberto", "Em Tramitação", "Concluído" e "Arquivado", contendo apenas os processos atualmente na sua unidade. Cada card SHALL exibir número, **tipo de processo**, assunto, **unidade atual por extenso** (nome completo, não sigla), **data de criação** ("Criado em dd/mm/aaaa hh:mm"), prazo e dias restantes, ordenados por prazo. Cada card SHALL expor o atributo `sigiloso`, e os processos sigilosos SHALL ser exibidos normalmente no Kanban da unidade com um indicador visual de "Sigiloso" (ícone de cadeado 🔒). Ver PRD US 2.3, US 2.6 (Cen.3) e US 1.4.
@@ -57,6 +53,8 @@ O sistema SHALL exibir ao Gestor um quadro Kanban consolidado com os processos d
 - **QUANDO** o Kanban consolidado é montado ou tento filtrar/acessar processos da unidade DIRAD (que não gerencio)
 - **ENTÃO** o sistema não inclui nem retorna processos da DIRAD; uma tentativa de acesso direto é rejeitada com "Acesso negado — você não tem permissão para esta unidade" e registrada em log de segurança (PRD US 1.4 Cen.2 adaptado ao Gestor)
 
+## ADDED Requirements
+
 ### Requirement: Alternância entre visualização Kanban e Lista
 O sistema SHALL oferecer na tela de Processos um controle de alternância entre dois modos de visualização dos mesmos processos: **Kanban** (colunas por status) e **Lista** (linhas empilhadas). O modo Lista SHALL exibir cada processo como uma linha contendo número, tipo de processo, assunto, unidade atual por extenso, data de criação e o indicador de sigilo 🔒 quando aplicável, com a *pill* de status alinhada à direita. Ambos os modos SHALL respeitar exatamente o mesmo escopo de visibilidade por unidade/perfil do Kanban — a Lista NÃO SHALL ampliar o conjunto de processos visíveis. O modo padrão ao abrir a tela SHALL ser o Kanban.
 
@@ -95,27 +93,3 @@ O sistema SHALL exibir no cabeçalho da tela de Processos um contador com o tota
 - **DADO** que meu escopo não possui processos visíveis
 - **QUANDO** acesso a tela de Processos
 - **ENTÃO** o cabeçalho exibe "0 processo(s)" e as colunas/lista aparecem vazias com a mensagem correspondente
-
-### Requirement: Quadro Kanban consolidado read-only (Administrador)
-O sistema SHALL conceder ao Administrador acesso **read-only** ao Kanban
-consolidado de todas as unidades: ele visualiza os processos como qualquer
-observador autorizado, mas NÃO dispõe de controles de ação sobre processos —
-criar, despachar, devolver e alternar sigilo permanecem exclusivos do Servidor
-da unidade. A interface NÃO SHALL exibir ao Administrador controles de ação que
-ele não pode executar; o backend já rejeita essas ações para perfis não-Servidor.
-Ver PRD US 2.3/2.8.
-
-#### Scenario: Administrador visualiza o Kanban de todas as unidades
-- **DADO** que estou autenticado como Administrador
-- **QUANDO** acesso a tela de Processos
-- **ENTÃO** vejo o Kanban consolidado com os processos de todas as unidades, organizados por coluna de status
-
-#### Scenario: Administrador não vê controles de ação de processo
-- **DADO** que estou autenticado como Administrador na tela de Processos ou no detalhe de um processo
-- **QUANDO** a tela é renderizada
-- **ENTÃO** os controles "Novo processo", "Despachar", "Devolver" e alternar sigilo não são exibidos para o meu perfil
-
-#### Scenario: Ação de processo por Administrador é rejeitada pelo backend
-- **DADO** que estou autenticado como Administrador
-- **QUANDO** uma requisição de criar, despachar, devolver ou alternar sigilo de processo chega ao backend
-- **ENTÃO** a operação é rejeitada por ser exclusiva do perfil Servidor, registrando a tentativa em log de segurança

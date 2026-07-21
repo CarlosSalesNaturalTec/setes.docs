@@ -412,6 +412,13 @@ class Processo(Base):
     interessados: Mapped[list["ProcessoInteressado"]] = relationship(
         "ProcessoInteressado", back_populates="processo"
     )
+    # Somente leitura, para enriquecer o card do Kanban/busca (D1, change
+    # ajustar-visualizacao-processos) — carregadas com eager loading em
+    # `processo_consulta` para evitar N+1.
+    tipo_processo: Mapped["TipoProcesso"] = relationship(
+        "TipoProcesso", foreign_keys=[tipo_processo_id]
+    )
+    unidade_atual: Mapped["Unidade"] = relationship("Unidade", foreign_keys=[unidade_atual_id])
 
 
 class ProcessoInteressado(Base):
