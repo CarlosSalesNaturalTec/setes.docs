@@ -169,6 +169,11 @@ unidade.
 
 ### Assinar documentos digitalmente
 
+> **Sujeito a confirmação do certificado digital a ser utilizado.** Esta
+> funcionalidade depende da confirmação de compatibilidade dos certificados
+> digitais adotados pelo órgão; até essa confirmação, ela pode não estar
+> disponível.
+
 Você pode **assinar digitalmente** documentos de um processo para dar validade
 jurídica à sua manifestação, usando seu certificado digital. Qualquer pessoa
 pode depois **verificar** um documento assinado para confirmar que o conteúdo
@@ -342,7 +347,7 @@ Ao entrar, um usuário com permissão de Auditoria é levado diretamente à áre
 | **Situação do processo** | Estágio atual: Aberto, Em Tramitação, Concluído ou Arquivado. |
 | **Arquivamento automático** | O sistema arquiva sozinho processos concluídos após o prazo configurado (padrão: 30 dias). |
 | **Sigilo** | Marcação que restringe a aparição do processo na consulta pública; não afeta a tramitação interna. |
-| **Assinatura digital** | Assinatura de um documento com validade jurídica, feita com certificado digital. |
+| **Assinatura digital** | Assinatura de um documento com validade jurídica, feita com certificado digital. *(Sujeito a confirmação do certificado digital a ser utilizado.)* |
 | **Consulta pública** | Pesquisa de processos aberta ao cidadão, sem login. |
 | **Auditoria** | Permissão concedida pelo Administrador que dá acesso amplo a processos e relatórios para fiscalização. |
 | **LGPD** | Lei de proteção de dados pessoais; embasa os pedidos de exclusão/anonimização feitos por cidadãos. |
