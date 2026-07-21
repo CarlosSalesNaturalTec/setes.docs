@@ -138,6 +138,20 @@ describe("AdminUsuariosPage — ações de auditoria e desativação (US 8.3/8.4
     expect(within(linhaDoServidor()).queryByRole("button", { name: "Desativar Usuário" })).toBeNull();
   });
 
+  it("não oferece unidades inativas no select de cadastro de usuário", async () => {
+    listarUnidades.mockResolvedValue([
+      { id: "un-1", nome: "COFIN", sigla: "COFIN", ativo: true },
+      { id: "un-2", nome: "AJUR", sigla: "AJUR", ativo: false },
+    ]);
+
+    render(<AdminUsuariosPage />);
+    await screen.findByText("Servidor Um");
+
+    const select = screen.getByLabelText("Unidade") as HTMLSelectElement;
+    expect(within(select).getByRole("option", { name: "COFIN" })).toBeInTheDocument();
+    expect(within(select).queryByRole("option", { name: "AJUR" })).toBeNull();
+  });
+
   it("não exibe as ações de auditoria/desativação para um Gestor (não-Administrador)", async () => {
     usuarioAtual.value = { id: "gestor-1", nome: "Gestor", email: "gestor@example.com", perfil: "gestor" };
 
