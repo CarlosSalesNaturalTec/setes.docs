@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "@/components/auth-provider";
 import { ProtectedShell } from "@/components/protected-shell";
@@ -13,6 +14,14 @@ type Unidade = Schemas["UnidadeResponse"];
 type ModoVisualizacao = "kanban" | "lista";
 
 const CHAVE_MODO_VISUALIZACAO = "setes:processos:modo-visualizacao";
+
+// Rótulos da confirmação de sucesso pós-despacho/devolução (ver
+// openspec/changes/corrigir-feedback-despacho-devolucao) — a ação já concluída
+// é comunicada aqui, e não como erro de acesso ao processo movido.
+const VERBO_ACAO: Record<string, string> = {
+  despacho: "despachado",
+  devolucao: "devolvido",
+};
 
 function PillStatus({ status }: { status: string }) {
   return (
@@ -80,6 +89,8 @@ function LinhaProcesso({ card }: { card: Card }) {
 }
 
 function KanbanConteudo() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { usuario } = useAuth();
   const ehGestor = usuario?.perfil === "gestor";
   const ehServidor = usuario?.perfil === "servidor";
@@ -91,6 +102,16 @@ function KanbanConteudo() {
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [modo, setModo] = useState<ModoVisualizacao>("kanban");
+  const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
+
+  useEffect(() => {
+    const acao = searchParams.get("acao");
+    const destino = searchParams.get("destino");
+    if (acao && destino && VERBO_ACAO[acao]) {
+      setMensagemSucesso(`Processo ${VERBO_ACAO[acao]} para ${destino}.`);
+      router.replace("/processos");
+    }
+  }, [searchParams, router]);
 
   useEffect(() => {
     const salvo = window.localStorage.getItem(CHAVE_MODO_VISUALIZACAO);
@@ -197,6 +218,9 @@ function KanbanConteudo() {
         </div>
       </div>
 
+      {mensagemSucesso && (
+        <p className="mt-4 rounded bg-green-50 p-3 text-sm text-green-800">{mensagemSucesso}</p>
+      )}
       {erro && <p className="mt-4 text-sm text-red-600">{erro}</p>}
       {carregando && <p className="mt-4 text-sm text-gray-500">Carregando…</p>}
 
@@ -231,7 +255,9 @@ function KanbanConteudo() {
 export default function ProcessosPage() {
   return (
     <ProtectedShell>
-      <KanbanConteudo />
+      <Suspense fallback={<p className="p-4 text-sm text-gray-500">Carregando…</p>}>
+        <KanbanConteudo />
+      </Suspense>
     </ProtectedShell>
   );
 }

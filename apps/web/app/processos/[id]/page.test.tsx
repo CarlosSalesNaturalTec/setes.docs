@@ -12,6 +12,7 @@ const {
   devolverProcesso,
   marcarSigilo,
   removerSigilo,
+  push,
 } = vi.hoisted(() => ({
   obterProcesso: vi.fn(),
   historicoProcesso: vi.fn(),
@@ -20,10 +21,12 @@ const {
   devolverProcesso: vi.fn(),
   marcarSigilo: vi.fn(),
   removerSigilo: vi.fn(),
+  push: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
   useParams: () => ({ id: "proc-1" }),
+  useRouter: () => ({ push }),
 }));
 
 vi.mock("@/components/protected-shell", () => ({
@@ -87,7 +90,11 @@ describe("DetalheProcessoPage", () => {
     devolverProcesso.mockReset();
     marcarSigilo.mockReset();
     removerSigilo.mockReset();
-    listarUnidades.mockResolvedValue([{ id: "un-1", nome: "COFIN", sigla: "COFIN", ativo: true }]);
+    push.mockReset();
+    listarUnidades.mockResolvedValue([
+      { id: "un-1", nome: "COFIN", sigla: "COFIN", ativo: true },
+      { id: "un-2", nome: "AJUR", sigla: "AJUR", ativo: true },
+    ]);
     historicoProcesso.mockResolvedValue(HISTORICO_VAZIO);
   });
 
@@ -158,6 +165,78 @@ describe("DetalheProcessoPage", () => {
         justificativa: null,
       }),
     );
+  });
+
+  it("despacho que muda a unidade exibe sucesso e navega ao Kanban sem reler o processo (correção de feedback pós-despacho)", async () => {
+    obterProcesso.mockResolvedValue(PROCESSO_BASE);
+    despacharProcesso.mockResolvedValue({
+      ...PROCESSO_BASE,
+      unidade_atual_id: "un-2",
+      status: "em_tramitacao",
+    });
+
+    render(<DetalheProcessoPage />);
+    await userEvent.click(await screen.findByRole("button", { name: "Despachar" }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/processos?acao=despacho&destino=AJUR"));
+    expect(obterProcesso).toHaveBeenCalledTimes(1);
+    expect(
+      screen.queryByText("Acesso negado — você não tem permissão para visualizar este processo"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("conclusão na própria unidade permanece na tela, sem navegar (PRD US 2.2 Cen.2/4)", async () => {
+    obterProcesso.mockResolvedValue(PROCESSO_BASE);
+    despacharProcesso.mockImplementation((_id: string, body: { confirmar: boolean }) =>
+      body.confirmar
+        ? Promise.resolve({ ...PROCESSO_BASE, status: "concluido" })
+        : Promise.reject(
+            new ApiError(409, "Este é o destino final do roteiro. Deseja concluir o processo?"),
+          ),
+    );
+
+    render(<DetalheProcessoPage />);
+    await userEvent.click(await screen.findByRole("button", { name: "Despachar" }));
+    const modal = await screen.findByRole("dialog", { name: "Confirmar conclusão" });
+    await userEvent.click(within(modal).getByRole("button", { name: "Concluir processo" }));
+
+    expect(await screen.findByText("Concluído")).toBeInTheDocument();
+    await waitFor(() => expect(historicoProcesso).toHaveBeenCalledTimes(2));
+    expect(push).not.toHaveBeenCalled();
+    expect(obterProcesso).toHaveBeenCalledTimes(1);
+  });
+
+  it("devolução que muda a unidade exibe sucesso e navega ao Kanban (PRD US 2.2b)", async () => {
+    obterProcesso.mockResolvedValue(PROCESSO_BASE);
+    devolverProcesso.mockResolvedValue({
+      ...PROCESSO_BASE,
+      unidade_atual_id: "un-2",
+      status: "em_tramitacao",
+    });
+
+    render(<DetalheProcessoPage />);
+    await userEvent.click(await screen.findByRole("button", { name: "Devolver" }));
+    const modal = await screen.findByRole("dialog", { name: "Devolver processo" });
+    await userEvent.selectOptions(within(modal).getByLabelText("Motivo"), "documentacao_insuficiente");
+    await userEvent.click(within(modal).getByRole("button", { name: "Confirmar devolução" }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/processos?acao=devolucao&destino=AJUR"));
+    expect(
+      screen.queryByText("Acesso negado — você não tem permissão para visualizar este processo"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("falha real do despacho exibe erro sem navegar nem confirmar sucesso (PRD US 2.2)", async () => {
+    obterProcesso.mockResolvedValue(PROCESSO_BASE);
+    despacharProcesso.mockRejectedValue(new ApiError(403, "Acesso negado — você não tem permissão para despachar este processo."));
+
+    render(<DetalheProcessoPage />);
+    await userEvent.click(await screen.findByRole("button", { name: "Despachar" }));
+
+    expect(
+      await screen.findByText("Acesso negado — você não tem permissão para despachar este processo."),
+    ).toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
   });
 
   it("exibe o estado vazio do histórico para processo recém-criado (PRD US 2.4 Cen.2)", async () => {

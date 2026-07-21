@@ -4,6 +4,10 @@ import { defineConfig, devices } from "@playwright/test";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const apiDir = path.join(__dirname, "..", "api");
+const uvicornBin =
+  process.platform === "win32"
+    ? path.join(apiDir, ".venv", "Scripts", "uvicorn.exe")
+    : path.join(apiDir, ".venv", "bin", "uvicorn");
 
 // Flags de dev/E2E (Settings.dev_email_inbox / dev_db_reset, app/config.py) —
 // nunca setadas no `.env` de desenvolvimento normal (ver apps/api/.env):
@@ -31,7 +35,7 @@ export default defineConfig({
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: [
     {
-      command: `${path.join(apiDir, ".venv", "bin", "uvicorn")} app.main:app --port 8000`,
+      command: `${uvicornBin} app.main:app --port 8000`,
       cwd: apiDir,
       url: "http://localhost:8000/health",
       reuseExistingServer: !process.env.CI,

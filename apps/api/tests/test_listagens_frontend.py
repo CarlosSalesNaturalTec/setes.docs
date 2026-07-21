@@ -56,13 +56,22 @@ def test_listar_unidades_permite_usuario_com_permissao_de_auditoria(client, db):
     assert len(resp.json()) == 1
 
 
-def test_listar_unidades_nega_servidor_sem_permissao_de_auditoria(client, db):
+def test_listar_unidades_permite_servidor_comum(client, db):
+    """O catálogo de unidades (nome/sigla/ativo) não é dado sensível: o
+    Servidor precisa dele para resolver o nome da unidade de destino após
+    despachar/devolver um processo (openspec/changes/
+    corrigir-feedback-despacho-devolucao). Cadastro/edição/desativação de
+    unidade continuam restritos ao Administrador — ver
+    test_gerenciar_unidade_nega_nao_administrador."""
+    db.add_all([Unidade(nome="COFIN", sigla="COFIN", ativo=True)])
+    db.commit()
     _usuario(db, perfil=PerfilUsuario.SERVIDOR, email="servidor@example.com")
     token = _login(client, "servidor@example.com")
 
     resp = client.get("/unidades", headers=_auth(token))
 
-    assert resp.status_code == 403
+    assert resp.status_code == 200
+    assert len(resp.json()) == 1
 
 
 def test_listar_tipos_processo_inclui_roteiro_vigente(client, db):

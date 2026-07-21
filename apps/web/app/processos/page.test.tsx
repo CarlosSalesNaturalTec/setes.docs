@@ -2,11 +2,18 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { listarKanban, listarUnidades } = vi.hoisted(() => ({
+const { listarKanban, listarUnidades, replace } = vi.hoisted(() => ({
   listarKanban: vi.fn(),
   listarUnidades: vi.fn(),
+  replace: vi.fn(),
 }));
 let usuario: { perfil: string } = { perfil: "servidor" };
+let searchParams = new URLSearchParams();
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace }),
+  useSearchParams: () => searchParams,
+}));
 
 vi.mock("@/components/protected-shell", () => ({
   ProtectedShell: ({ children }: { children: React.ReactNode }) => children,
@@ -42,8 +49,10 @@ describe("ProcessosPage (Kanban)", () => {
   beforeEach(() => {
     listarKanban.mockReset();
     listarUnidades.mockReset();
+    replace.mockReset();
     listarUnidades.mockResolvedValue([]);
     usuario = { perfil: "servidor" };
+    searchParams = new URLSearchParams();
     window.localStorage.clear();
   });
 
@@ -210,6 +219,22 @@ describe("ProcessosPage (Kanban)", () => {
     const aberto = (await screen.findByText(/Aberto/)).closest("h2");
     expect(aberto?.className).toContain("bg-status-aberto-bg");
     expect(aberto?.className).toContain("text-status-aberto");
+  });
+
+  it("exibe a confirmação de sucesso vinda do despacho/devolução e limpa a query string", async () => {
+    searchParams = new URLSearchParams({ acao: "despacho", destino: "AJUR" });
+    listarKanban.mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      page_size: 50,
+      mensagem_vazio: "Nenhum processo encontrado nesta unidade",
+    });
+
+    render(<ProcessosPage />);
+
+    expect(await screen.findByText("Processo despachado para AJUR.")).toBeInTheDocument();
+    expect(replace).toHaveBeenCalledWith("/processos");
   });
 
   it("alterna entre Kanban e Lista mantendo os mesmos processos (toggle)", async () => {

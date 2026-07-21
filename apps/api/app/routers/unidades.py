@@ -5,13 +5,13 @@ from __future__ import annotations
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db.models import PerfilUsuario, Unidade, Usuario
 from app.db.session import get_db
 from app.schemas.unidades import CadastroUnidadeRequest, EditarUnidadeRequest, UnidadeResponse
-from app.security.autorizacao import get_current_user, registrar_acesso_negado, require_perfil
+from app.security.autorizacao import get_current_user, require_perfil
 from app.services.unidades import contar_processos_em_andamento
 
 router = APIRouter(prefix="/unidades", tags=["unidades"])
@@ -19,29 +19,18 @@ router = APIRouter(prefix="/unidades", tags=["unidades"])
 _require_admin = require_perfil(PerfilUsuario.ADMINISTRADOR)
 
 
-def _permitir_listar_unidades(
-    request: Request,
-    usuario: Annotated[Usuario, Depends(get_current_user)],
-    db: Annotated[Session, Depends(get_db)],
-) -> Usuario:
-    """Catálogo de unidades: Administrador, Gestor, ou usuário com permissão
-    de auditoria (`pode_auditar`, Épico 9 — filtro por unidade do relatório
-    consolidado, US 9.2). Ortogonal ao perfil, mesmo padrão de D1/D6 do change
-    `auditoria-e-relatorios` — não usa `require_perfil` sozinho."""
-    if usuario.perfil in (PerfilUsuario.ADMINISTRADOR, PerfilUsuario.GESTOR) or usuario.pode_auditar:
-        return usuario
-    registrar_acesso_negado(db, usuario=usuario, rota=request.url.path)
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN, detail="Acesso negado para o seu perfil."
-    )
-
-
 @router.get("", response_model=list[UnidadeResponse])
 def listar_unidades(
-    _usuario: Annotated[Usuario, Depends(_permitir_listar_unidades)],
+    _usuario: Annotated[Usuario, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
 ) -> list[UnidadeResponse]:
-    """Catálogo de unidades — usado pelos formulários de cadastro/CRUD do frontend."""
+    """Catálogo de unidades (nome/sigla/ativo) — qualquer usuário autenticado
+    pode listar: dado não sensível, usado pelos formulários de cadastro/CRUD
+    (Administrador/Gestor) e para o Servidor resolver o nome da unidade de
+    destino após despachar/devolver um processo (ver openspec/changes/
+    corrigir-feedback-despacho-devolucao). Cadastro/edição/desativação
+    continuam restritos ao Administrador (`_require_admin`, capability
+    `unidades-administrativas`)."""
     unidades = db.query(Unidade).order_by(Unidade.nome).all()
     return [UnidadeResponse.de(u) for u in unidades]
 

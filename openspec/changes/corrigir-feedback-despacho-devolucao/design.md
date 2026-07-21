@@ -39,7 +39,7 @@ novo estado.
 - Cobrir despacho (US 2.2) e devolução (US 2.2b) com a mesma correção.
 
 **Non-Goals:**
-- Nenhuma mudança no backend, no contrato OpenAPI ou nos tipos gerados.
+- Nenhuma mudança no contrato OpenAPI ou nos tipos gerados.
 - Não conceder ao Servidor de origem leitura do processo despachado (isso seria
   mudança de regra de visibilidade, fora de escopo — ver Open Questions).
 - Não alterar o Kanban, a notificação por e-mail nem o histórico imutável.
@@ -109,6 +109,28 @@ Servidor        page.tsx (despachar/devolver)            API
    │            (SEM re-fetch → sem 403)             + recarrega histórico
    │                   │                                   │
 ```
+
+### Decisão 4 — `GET /unidades` passa a exigir apenas autenticação (descoberto na implementação)
+
+O rótulo da unidade de destino (Decisão 3) sai de `nomeUnidade()`, que depende de
+`api.listarUnidades()`. Ao validar o E2E contra a API real, esse endpoint
+retornava 403 para um Servidor comum (`_permitir_listar_unidades` restringia a
+Administrador/Gestor/`pode_auditar`) — o front engolia o erro silenciosamente
+(`// rótulos de unidade são opcionais`) e `nomeUnidade()` caía no fallback (o
+UUID bruto). Isso já acontecia hoje no campo "Unidade atual" e nos rótulos de
+unidade do histórico para qualquer Servidor — não é uma regressão desta
+correção, mas a torna visível e quebra seu próprio critério de aceite (nomear a
+unidade de destino).
+
+`GET /unidades` expõe apenas nome/sigla/ativo — não é dado sensível (diferente
+de `GET /unidades/{id}/reativar` ou de cadastro/edição, que continuam
+Administrador-only). Ampliar a leitura para qualquer usuário autenticado
+(remover a checagem de perfil, manter `get_current_user`) resolve a causa raiz
+sem introduzir uma rota nova nem mudar o schema de resposta — não há mudança de
+contrato OpenAPI, `pnpm gen:types` não é necessário. O teste
+`test_listar_unidades_nega_servidor_sem_permissao_de_auditoria` foi substituído
+por `test_listar_unidades_permite_servidor_comum` em
+`apps/api/tests/test_listagens_frontend.py`.
 
 ## Risks / Trade-offs
 

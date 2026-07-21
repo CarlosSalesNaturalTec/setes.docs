@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "@/components/auth-provider";
@@ -120,6 +120,7 @@ function ModalDevolucao({
 }
 
 function DetalheConteudo({ id }: { id: string }) {
+  const router = useRouter();
   const { usuario } = useAuth();
   const ehServidor = usuario?.perfil === "servidor";
   const [processo, setProcesso] = useState<Processo | null>(null);
@@ -161,12 +162,29 @@ function DetalheConteudo({ id }: { id: string }) {
     return (uid: string | null) => (uid ? (mapa.get(uid) ?? uid) : "—");
   }, [unidades]);
 
+  async function irParaKanbanComSucesso(acao: "despacho" | "devolucao", unidadeDestinoId: string | null) {
+    const params = new URLSearchParams({ acao, destino: nomeUnidade(unidadeDestinoId) });
+    router.push(`/processos?${params.toString()}`);
+  }
+
   async function despachar(confirmar: boolean) {
     setErro(null);
+    const unidadeAnterior = processo?.unidade_atual_id ?? null;
     try {
-      await api.despacharProcesso(id, { confirmar });
+      const resposta = await api.despacharProcesso(id, { confirmar });
       setPromptConclusao(null);
-      await carregar();
+      if (resposta.unidade_atual_id !== unidadeAnterior) {
+        // O processo saiu do escopo da unidade: navegar sem reler o detalhe
+        // (uma releitura aqui retornaria 403, ver openspec/changes/corrigir-feedback-despacho-devolucao).
+        await irParaKanbanComSucesso("despacho", resposta.unidade_atual_id);
+        return;
+      }
+      setProcesso(resposta);
+      try {
+        setHistorico(await api.historicoProcesso(id));
+      } catch {
+        // atualização do histórico é best-effort — o despacho já foi concluído
+      }
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         // Última etapa: backend pede confirmação de conclusão (US 2.2 Cen.2/4).
@@ -179,10 +197,20 @@ function DetalheConteudo({ id }: { id: string }) {
 
   async function devolver(motivo: string, justificativa: string) {
     setErro(null);
+    const unidadeAnterior = processo?.unidade_atual_id ?? null;
     try {
-      await api.devolverProcesso(id, { motivo, justificativa: justificativa || null });
+      const resposta = await api.devolverProcesso(id, { motivo, justificativa: justificativa || null });
       setMostrarDevolucao(false);
-      await carregar();
+      if (resposta.unidade_atual_id !== unidadeAnterior) {
+        await irParaKanbanComSucesso("devolucao", resposta.unidade_atual_id);
+        return;
+      }
+      setProcesso(resposta);
+      try {
+        setHistorico(await api.historicoProcesso(id));
+      } catch {
+        // atualização do histórico é best-effort — a devolução já foi concluída
+      }
     } catch (err) {
       setMostrarDevolucao(false);
       setErro(err instanceof ApiError ? err.detail : "Não foi possível devolver.");

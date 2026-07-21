@@ -27,10 +27,20 @@ sistema (RNF de usabilidade: despachar em ≤ 2 cliques). Ocorrido com o process
   resposta e recarrega apenas o histórico, como hoje.
 - **Cobre despacho (US 2.2) e devolução (US 2.2b)**, que hoje têm exatamente o
   mesmo defeito (ambos chamam `carregar()` após a ação bem-sucedida).
-- **Nenhuma mudança no backend**: a autorização por unidade (`_exigir_leitura_ao_processo`,
-  `require_acesso_unidade`) está correta conforme a spec — negar leitura de um
-  processo fora do escopo é o comportamento previsto (US 1.4 Cen.2). O contrato
-  OpenAPI e os tipos gerados não mudam.
+- **Nenhuma mudança na autorização por processo**: a autorização por unidade
+  (`_exigir_leitura_ao_processo`, `require_acesso_unidade`) está correta conforme
+  a spec — negar leitura de um processo fora do escopo é o comportamento previsto
+  (US 1.4 Cen.2).
+- **Ajuste pontual de autorização em `GET /unidades`** (descoberto durante a
+  implementação, ver `design.md`): o catálogo de unidades (nome/sigla/ativo, dado
+  não sensível) era restrito a Administrador/Gestor/auditor, o que fazia
+  `nomeUnidade()` no front cair para o UUID bruto quando um Servidor comum tentava
+  resolver o nome de uma unidade — inclusive hoje, no campo "Unidade atual" e no
+  histórico, não só na confirmação de sucesso desta correção. `GET /unidades`
+  passa a exigir apenas autenticação (`get_current_user`); cadastro, edição,
+  desativação e reativação de unidade continuam restritos ao Administrador. O
+  contrato OpenAPI (rota, schema de resposta) não muda — não é necessário
+  `pnpm gen:types`.
 
 ## Capabilities
 
@@ -43,16 +53,28 @@ sistema (RNF de usabilidade: despachar em ≤ 2 cliques). Ocorrido com o process
   unidade SHALL ser comunicada como sucesso (com a unidade de destino), nunca
   como erro de acesso. Refina os cenários de despacho (US 2.2) e devolução
   (US 2.2b) com o pós-ação observável no cliente.
+- `unidades-administrativas`: adiciona requisito de **leitura do catálogo de
+  unidades por qualquer usuário autenticado** (`GET /unidades`) — descoberto
+  durante a implementação (design.md, Decisão 4): a restrição anterior
+  (Administrador/Gestor/auditor) impedia o Servidor de resolver nomes de
+  unidade no front. Gestão (cadastro/edição/desativação/reativação) continua
+  Administrador-only.
 
 ## Impact
 
-- **Código afetado**: apenas frontend —
+- **Código afetado**: frontend —
   `apps/web/app/processos/[id]/page.tsx` (funções `despachar` e `devolver`;
-  provável introdução de estado de confirmação de sucesso e navegação via
-  `useRouter`). Teste de componente correspondente em
-  `apps/web/app/processos/[id]/page.test.tsx` e o fluxo E2E
-  `apps/web/e2e/05-processos-despacho.spec.ts`.
-- **Backend / API / contrato OpenAPI**: inalterados. Sem `pnpm gen:types`.
+  estado de confirmação de sucesso e navegação via `useRouter`) e
+  `apps/web/app/processos/page.tsx` (Kanban lê a confirmação de sucesso via
+  query string). Teste de componente correspondente em
+  `apps/web/app/processos/[id]/page.test.tsx` e `apps/web/app/processos/page.test.tsx`,
+  e o fluxo E2E `apps/web/e2e/05-processos-despacho.spec.ts`. Backend —
+  `apps/api/app/routers/unidades.py` (`GET /unidades` passa a exigir apenas
+  autenticação, ver Decisão 4 do `design.md`) e
+  `apps/api/tests/test_listagens_frontend.py`.
+- **Backend / API / contrato OpenAPI**: rota e schema de `GET /unidades`
+  inalterados (só a política de autorização muda); demais rotas inalteradas.
+  Sem `pnpm gen:types`.
 - **Banco de dados**: nenhuma tabela nova ou alterada; nenhuma migration.
 - **Secret Manager / Cloud Storage**: sem novos segredos ou buckets.
 - **LGPD**: sem novo tratamento de dados pessoais — a mudança é de fluxo de UI e
