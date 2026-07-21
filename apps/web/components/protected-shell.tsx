@@ -12,6 +12,7 @@ import {
   IconDocumentos,
   IconFechar,
   IconLgpd,
+  IconMarca,
   IconMenu,
   IconPainel,
   IconPerfil,
@@ -153,7 +154,7 @@ export function ProtectedShell({
           <div>
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm font-semibold text-navy-900">
-                S
+                <IconMarca className="h-5 w-5" />
               </div>
               <span className="text-sm font-semibold">SETES.DOCS</span>
             </div>

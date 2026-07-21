@@ -6,7 +6,7 @@ from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
-from app.db.models import SistemaConfig, TipoEventoTramitacao, Tramitacao
+from app.db.models import SistemaConfig, StatusProcesso, TipoEventoTramitacao, Tramitacao
 from app.services import dashboard as dashboard_service
 from tests.helpers_processo import (
     gestor_de,
@@ -200,3 +200,86 @@ def test_estado_vazio_gestor_sem_processos(db):
     assert dashboard_service.listar_parados(db, unidades, dias_limiar=7, hoje=hoje) == []
     assert dashboard_service.produtividade_por_unidade(db, unidades, hoje=hoje) == []
     assert dashboard_service.prazos_em_risco(db, unidades, dias_antecedencia=2, hoje=hoje) == []
+
+
+def test_distribuicoes_contam_apenas_ativos(db):
+    cofin = unidade(db, "COFIN")
+    gestor = gestor_de(db, cofin)
+    criador = usuario(db, unidade_id=cofin.id)
+    tipo = tipo_com_roteiro(db, cofin)
+    hoje = date.today()
+
+    for _ in range(5):
+        processo_ativo(db, unidade=cofin, criador=criador, tipo=tipo, prazo_em=hoje + timedelta(days=10))
+    processo_concluido(
+        db,
+        unidade=cofin,
+        criador=criador,
+        tipo=tipo,
+        concluido_em=datetime.now(timezone.utc),
+        arquivar_em=datetime.now(timezone.utc),
+    )
+    processo_concluido(
+        db,
+        unidade=cofin,
+        criador=criador,
+        tipo=tipo,
+        concluido_em=datetime.now(timezone.utc),
+        arquivar_em=datetime.now(timezone.utc),
+        status=StatusProcesso.ARQUIVADO,
+    )
+
+    unidades = dashboard_service.resolver_escopo_gestor(db, gestor=gestor, unidade_id=None)
+
+    por_unidade = dashboard_service.distribuicao_por_unidade(db, unidades)
+    assert por_unidade == [(cofin.nome, 5)]
+
+    por_tipo = dashboard_service.distribuicao_por_tipo(db, unidades)
+    assert por_tipo == [(tipo.nome, 5)]
+
+    por_usuario = dashboard_service.distribuicao_por_usuario(db, unidades)
+    assert por_usuario == [(criador.nome, 5)]
+
+
+def test_distribuicao_conta_sigiloso(db):
+    cofin = unidade(db, "COFIN")
+    gestor = gestor_de(db, cofin)
+    criador = usuario(db, unidade_id=cofin.id)
+    tipo = tipo_com_roteiro(db, cofin)
+    hoje = date.today()
+
+    processo_ativo(db, unidade=cofin, criador=criador, tipo=tipo, prazo_em=hoje + timedelta(days=10))
+    sigiloso = processo_ativo(db, unidade=cofin, criador=criador, tipo=tipo, prazo_em=hoje + timedelta(days=10))
+    sigiloso.sigiloso = True
+    db.commit()
+
+    unidades = dashboard_service.resolver_escopo_gestor(db, gestor=gestor, unidade_id=None)
+    por_unidade = dashboard_service.distribuicao_por_unidade(db, unidades)
+    assert por_unidade == [(cofin.nome, 2)]
+
+
+def test_distribuicao_por_usuario_agrupa_por_autor_e_ordena_desc(db):
+    cofin = unidade(db, "COFIN")
+    gestor = gestor_de(db, cofin)
+    ricardo = usuario(db, unidade_id=cofin.id, email="ricardo@example.com")
+    ricardo.nome = "Ricardo Pita"
+    ana = usuario(db, unidade_id=cofin.id, email="ana@example.com")
+    ana.nome = "Ana Souza"
+    db.commit()
+    tipo = tipo_com_roteiro(db, cofin)
+    hoje = date.today()
+
+    for _ in range(5):
+        processo_ativo(db, unidade=cofin, criador=ricardo, tipo=tipo, prazo_em=hoje + timedelta(days=10))
+    for _ in range(2):
+        processo_ativo(db, unidade=cofin, criador=ana, tipo=tipo, prazo_em=hoje + timedelta(days=10))
+
+    unidades = dashboard_service.resolver_escopo_gestor(db, gestor=gestor, unidade_id=None)
+    por_usuario = dashboard_service.distribuicao_por_usuario(db, unidades)
+    assert por_usuario == [("Ricardo Pita", 5), ("Ana Souza", 2)]
+
+
+def test_distribuicoes_vazias_quando_sem_unidades(db):
+    assert dashboard_service.distribuicao_por_unidade(db, []) == []
+    assert dashboard_service.distribuicao_por_tipo(db, []) == []
+    assert dashboard_service.distribuicao_por_usuario(db, []) == []

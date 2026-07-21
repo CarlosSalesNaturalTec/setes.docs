@@ -454,6 +454,53 @@
         "title": "DevolverRequest",
         "type": "object"
       },
+      "DistribuicaoItem": {
+        "description": "Item de distribuição por dimensão (unidade/tipo/usuário) — US 6.2.",
+        "properties": {
+          "quantidade": {
+            "title": "Quantidade",
+            "type": "integer"
+          },
+          "rotulo": {
+            "title": "Rotulo",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rotulo",
+          "quantidade"
+        ],
+        "title": "DistribuicaoItem",
+        "type": "object"
+      },
+      "DistribuicoesResponse": {
+        "description": "US 6.2 — distribuição de processos ativos por unidade, por tipo e por usuário.",
+        "properties": {
+          "por_tipo": {
+            "items": {
+              "$ref": "#/components/schemas/DistribuicaoItem"
+            },
+            "title": "Por Tipo",
+            "type": "array"
+          },
+          "por_unidade": {
+            "items": {
+              "$ref": "#/components/schemas/DistribuicaoItem"
+            },
+            "title": "Por Unidade",
+            "type": "array"
+          },
+          "por_usuario": {
+            "items": {
+              "$ref": "#/components/schemas/DistribuicaoItem"
+            },
+            "title": "Por Usuario",
+            "type": "array"
+          }
+        },
+        "title": "DistribuicoesResponse",
+        "type": "object"
+      },
       "DocumentoRemovidoResponse": {
         "description": "Item da área administrativa \"Documentos Removidos\" (US 8.7): identifica o\nanexo em retenção com o processo de origem (número/assunto), a data de\nremoção e o responsável pela remoção.",
         "properties": {
@@ -3027,6 +3074,73 @@
         "summary": "Trocar Senha",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/dashboard/distribuicoes": {
+      "get": {
+        "description": "US 6.2 — distribuição de processos ativos por unidade, por tipo e por usuário.",
+        "operationId": "obter_distribuicoes_dashboard_distribuicoes_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "unidade_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Unidade Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DistribuicoesResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Obter Distribuicoes",
+        "tags": [
+          "dashboard"
         ]
       }
     },

@@ -18,6 +18,7 @@ from app.db.models import (
     Processo,
     SistemaConfig,
     StatusProcesso,
+    TipoProcesso,
     Tramitacao,
     Unidade,
     UnidadeGestor,
@@ -157,6 +158,60 @@ def produtividade_por_unidade(
     for unidade_id, quantidade in linhas:
         unidade = db.get(Unidade, unidade_id)
         resultado.append((unidade, quantidade))
+    return resultado
+
+
+def distribuicao_por_unidade(db: Session, unidades: list[uuid.UUID]) -> list[tuple[str, int]]:
+    """Processos ativos agrupados por unidade atual, ordenado por quantidade desc (US 6.2)."""
+    if not unidades:
+        return []
+    linhas = (
+        _query_ativos(db, unidades)
+        .with_entities(Processo.unidade_atual_id, func.count(Processo.id))
+        .group_by(Processo.unidade_atual_id)
+        .all()
+    )
+    resultado = []
+    for unidade_id, quantidade in linhas:
+        unidade_obj = db.get(Unidade, unidade_id)
+        resultado.append((unidade_obj.nome, quantidade))
+    resultado.sort(key=lambda item: item[1], reverse=True)
+    return resultado
+
+
+def distribuicao_por_tipo(db: Session, unidades: list[uuid.UUID]) -> list[tuple[str, int]]:
+    """Processos ativos agrupados por tipo de processo, ordenado por quantidade desc (US 6.2)."""
+    if not unidades:
+        return []
+    linhas = (
+        _query_ativos(db, unidades)
+        .with_entities(Processo.tipo_processo_id, func.count(Processo.id))
+        .group_by(Processo.tipo_processo_id)
+        .all()
+    )
+    resultado = []
+    for tipo_id, quantidade in linhas:
+        tipo_obj = db.get(TipoProcesso, tipo_id)
+        resultado.append((tipo_obj.nome, quantidade))
+    resultado.sort(key=lambda item: item[1], reverse=True)
+    return resultado
+
+
+def distribuicao_por_usuario(db: Session, unidades: list[uuid.UUID]) -> list[tuple[str, int]]:
+    """Processos ativos agrupados pelo autor (`criado_por_id`), ordenado por quantidade desc (US 6.2)."""
+    if not unidades:
+        return []
+    linhas = (
+        _query_ativos(db, unidades)
+        .with_entities(Processo.criado_por_id, func.count(Processo.id))
+        .group_by(Processo.criado_por_id)
+        .all()
+    )
+    resultado = []
+    for usuario_id, quantidade in linhas:
+        usuario_obj = db.get(Usuario, usuario_id)
+        resultado.append((usuario_obj.nome, quantidade))
+    resultado.sort(key=lambda item: item[1], reverse=True)
     return resultado
 
 

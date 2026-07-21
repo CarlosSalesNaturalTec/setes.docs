@@ -342,6 +342,8 @@ export const api = {
     get<Schemas["ProcessosAtivosResponse"]>("/dashboard/processos-ativos", { auth: true, query }),
   obterProcessosParadosDashboard: (query?: { unidade_id?: string }) =>
     get<Schemas["ProcessosParadosResponse"]>("/dashboard/processos-parados", { auth: true, query }),
+  obterDashboardDistribuicoes: (query?: { unidade_id?: string }) =>
+    get<Schemas["DistribuicoesResponse"]>("/dashboard/distribuicoes", { auth: true, query }),
 
   // Auditoria — relatório consolidado em tela (Épico 9, US 9.2).
   obterRelatorioAuditoria: (query?: {
