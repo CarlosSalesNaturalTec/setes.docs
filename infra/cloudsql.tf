@@ -26,8 +26,13 @@ resource "google_sql_database_instance" "postgres" {
     }
 
     backup_configuration {
-      enabled                        = true
-      point_in_time_recovery_enabled = true
+      enabled = true
+      # PITR desligado no MVP p/ economia (evita armazenamento contínuo de WAL);
+      # RPO passa a ser de até 24h (só backup diário automatizado).
+      # REATIVAR (=true) quando o sistema estiver estável e com alto volume de
+      # dados em produção — dados de processos administrativos + LGPD justificam
+      # RPO de minutos nesse momento.
+      point_in_time_recovery_enabled = false
     }
   }
 }

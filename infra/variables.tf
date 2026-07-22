@@ -22,20 +22,20 @@ variable "github_repository" {
 
 variable "db_tier" {
   type        = string
-  description = "Tier da instância Cloud SQL (MVP: pequena)."
-  default     = "db-custom-2-4096"
+  description = "Tier da instância Cloud SQL. MVP: db-f1-micro (shared/0,6 GB) p/ custo mínimo; subir p/ db-g1-small se houver instabilidade de memória."
+  default     = "db-f1-micro"
 }
 
 variable "db_max_connections" {
   type        = number
-  description = "max_connections configurado na instância Cloud SQL (teto de conexões)."
-  default     = 100
+  description = "max_connections da instância Cloud SQL (teto de conexões). Reduzido p/ 40 no db-f1-micro: cada conexão reserva RAM e 0,6 GB não comporta 100. Deve ser > api_max_instances × api_pool_size + overhead."
+  default     = 40
 }
 
 variable "api_max_instances" {
   type        = number
   description = "Teto de instâncias do Cloud Run api. instâncias × pool_size deve ficar < db_max_connections."
-  default     = 10
+  default     = 5
 }
 
 variable "api_pool_size" {
