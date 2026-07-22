@@ -1,10 +1,4 @@
-# quadro-kanban
-
-## Purpose
-
-Visualização Kanban por unidade (Servidor) e consolidada por unidades geridas (Gestor), com ordenação por prazo e filtro (US 2.3, 2.8).
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Quadro Kanban da unidade (Servidor)
 O sistema SHALL exibir ao Servidor um quadro Kanban **de visualização** (não manipulável por drag-and-drop) com as colunas "Aberto", "Em Tramitação", "Concluído" e "Arquivado", contendo os processos **atualmente na sua unidade** e também os processos **cuja unidade de origem é a sua unidade** e que já tramitaram para outras unidades — estes em modo **somente leitura**, com card **acinzentado** (fundo cinza e opacidade reduzida), clicável para o detalhe. Processos **sigilosos** que estejam em outra unidade NÃO SHALL aparecer no acompanhamento por origem; o sigiloso na própria unidade atual continua exibido com o indicador 🔒, como hoje. Cada card SHALL exibir número, **tipo de processo**, assunto, **unidade atual por extenso** (nome completo, não sigla), **data de criação** ("Criado em dd/mm/aaaa hh:mm"), prazo e dias restantes, ordenados por prazo, e SHALL expor os atributos `sigiloso`, `somente_leitura` e `devolvido`. Ver PRD US 2.3, US 2.6 (Cen.3) e US 1.4 (revisada por este change).
@@ -77,6 +71,8 @@ O sistema SHALL exibir ao Gestor um quadro Kanban consolidado com os processos d
 - **QUANDO** o Kanban consolidado é montado ou tento filtrar/acessar processos da unidade DIRAD (que não gerencio e que não é origem de processos das minhas unidades)
 - **ENTÃO** o sistema não inclui nem retorna processos originados e localizados fora do meu escopo; uma tentativa de acesso direto é rejeitada com "Acesso negado — você não tem permissão para esta unidade" e registrada em log de segurança (PRD US 1.4 Cen.2 adaptado ao Gestor)
 
+## ADDED Requirements
+
 ### Requirement: Destaque de processo devolvido
 O sistema SHALL destacar, no Kanban e na Lista, os processos cujo **último evento do histórico de tramitação é uma devolução** e que estão **atualmente na unidade do usuário** (atributo `devolvido` do card): badge "↩ Devolvido" e borda esquerda âmbar de 4px no card/linha. O destaque SHALL cessar automaticamente quando um novo evento de tramitação for registrado (ex.: novo despacho) — derivação exclusiva do histórico imutável, sem estado adicional. Quando o processo devolvido também estiver vencido, a borda vermelha de vencido SHALL prevalecer, mantendo o badge "↩ Devolvido". Processos devolvidos à unidade são acionáveis normalmente (não são somente leitura). Ver PRD US 2.2b.
 
@@ -112,66 +108,3 @@ O sistema SHALL exibir no topo da tela de Processos um checkbox "Exibir concluí
 - **DADO** que estou autenticado como Servidor da COFIN
 - **QUANDO** marco "Exibir concluídos e arquivados"
 - **ENTÃO** vejo apenas processos concluídos/arquivados do meu escopo (unidade atual ou origem COFIN, sem sigilosos fora da unidade); processos de outras unidades continuam inacessíveis e tentativas diretas seguem rejeitadas com registro em log de segurança
-
-### Requirement: Alternância entre visualização Kanban e Lista
-O sistema SHALL oferecer na tela de Processos um controle de alternância entre dois modos de visualização dos mesmos processos: **Kanban** (colunas por status) e **Lista** (linhas empilhadas). O modo Lista SHALL exibir cada processo como uma linha contendo número, tipo de processo, assunto, unidade atual por extenso, data de criação e o indicador de sigilo 🔒 quando aplicável, com a *pill* de status alinhada à direita. Ambos os modos SHALL respeitar exatamente o mesmo escopo de visibilidade por unidade/perfil do Kanban — a Lista NÃO SHALL ampliar o conjunto de processos visíveis. O modo padrão ao abrir a tela SHALL ser o Kanban.
-
-#### Scenario: Alternar de Kanban para Lista
-- **DADO** que estou na tela de Processos exibindo o Kanban
-- **QUANDO** aciono o controle de visualização "Lista"
-- **ENTÃO** os mesmos processos passam a ser exibidos como linhas empilhadas, cada linha com número, tipo, assunto, unidade por extenso, data de criação, indicador 🔒 quando sigiloso, e a *pill* de status à direita
-
-#### Scenario: Alternar de Lista para Kanban
-- **DADO** que estou na tela de Processos exibindo a Lista
-- **QUANDO** aciono o controle de visualização "Kanban"
-- **ENTÃO** os mesmos processos voltam a ser exibidos em colunas por status
-
-#### Scenario: Lista respeita o escopo de unidade — acesso negado
-- **DADO** que estou autenticado como Gestor das unidades COFIN e AJUR
-- **QUANDO** alterno para o modo Lista
-- **ENTÃO** a Lista exibe apenas processos de COFIN e AJUR, jamais processos da DIRAD (unidade que não gerencio), mantendo o mesmo escopo e a mesma rejeição de acesso do Kanban consolidado
-
-### Requirement: Cores por coluna de status no Kanban
-O sistema SHALL apresentar cada coluna do Kanban com uma cor associada ao seu status, de modo consistente e distinguível: "Aberto" em azul, "Em Tramitação" em âmbar, "Concluído" em verde e "Arquivado" em cinza. A cor SHALL ser um atributo de identidade visual da coluna (cabeçalho), sem alterar a máquina de estados nem a ordenação dos cards.
-
-#### Scenario: Colunas exibidas com cor por status
-- **DADO** que estou na tela de Processos no modo Kanban
-- **QUANDO** o quadro é renderizado
-- **ENTÃO** o cabeçalho da coluna "Aberto" é azul, "Em Tramitação" âmbar, "Concluído" verde e "Arquivado" cinza, cada um com o respectivo título e a contagem de cards da coluna
-
-### Requirement: Contador de processos no cabeçalho
-O sistema SHALL exibir no cabeçalho da tela de Processos um contador com o total de processos visíveis no escopo atual, no formato "{n} processo(s)", refletindo o número real de processos retornados.
-
-#### Scenario: Contador reflete o total visível
-- **DADO** que meu escopo possui 5 processos visíveis
-- **QUANDO** acesso a tela de Processos
-- **ENTÃO** o cabeçalho exibe "5 processo(s)"
-
-#### Scenario: Contador com escopo vazio
-- **DADO** que meu escopo não possui processos visíveis
-- **QUANDO** acesso a tela de Processos
-- **ENTÃO** o cabeçalho exibe "0 processo(s)" e as colunas/lista aparecem vazias com a mensagem correspondente
-
-### Requirement: Quadro Kanban consolidado read-only (Administrador)
-O sistema SHALL conceder ao Administrador acesso **read-only** ao Kanban
-consolidado de todas as unidades: ele visualiza os processos como qualquer
-observador autorizado, mas NÃO dispõe de controles de ação sobre processos —
-criar, despachar, devolver e alternar sigilo permanecem exclusivos do Servidor
-da unidade. A interface NÃO SHALL exibir ao Administrador controles de ação que
-ele não pode executar; o backend já rejeita essas ações para perfis não-Servidor.
-Ver PRD US 2.3/2.8.
-
-#### Scenario: Administrador visualiza o Kanban de todas as unidades
-- **DADO** que estou autenticado como Administrador
-- **QUANDO** acesso a tela de Processos
-- **ENTÃO** vejo o Kanban consolidado com os processos de todas as unidades, organizados por coluna de status
-
-#### Scenario: Administrador não vê controles de ação de processo
-- **DADO** que estou autenticado como Administrador na tela de Processos ou no detalhe de um processo
-- **QUANDO** a tela é renderizada
-- **ENTÃO** os controles "Novo processo", "Despachar", "Devolver" e alternar sigilo não são exibidos para o meu perfil
-
-#### Scenario: Ação de processo por Administrador é rejeitada pelo backend
-- **DADO** que estou autenticado como Administrador
-- **QUANDO** uma requisição de criar, despachar, devolver ou alternar sigilo de processo chega ao backend
-- **ENTÃO** a operação é rejeitada por ser exclusiva do perfil Servidor, registrando a tentativa em log de segurança

@@ -33,7 +33,7 @@ export class ApiError extends Error {
 
 interface RequestOptions {
   auth?: boolean;
-  query?: Record<string, string | number | undefined>;
+  query?: Record<string, string | number | boolean | undefined>;
 }
 
 function buildUrl(path: string, query?: RequestOptions["query"]): string {
@@ -264,8 +264,12 @@ export const api = {
     post<Schemas["CriarProcessoRequest"], Schemas["ProcessoResponse"]>("/processos", body, {
       auth: true,
     }),
-  listarKanban: (query?: { filtro_unidade?: string; page?: number; page_size?: number }) =>
-    get<Schemas["KanbanResponse"]>("/processos", { auth: true, query }),
+  listarKanban: (query?: {
+    filtro_unidade?: string;
+    incluir_finalizados?: boolean;
+    page?: number;
+    page_size?: number;
+  }) => get<Schemas["KanbanResponse"]>("/processos", { auth: true, query }),
   buscarProcessos: (query: {
     numero?: string;
     assunto?: string;

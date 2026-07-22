@@ -232,6 +232,23 @@ describe("DocumentosSection", () => {
     await waitFor(() => expect(baixarDocumento).toHaveBeenCalledWith("proc-1", "doc-2"));
   });
 
+  it("oculta anexar/remover quando somenteLeitura (change visibilidade-processos-origem, D2/D5)", async () => {
+    listarDocumentos.mockResolvedValue({ items: [DOC_PDF] });
+
+    render(
+      <DocumentosSection
+        processoId="proc-1"
+        status="em_tramitacao"
+        eventos={[EVENTO_DESPACHO, EVENTO_DEVOLUCAO]}
+        somenteLeitura
+      />,
+    );
+    await screen.findByText("parecer.pdf");
+
+    expect(screen.queryByLabelText("Anexar Documento")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Remover" })).not.toBeInTheDocument();
+  });
+
   it("clicar em PDF abre a visualização inline (US 3.2 Cen.1)", async () => {
     listarDocumentos.mockResolvedValue({ items: [DOC_PDF] });
     const blob = new Blob(["conteudo"], { type: "application/pdf" });

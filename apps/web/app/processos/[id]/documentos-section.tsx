@@ -116,10 +116,14 @@ export function DocumentosSection({
   processoId,
   status,
   eventos,
+  somenteLeitura = false,
 }: {
   processoId: string;
   status: string;
   eventos: EventoHistorico[];
+  /** Change visibilidade-processos-origem (D2/D5) — oculta anexar/remover
+   * quando o acompanhamento é somente leitura (unidade de origem). */
+  somenteLeitura?: boolean;
 }) {
   const [documentos, setDocumentos] = useState<Documento[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -142,7 +146,7 @@ export function DocumentosSection({
     void carregar();
   }, [carregar]);
 
-  const podeRemover = podeRemoverDocumento(status, eventos);
+  const podeRemover = !somenteLeitura && podeRemoverDocumento(status, eventos);
 
   async function anexar(arquivo: File) {
     setErro(null);
@@ -211,20 +215,22 @@ export function DocumentosSection({
     <section>
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-medium">Documentos</h2>
-        <label className="cursor-pointer rounded-card bg-navy-900 px-3 py-1 text-sm font-medium text-white">
-          {enviando ? "Enviando…" : "Anexar Documento"}
-          <input
-            type="file"
-            className="hidden"
-            disabled={enviando}
-            aria-label="Anexar Documento"
-            onChange={(e) => {
-              const arquivo = e.target.files?.[0];
-              e.target.value = "";
-              if (arquivo) void anexar(arquivo);
-            }}
-          />
-        </label>
+        {!somenteLeitura && (
+          <label className="cursor-pointer rounded-card bg-navy-900 px-3 py-1 text-sm font-medium text-white">
+            {enviando ? "Enviando…" : "Anexar Documento"}
+            <input
+              type="file"
+              className="hidden"
+              disabled={enviando}
+              aria-label="Anexar Documento"
+              onChange={(e) => {
+                const arquivo = e.target.files?.[0];
+                e.target.value = "";
+                if (arquivo) void anexar(arquivo);
+              }}
+            />
+          </label>
+        )}
       </div>
 
       {erro && <p className="mt-2 text-sm text-red-600">{erro}</p>}

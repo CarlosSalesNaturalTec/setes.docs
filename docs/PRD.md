@@ -125,12 +125,12 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
       * **Quando** tento fazer login com minhas credenciais corretas
       * **Então** o sistema rejeita a autenticação e exibe "Conta desativada. Entre em contato com o Administrador do sistema." NENHUM e-mail de alerta é enviado (pois a desativação é uma ação administrativa legítima, não uma tentativa de invasão).
 
-* **US 1.4:** Como Servidor, eu quero ver apenas os processos da minha unidade para que eu não visualizo indevidamente processos de outras unidades.
+* **US 1.4:** Como Servidor, eu quero ver os processos da minha unidade e acompanhar os que protocolei mesmo depois de tramitados para que eu não visualizo indevidamente processos de outras unidades, mas não perco o acompanhamento do que a minha unidade originou.
   * **Critérios de Aceitação:**
-    * *Cenário 1: Acesso restrito à unidade do servidor*
+    * *Cenário 1: Acesso pela unidade atual e acompanhamento pela unidade de origem (revisado — change visibilidade-processos-origem)*
       * **Dado** que estou autenticado como Servidor vinculado à unidade COFIN
       * **Quando** acesso a listagem de processos ou realizo qualquer busca
-      * **Então** vejo exclusivamente os processos que estão atualmente na unidade COFIN (colunas Aberto, Em Tramitação, Concluído e Arquivado do Kanban da COFIN). Processos que já tramitaram para outras unidades não aparecem mais no meu Kanban, mas permanecem acessíveis no meu histórico pessoal (US 1.5) e nos resultados de busca restritos à unidade COFIN (US 2.7)
+      * **Então** vejo os processos atualmente na unidade COFIN (colunas Aberto, Em Tramitação, Concluído e Arquivado do Kanban da COFIN, integralmente acionáveis) e, em modo **somente leitura** (card acinzentado, sem Despachar/Devolver/sigilo/anexar-remover documentos), os processos **cuja unidade de origem é a COFIN** e que já tramitaram para outra unidade. Processo sigiloso que está em outra unidade **não aparece** no acompanhamento por origem — o sigilo prevalece. Concluído/Arquivado só aparecem quando o checkbox "Exibir concluídos e arquivados" está marcado (default desmarcado)
     * *Cenário 2: Tentativa de acesso direto por URL a processo de outra unidade*
       * **Dado** que estou autenticado como Servidor da unidade COFIN e conheço o ID de um processo que nunca passou pela COFIN
       * **Quando** tento acessar diretamente a URL desse processo de outra unidade

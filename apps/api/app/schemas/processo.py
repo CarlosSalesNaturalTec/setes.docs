@@ -92,7 +92,12 @@ class ProcessoResponse(BaseModel):
 
 
 class CardProcessoResponse(BaseModel):
-    """Card enxuto do Kanban/busca (US 2.3, 2.7, 2.8)."""
+    """Card enxuto do Kanban/busca (US 2.3, 2.7, 2.8).
+
+    `somente_leitura` e `devolvido` são **contextuais ao usuário da
+    requisição** (change visibilidade-processos-origem, design D2/D3): não são
+    propriedades intrínsecas do processo, variam conforme quem pediu o card.
+    """
 
     id: str
     numero: str
@@ -106,9 +111,13 @@ class CardProcessoResponse(BaseModel):
     dias_restantes: int
     vencido: bool
     sigiloso: bool
+    somente_leitura: bool
+    devolvido: bool
 
     @classmethod
-    def de(cls, processo, *, hoje: date) -> "CardProcessoResponse":
+    def de(
+        cls, processo, *, hoje: date, somente_leitura: bool = False, devolvido: bool = False
+    ) -> "CardProcessoResponse":
         dias = (processo.prazo_em - hoje).days
         return cls(
             id=str(processo.id),
@@ -123,6 +132,8 @@ class CardProcessoResponse(BaseModel):
             dias_restantes=dias,
             vencido=dias < 0,
             sigiloso=processo.sigiloso,
+            somente_leitura=somente_leitura,
+            devolvido=devolvido,
         )
 
 
