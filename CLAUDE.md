@@ -120,7 +120,9 @@ rejeição grava `log_seguranca` (`acesso_negado`).
 Rotas em `app/` espelham o domínio (`/processos`, `/admin/*`, `/consulta-publica`,
 `/lgpd`, `/auditoria`, `/setup`, `/primeiro-acesso/[token]`). `lib/` = client HTTP,
 session-store, validação, rota-inicial (redirect por perfil). `components/` = shell
-protegido, auth-provider, session-watcher, sino de notificações.
+protegido, auth-provider, session-watcher, sino de notificações. Testes Vitest ficam
+**colocados** junto ao código (`lib/api.test.ts`, `components/*.test.tsx`), não em
+diretório separado.
 
 ### Infra `infra/` (Terraform, GCP)
 Cloud Run (web + api), Cloud SQL (Postgres, IP privado), Cloud Storage (documentos),
@@ -141,7 +143,9 @@ via **Workload Identity Federation** (sem chave JSON). `terraform.tfvars` e
 `DEV_DB_RESET=true` — flags **dev/E2E-only, nunca em produção** — que habilitam
 `GET /internal/dev/emails` (lê link de primeiro-acesso/recuperação sem provedor real)
 e `POST /internal/dev/reset` (banco limpo antes da suíte). Sem a flag, cada endpoint
-responde 404.
+responde 404. Specs em `apps/web/e2e/` — arquivos numerados por fluxo
+(`05-processos-despacho.spec.ts`, …), com `fixtures.ts`/`helpers/` compartilhados e
+`global-setup.ts` (reset do banco).
 
 ## Convenções de git
 

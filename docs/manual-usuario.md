@@ -21,6 +21,7 @@ ela vê e pode fazer. Os três perfis são:
 - [Perfil Gestor](#perfil-gestor)
 - [Perfil Administrador](#perfil-administrador)
 - [Nota: permissão de Auditoria](#nota-permissão-de-auditoria)
+- [Para o cidadão (sem login)](#para-o-cidadão-sem-login)
 - [Glossário](#glossário)
 
 ---
@@ -89,6 +90,12 @@ notificações dentro do sistema** e por **e-mail** (para você não perder praz
 mesmo sem estar logado). Exemplos de aviso: novo processo chegando à sua
 unidade, processo concluído e prazo se aproximando.
 
+- O número no sino indica quantas notificações **não lidas** você tem. Abrir o
+  painel **não zera o contador** — uma notificação só é considerada lida quando
+  você **clica nela** ou usa **"Marcar todas como lidas"**.
+- Notificações já lidas são mantidas por **30 dias** e depois removidas
+  automaticamente.
+
 ### 7. Sair e sessão automática
 
 Use **"Sair"** para encerrar sua sessão com segurança. Por proteção, o sistema
@@ -111,12 +118,23 @@ O Servidor é o **executor do dia a dia**. Ao entrar, você chega ao seu
 > Perfil") e nas buscas, com o mesmo escopo do quadro. Tentar abrir um
 > processo fora desse escopo resulta em **"Acesso negado"**.
 
-### O quadro de processos (Kanban)
+### A tela de Processos (Kanban e Lista)
 
-O quadro organiza os processos em colunas por situação: **Aberto**, **Em
-Tramitação**, **Concluído** e **Arquivado**. Ele dá uma visão rápida de onde
-cada processo está. As colunas mudam sozinhas conforme os processos são
-movimentados (não é preciso arrastar manualmente para trocar de situação).
+A tela de Processos tem **dois modos de visualização**, alternáveis por um
+controle no cabeçalho:
+
+- **Kanban** (modo padrão) — colunas por situação: **Aberto** (azul), **Em
+  Tramitação** (âmbar), **Concluído** (verde) e **Arquivado** (cinza). As
+  colunas mudam sozinhas conforme os processos são movimentados (não é preciso
+  arrastar manualmente para trocar de situação).
+- **Lista** — os mesmos processos como linhas empilhadas, com a situação
+  indicada à direita de cada linha.
+
+Cada card (ou linha) mostra o **número**, o **tipo de processo**, o
+**assunto**, a **unidade atual** (nome por extenso), a **data de criação**, o
+**prazo com os dias restantes** e o cadeado 🔒 quando o processo é sigiloso.
+Os processos aparecem **ordenados por prazo**, e o cabeçalho exibe o total de
+processos visíveis.
 
 - **Cards acinzentados** são processos que a sua unidade protocolou e que já
   tramitaram para outra unidade — você os acompanha, mas não pode agir sobre
@@ -173,12 +191,21 @@ sempre respeita a mesma regra de visibilidade do quadro — retorna os processos
 da sua unidade e os que ela protocolou (origem), sempre excluindo sigilosos
 fora da sua unidade.
 
-### Anexar e consultar documentos
+### Anexar, consultar e remover documentos
 
-- **Anexar:** adicione documentos ao processo (arquivos de texto, PDF ou
-  imagens) para centralizar tudo em um só lugar.
+- **Anexar:** adicione documentos ao processo nos formatos **PDF, DOC, DOCX,
+  JPG ou PNG**, com até **20 MB** por arquivo. Arquivos vazios ou em outros
+  formatos são recusados. Se você anexar um arquivo com nome repetido, o
+  sistema o renomeia automaticamente (ex.: "parecer (1).pdf") — nada é
+  sobrescrito.
 - **Consultar / baixar:** abra ou baixe os documentos já anexados para analisar
   o conteúdo.
+- **Remover:** um documento pode ser removido **apenas enquanto o processo
+  ainda está com a sua unidade e não foi despachado** (processo recém-criado ou
+  recém-devolvido). Depois do despacho, a remoção é bloqueada. A remoção pede
+  confirmação, fica registrada no histórico do processo (com autor e data/hora)
+  e o arquivo é preservado por **30 dias** — nesse período, o Administrador
+  consegue restaurá-lo se a remoção tiver sido um engano.
 
 ### Assinar documentos digitalmente
 
@@ -197,8 +224,10 @@ não foi alterado. Os documentos que você assinou ficam registrados no seu
 
 Quando um processo exige confidencialidade, você pode **marcá-lo como sigiloso**
 (e remover o sigilo depois). O sigilo **restringe a aparição do processo na
-consulta pública** — a tramitação interna continua normalmente. *(Gestores e
-Administradores também podem marcar sigilo.)*
+consulta pública** — a tramitação interna continua normalmente. Marcar e
+remover sigilo é uma ação do **Servidor da unidade onde o processo está**; nas
+demais unidades, um processo sigiloso simplesmente não aparece (só quem tem
+permissão de Auditoria consegue vê-lo).
 
 ---
 
@@ -224,6 +253,13 @@ unidades, como:
 - **Processos parados** (onde pode haver gargalo);
 - **Produtividade por unidade**.
 
+Abaixo dos KPIs, três **gráficos de distribuição** mostram como os processos
+**ativos** (Aberto e Em Tramitação) das suas unidades se dividem:
+
+- **Processos por Unidade**;
+- **Processos por Tipo**;
+- **Processos por Usuário** (quem criou cada processo).
+
 Use esses indicadores para identificar **onde os processos estão travando** e
 **quem está sobrecarregado**, e assim tomar decisões.
 
@@ -231,7 +267,9 @@ Use esses indicadores para identificar **onde os processos estão travando** e
 
 Além dos números, você vê um **quadro de processos consolidado** reunindo, em
 um só lugar, os processos de **todas as unidades que você gerencia** — uma visão
-completa do que está sob sua responsabilidade.
+completa do que está sob sua responsabilidade. Um **filtro por unidade** permite
+focar em uma unidade de cada vez, e a alternância **Kanban / Lista** funciona
+igual à do Servidor.
 
 ### Cadastrar usuários da sua unidade
 
@@ -249,10 +287,9 @@ Para não depender da equipe central a cada nova pessoa na sua equipe, você pod
 - Você **não pode** atribuir os perfis Gestor ou Administrador — isso é
   exclusivo do Administrador.
 
-### Marcar sigilo
-
-Assim como o Servidor, o Gestor também pode **marcar e remover o sigilo** de um
-processo quando a confidencialidade for necessária.
+> **Nota:** o Gestor **acompanha** os processos das suas unidades, mas as ações
+> de tramitação (criar, despachar, devolver e marcar sigilo) são executadas
+> pelos **Servidores** de cada unidade.
 
 ---
 
@@ -310,20 +347,39 @@ concluídos (padrão: 30 dias).
 - **Definir as unidades de um Gestor:** determine **quais unidades** cada Gestor
   gerencia, para dar a ele a visibilidade adequada à sua responsabilidade.
 
+### Acompanhar processos (somente leitura)
+
+O Administrador tem acesso à tela de **Processos de todas as unidades**, em
+modo **somente leitura**: você visualiza o quadro (Kanban ou Lista) e o detalhe
+de qualquer processo, mas **não vê botões de ação** — criar processo,
+despachar, devolver e marcar sigilo são ações exclusivas do **Servidor** da
+unidade onde o processo está. Use essa visão para acompanhar o andamento geral
+sem interferir.
+
 ### Restaurar documentos removidos
 
 Se um documento foi **removido por engano**, você pode **restaurá-lo** para
-recuperar a informação excluída indevidamente.
+recuperar a informação excluída indevidamente. A restauração só é possível
+dentro do período de retenção de **30 dias** após a remoção — depois disso, o
+arquivo é apagado definitivamente.
 
 ### Tratar solicitações de privacidade (LGPD)
 
-Cidadãos podem pedir a **exclusão ou anonimização dos seus dados pessoais**. Cabe
-ao Administrador **gerenciar essas solicitações** recebidas e dar o
-encaminhamento a cada pedido, em conformidade com a legislação.
+Cidadãos podem pedir a **exclusão ou anonimização dos seus dados pessoais**
+pelo canal público (ver [Para o cidadão](#para-o-cidadão-sem-login)). Em
+**"Solicitações LGPD"**, você vê a fila de pedidos com protocolo, data,
+solicitante, processo e status (**Pendente / Em análise / Atendida /
+Rejeitada**) e, para cada um:
 
-### Marcar sigilo
+- **Atender:** após validar a identidade do solicitante, o atendimento
+  **anonimiza de forma irreversível** os dados pessoais do titular no processo
+  (o número, as datas e o histórico de tramitação são preservados) e envia
+  e-mail automático ao solicitante informando a conclusão.
+- **Rejeitar:** exige uma **justificativa obrigatória** (por exemplo, quando o
+  solicitante não é o titular dos dados), enviada por e-mail ao solicitante.
 
-O Administrador também pode **marcar e remover o sigilo** de processos.
+"Atendida" e "Rejeitada" são status finais — a solicitação não pode ser
+reprocessada depois.
 
 ---
 
@@ -341,10 +397,36 @@ Quem recebe a permissão de Auditoria pode:
 Ao entrar, um usuário com permissão de Auditoria é levado diretamente à área de
 **Relatórios de Auditoria**.
 
-> **Sobre a Consulta Pública:** qualquer cidadão, **sem precisar de login**, pode
-> pesquisar o andamento de processos por número, assunto, tipo ou período no
-> portal de consulta pública. Processos marcados como **sigilosos** não aparecem
-> nessa consulta.
+---
+
+## Para o cidadão (sem login)
+
+Duas áreas do sistema são abertas ao público, **sem necessidade de cadastro ou
+senha**.
+
+### Consulta pública de processos
+
+Qualquer cidadão pode pesquisar o **andamento de processos** por número,
+assunto, tipo de processo ou período, no portal de consulta pública. A consulta
+mostra as informações de tramitação do processo, **sem expor dados pessoais**
+dos interessados. Processos marcados como **sigilosos** não aparecem nessa
+consulta.
+
+### Solicitação de privacidade (LGPD)
+
+Quem é titular de dados pessoais citados em um processo (ou seu representante
+legal) pode pedir a **exclusão** ou a **anonimização** desses dados pelo canal
+público de solicitação LGPD:
+
+1. Informe o **número do processo**, seu **nome completo**, **CPF** e um
+   **e-mail para resposta**.
+2. Escolha o tipo de solicitação: **"Exclusão de dados"** ou **"Anonimização de
+   dados"**.
+3. Anexe um **documento de identificação com foto** (PDF, JPG ou PNG).
+4. Envie. Você recebe um **número de protocolo** em tela e por e-mail.
+
+A resposta é enviada ao e-mail informado em **até 15 dias**. Guarde o número de
+protocolo — é por ele que a solicitação é identificada.
 
 ---
 
@@ -367,6 +449,8 @@ Ao entrar, um usuário com permissão de Auditoria é levado diretamente à áre
 | **Consulta pública** | Pesquisa de processos aberta ao cidadão, sem login. |
 | **Auditoria** | Permissão concedida pelo Administrador que dá acesso amplo a processos e relatórios para fiscalização. |
 | **LGPD** | Lei de proteção de dados pessoais; embasa os pedidos de exclusão/anonimização feitos por cidadãos. |
+| **Protocolo LGPD** | Número gerado ao registrar uma solicitação LGPD; identifica o pedido até a resposta. |
+| **Anonimização** | Substituição irreversível dos dados pessoais do titular no processo (nome e CPF/CNPJ), preservando número, datas e histórico. |
 
 ---
 
