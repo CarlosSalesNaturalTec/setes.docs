@@ -124,6 +124,11 @@ function DetalheConteudo({ id }: { id: string }) {
   const { usuario } = useAuth();
   const ehServidor = usuario?.perfil === "servidor";
   const [processo, setProcesso] = useState<Processo | null>(null);
+  // Change visibilidade-processos-origem (design D2/D5) — Servidor fora da
+  // unidade atual do processo (acompanhamento por origem, sem sigilo) vê o
+  // acompanhamento em modo leitura: sem Despachar/Devolver/sigilo/anexos.
+  const somenteLeitura =
+    ehServidor && !!processo && usuario?.unidade_id !== processo.unidade_atual_id;
   const [historico, setHistorico] = useState<Historico | null>(null);
   const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [aba, setAba] = useState<"detalhe" | "documentos" | "historico">("detalhe");
@@ -254,7 +259,7 @@ function DetalheConteudo({ id }: { id: string }) {
           <p className="text-sm text-gray-600">{processo.assunto}</p>
         </div>
         <div className="flex gap-2">
-          {ehServidor && !concluido && (
+          {ehServidor && !concluido && !somenteLeitura && (
             <>
               <button
                 type="button"
@@ -273,6 +278,7 @@ function DetalheConteudo({ id }: { id: string }) {
             </>
           )}
           {ehServidor &&
+            !somenteLeitura &&
             (processo.sigiloso ? (
               <button
                 type="button"
@@ -296,6 +302,11 @@ function DetalheConteudo({ id }: { id: string }) {
       </div>
 
       {erro && <p className="mt-3 text-sm text-red-600">{erro}</p>}
+      {somenteLeitura && (
+        <p className="mt-3 rounded bg-gray-100 p-2 text-sm text-gray-600">
+          Acompanhamento em modo leitura — este processo está atualmente em outra unidade.
+        </p>
+      )}
 
       <div className="mt-4 flex gap-4 border-b text-sm">
         <button
@@ -355,6 +366,7 @@ function DetalheConteudo({ id }: { id: string }) {
             processoId={processo.id}
             status={processo.status}
             eventos={historico.eventos ?? []}
+            somenteLeitura={somenteLeitura}
           />
         </div>
       ) : (

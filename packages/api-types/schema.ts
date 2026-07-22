@@ -522,6 +522,10 @@ export interface paths {
         /**
          * Listar Kanban
          * @description US 2.3/2.8 — Kanban da unidade (Servidor) ou consolidado (Gestor).
+         *
+         *     Escopo ampliado por unidade de origem, somente leitura (design D1/D2 do
+         *     change visibilidade-processos-origem); `incluir_finalizados` (D4) omite
+         *     Concluído/Arquivado por padrão.
          */
         get: operations["listar_kanban_processos_get"];
         put?: never;
@@ -1261,6 +1265,10 @@ export interface components {
         /**
          * CardProcessoResponse
          * @description Card enxuto do Kanban/busca (US 2.3, 2.7, 2.8).
+         *
+         *     `somente_leitura` e `devolvido` são **contextuais ao usuário da
+         *     requisição** (change visibilidade-processos-origem, design D2/D3): não são
+         *     propriedades intrínsecas do processo, variam conforme quem pediu o card.
          */
         CardProcessoResponse: {
             /** Assunto */
@@ -1270,6 +1278,8 @@ export interface components {
              * Format: date-time
              */
             criado_em: string;
+            /** Devolvido */
+            devolvido: boolean;
             /** Dias Restantes */
             dias_restantes: number;
             /** Id */
@@ -1283,6 +1293,8 @@ export interface components {
             prazo_em: string;
             /** Sigiloso */
             sigiloso: boolean;
+            /** Somente Leitura */
+            somente_leitura: boolean;
             /** Status */
             status: string;
             /** Tipo Processo Nome */
@@ -2125,6 +2137,8 @@ export interface components {
             pode_auditar: boolean;
             /** Status */
             status: string;
+            /** Unidade Id */
+            unidade_id?: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -2983,6 +2997,7 @@ export interface operations {
         parameters: {
             query?: {
                 filtro_unidade?: string | null;
+                incluir_finalizados?: boolean;
                 page?: number;
                 page_size?: number;
             };

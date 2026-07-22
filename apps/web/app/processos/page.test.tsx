@@ -43,6 +43,8 @@ const CARD_BASE = {
   dias_restantes: 5,
   vencido: false,
   sigiloso: false,
+  somente_leitura: false,
+  devolvido: false,
 };
 
 describe("ProcessosPage (Kanban)", () => {
@@ -148,7 +150,10 @@ describe("ProcessosPage (Kanban)", () => {
     await userEvent.selectOptions(filtro, "un-2");
 
     await waitFor(() =>
-      expect(listarKanban).toHaveBeenLastCalledWith({ filtro_unidade: "un-2" }),
+      expect(listarKanban).toHaveBeenLastCalledWith({
+        filtro_unidade: "un-2",
+        incluir_finalizados: false,
+      }),
     );
   });
 
@@ -265,5 +270,127 @@ describe("ProcessosPage (Kanban)", () => {
 
     // Só uma chamada à API para ambos os modos — mesma resposta reaproveitada (D2).
     expect(listarKanban).toHaveBeenCalledTimes(1);
+  });
+
+  it('checkbox "Exibir concluídos e arquivados" desmarcado por padrão (change visibilidade-processos-origem, D4)', async () => {
+    listarKanban.mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      page_size: 50,
+      mensagem_vazio: "Nenhum processo encontrado nesta unidade",
+    });
+
+    render(<ProcessosPage />);
+    await screen.findByText("Nenhum processo encontrado nesta unidade");
+
+    const checkbox = screen.getByLabelText("Exibir concluídos e arquivados");
+    expect(checkbox).not.toBeChecked();
+    await waitFor(() =>
+      expect(listarKanban).toHaveBeenLastCalledWith({ incluir_finalizados: false }),
+    );
+  });
+
+  it("marcar o checkbox chama a API com incluir_finalizados=true e persiste a preferência", async () => {
+    listarKanban.mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      page_size: 50,
+      mensagem_vazio: "Nenhum processo encontrado nesta unidade",
+    });
+
+    render(<ProcessosPage />);
+    await screen.findByText("Nenhum processo encontrado nesta unidade");
+
+    const checkbox = screen.getByLabelText("Exibir concluídos e arquivados");
+    await userEvent.click(checkbox);
+
+    expect(checkbox).toBeChecked();
+    await waitFor(() =>
+      expect(listarKanban).toHaveBeenLastCalledWith({ incluir_finalizados: true }),
+    );
+    expect(window.localStorage.getItem("setes:processos:exibir-finalizados")).toBe("true");
+  });
+
+  it("reaplica a preferência salva do checkbox na próxima visita", async () => {
+    window.localStorage.setItem("setes:processos:exibir-finalizados", "true");
+    listarKanban.mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      page_size: 50,
+      mensagem_vazio: null,
+    });
+
+    render(<ProcessosPage />);
+
+    await waitFor(() =>
+      expect(listarKanban).toHaveBeenLastCalledWith({ incluir_finalizados: true }),
+    );
+    expect(screen.getByLabelText("Exibir concluídos e arquivados")).toBeChecked();
+  });
+
+  it("o contador do cabeçalho reflete só o total retornado (finalizados ocultos)", async () => {
+    listarKanban.mockResolvedValue({
+      items: [{ ...CARD_BASE, id: "proc-1", numero: "2026/000001", assunto: "A" }],
+      total: 1,
+      page: 1,
+      page_size: 50,
+      mensagem_vazio: null,
+    });
+
+    render(<ProcessosPage />);
+
+    expect(await screen.findByText("1 processo(s)")).toBeInTheDocument();
+  });
+
+  it("exibe o card acinzentado quando somente_leitura (acompanhamento por origem)", async () => {
+    listarKanban.mockResolvedValue({
+      items: [
+        {
+          ...CARD_BASE,
+          id: "proc-1",
+          numero: "2026/000001",
+          assunto: "Despachado para AJUR",
+          unidade_atual_nome: "Assessoria Jurídica",
+          somente_leitura: true,
+        },
+      ],
+      total: 1,
+      page: 1,
+      page_size: 50,
+      mensagem_vazio: null,
+    });
+
+    render(<ProcessosPage />);
+
+    const card = (await screen.findByText("2026/000001")).closest("a");
+    expect(card?.className).toContain("bg-gray-100");
+    expect(card?.className).toContain("opacity-75");
+  });
+
+  it('exibe o badge "↩ Devolvido" com borda âmbar quando devolvido', async () => {
+    listarKanban.mockResolvedValue({
+      items: [
+        {
+          ...CARD_BASE,
+          id: "proc-1",
+          numero: "2026/000001",
+          assunto: "Devolvido pela AJUR",
+          devolvido: true,
+        },
+      ],
+      total: 1,
+      page: 1,
+      page_size: 50,
+      mensagem_vazio: null,
+    });
+
+    render(<ProcessosPage />);
+
+    const card = (await screen.findByText("2026/000001")).closest("a");
+    expect(card?.className).toContain("border-l-amber-500");
+    expect(within(card as HTMLElement).getByText("↩ Devolvido")).toBeInTheDocument();
   });
 });

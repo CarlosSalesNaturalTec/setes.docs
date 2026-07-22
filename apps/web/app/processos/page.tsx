@@ -7,7 +7,15 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { ProtectedShell } from "@/components/protected-shell";
 import { ApiError, api, type Schemas } from "@/lib/api";
-import { COLUNAS_KANBAN, agruparPorStatus, corStatus, rotuloStatus, textoCriadoEm, textoPrazo } from "@/lib/processo-ui";
+import {
+  CHAVE_EXIBIR_FINALIZADOS,
+  COLUNAS_KANBAN,
+  agruparPorStatus,
+  corStatus,
+  rotuloStatus,
+  textoCriadoEm,
+  textoPrazo,
+} from "@/lib/processo-ui";
 
 type Card = Schemas["CardProcessoResponse"];
 type Unidade = Schemas["UnidadeResponse"];
@@ -31,13 +39,33 @@ function PillStatus({ status }: { status: string }) {
   );
 }
 
+// Fundo/borda contextuais do card (design D6): somente_leitura acinzenta o
+// fundo (processo acompanhado por origem, fora da unidade atual); devolvido
+// destaca a borda esquerda em âmbar — vencido (borda vermelha) prevalece
+// quando os dois coincidem, mas o badge "↩ Devolvido" permanece.
+function classesFundoBorda(card: Card): string {
+  const fundo = card.somente_leitura ? "bg-gray-100 opacity-75" : "bg-superficie-card";
+  const borda = card.vencido
+    ? "border-l-4 border-l-red-600 font-bold"
+    : card.devolvido
+      ? "border-l-4 border-l-amber-500"
+      : "";
+  return `${fundo} ${borda}`;
+}
+
+function BadgeDevolvido() {
+  return (
+    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+      ↩ Devolvido
+    </span>
+  );
+}
+
 function CardProcesso({ card }: { card: Card }) {
   return (
     <Link
       href={`/processos/${card.id}`}
-      className={`block rounded-card border border-navy-50 bg-superficie-card p-3 text-sm shadow-card hover:bg-navy-50/40 ${
-        card.vencido ? "border-l-4 border-l-red-600 font-bold" : ""
-      }`}
+      className={`block rounded-card border border-navy-50 p-3 text-sm shadow-card hover:bg-navy-50/40 ${classesFundoBorda(card)}`}
     >
       <div className="flex items-center gap-1 font-mono text-xs text-gray-500">
         {card.numero}
@@ -47,8 +75,11 @@ function CardProcesso({ card }: { card: Card }) {
           </span>
         )}
       </div>
-      <div className="mt-1 inline-block rounded bg-navy-50 px-2 py-0.5 text-xs font-medium text-navy-700">
-        {card.tipo_processo_nome}
+      <div className="mt-1 flex flex-wrap items-center gap-1">
+        <span className="inline-block rounded bg-navy-50 px-2 py-0.5 text-xs font-medium text-navy-700">
+          {card.tipo_processo_nome}
+        </span>
+        {card.devolvido && <BadgeDevolvido />}
       </div>
       <div className="mt-1">{card.assunto}</div>
       <div className="mt-1 text-xs text-gray-500">{card.unidade_atual_nome}</div>
@@ -65,9 +96,7 @@ function LinhaProcesso({ card }: { card: Card }) {
   return (
     <Link
       href={`/processos/${card.id}`}
-      className={`flex flex-wrap items-center gap-3 rounded-card border border-navy-50 bg-superficie-card p-3 text-sm shadow-card hover:bg-navy-50/40 ${
-        card.vencido ? "border-l-4 border-l-red-600 font-bold" : ""
-      }`}
+      className={`flex flex-wrap items-center gap-3 rounded-card border border-navy-50 p-3 text-sm shadow-card hover:bg-navy-50/40 ${classesFundoBorda(card)}`}
     >
       <div className="flex items-center gap-1 font-mono text-xs text-gray-500">
         {card.numero}
@@ -80,6 +109,7 @@ function LinhaProcesso({ card }: { card: Card }) {
       <div className="rounded bg-navy-50 px-2 py-0.5 text-xs font-medium text-navy-700">
         {card.tipo_processo_nome}
       </div>
+      {card.devolvido && <BadgeDevolvido />}
       <div className="flex-1">{card.assunto}</div>
       <div className="text-xs text-gray-500">{card.unidade_atual_nome}</div>
       <div className="text-xs text-gray-500">{textoCriadoEm(card)}</div>
@@ -103,6 +133,7 @@ function KanbanConteudo() {
   const [carregando, setCarregando] = useState(true);
   const [modo, setModo] = useState<ModoVisualizacao>("kanban");
   const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
+  const [exibirFinalizados, setExibirFinalizados] = useState(false);
 
   useEffect(() => {
     const acao = searchParams.get("acao");
@@ -116,6 +147,7 @@ function KanbanConteudo() {
   useEffect(() => {
     const salvo = window.localStorage.getItem(CHAVE_MODO_VISUALIZACAO);
     if (salvo === "kanban" || salvo === "lista") setModo(salvo);
+    setExibirFinalizados(window.localStorage.getItem(CHAVE_EXIBIR_FINALIZADOS) === "true");
   }, []);
 
   const alternarModo = useCallback((novo: ModoVisualizacao) => {
@@ -123,13 +155,19 @@ function KanbanConteudo() {
     window.localStorage.setItem(CHAVE_MODO_VISUALIZACAO, novo);
   }, []);
 
+  const alternarExibirFinalizados = useCallback((novo: boolean) => {
+    setExibirFinalizados(novo);
+    window.localStorage.setItem(CHAVE_EXIBIR_FINALIZADOS, String(novo));
+  }, []);
+
   const carregar = useCallback(async () => {
     setCarregando(true);
     setErro(null);
     try {
-      const resp = await api.listarKanban(
-        filtroUnidade ? { filtro_unidade: filtroUnidade } : undefined,
-      );
+      const resp = await api.listarKanban({
+        ...(filtroUnidade ? { filtro_unidade: filtroUnidade } : {}),
+        incluir_finalizados: exibirFinalizados,
+      });
       setCards(resp.items);
       setTotal(resp.total);
       setMensagemVazio(resp.total === 0 ? (resp.mensagem_vazio ?? null) : null);
@@ -138,7 +176,7 @@ function KanbanConteudo() {
     } finally {
       setCarregando(false);
     }
-  }, [filtroUnidade]);
+  }, [filtroUnidade, exibirFinalizados]);
 
   useEffect(() => {
     void carregar();
@@ -167,6 +205,14 @@ function KanbanConteudo() {
           <span className="text-sm text-gray-500">{total} processo(s)</span>
         </div>
         <div className="flex items-center gap-2">
+          <label className="flex items-center gap-1.5 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={exibirFinalizados}
+              onChange={(e) => alternarExibirFinalizados(e.target.checked)}
+            />
+            Exibir concluídos e arquivados
+          </label>
           <div className="flex overflow-hidden rounded border">
             <button
               type="button"

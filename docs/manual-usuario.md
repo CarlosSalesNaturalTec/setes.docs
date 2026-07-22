@@ -102,19 +102,31 @@ acontece, basta entrar de novo.
 O Servidor é o **executor do dia a dia**. Ao entrar, você chega ao seu
 **quadro de processos (Kanban) da sua unidade**.
 
-> **Regra de visibilidade:** você enxerga **apenas os processos que estão na sua
-> unidade**. Processos que já seguiram para outra unidade saem do seu quadro,
-> mas continuam no seu histórico pessoal ("Meu Perfil") e nas buscas restritas à
-> sua unidade. Tentar abrir um processo de outra unidade resulta em **"Acesso
-> negado"**.
+> **Regra de visibilidade:** você enxerga os processos **atualmente na sua
+> unidade** (totalmente acionáveis) e também **acompanha, em modo somente
+> leitura, os processos que a sua unidade protocolou** e que já seguiram para
+> outra unidade — cards acinzentados, sem os botões de ação. Um processo
+> sigiloso em outra unidade **não aparece** nesse acompanhamento — o sigilo
+> prevalece. Esses processos continuam também no seu histórico pessoal ("Meu
+> Perfil") e nas buscas, com o mesmo escopo do quadro. Tentar abrir um
+> processo fora desse escopo resulta em **"Acesso negado"**.
 
 ### O quadro de processos (Kanban)
 
-O quadro organiza os processos da sua unidade em colunas por situação:
-**Aberto**, **Em Tramitação**, **Concluído** e **Arquivado**. Ele dá uma visão
-rápida de onde cada processo está. As colunas mudam sozinhas conforme você
-movimenta os processos (não é preciso arrastar manualmente para trocar de
-situação).
+O quadro organiza os processos em colunas por situação: **Aberto**, **Em
+Tramitação**, **Concluído** e **Arquivado**. Ele dá uma visão rápida de onde
+cada processo está. As colunas mudam sozinhas conforme os processos são
+movimentados (não é preciso arrastar manualmente para trocar de situação).
+
+- **Cards acinzentados** são processos que a sua unidade protocolou e que já
+  tramitaram para outra unidade — você os acompanha, mas não pode agir sobre
+  eles (abrir o detalhe mostra o aviso "Acompanhamento em modo leitura").
+- Um card com o selo **"↩ Devolvido"** e borda âmbar indica que o processo
+  acabou de ser devolvido à sua unidade e está pronto para uma nova ação; o
+  destaque some assim que você despachar novamente.
+- O checkbox **"Exibir concluídos e arquivados"**, no topo da tela, começa
+  **desmarcado** — os processos finalizados ficam ocultos até você marcá-lo.
+  A preferência é lembrada da próxima vez que você acessar a tela.
 
 ### Criar um novo processo
 
@@ -156,9 +168,10 @@ serve para entender toda a trajetória do processo.
 
 ### Buscar e filtrar processos
 
-Você pode **localizar processos da sua unidade** por número, assunto ou período.
-A busca sempre respeita a regra de visibilidade — só retorna processos da sua
-unidade.
+Você pode **localizar processos** por número, assunto ou período. A busca
+sempre respeita a mesma regra de visibilidade do quadro — retorna os processos
+da sua unidade e os que ela protocolou (origem), sempre excluindo sigilosos
+fora da sua unidade.
 
 ### Anexar e consultar documentos
 
@@ -194,9 +207,12 @@ Administradores também podem marcar sigilo.)*
 O Gestor tem a **visão tática** das unidades que gerencia. Ao entrar, você chega
 ao **Painel de Indicadores**.
 
-> **Regra de visibilidade:** você enxerga os processos de **todas as unidades
-> que você gerencia** — não apenas uma. Quais unidades você gerencia é definido
-> pelo Administrador.
+> **Regra de visibilidade:** você enxerga os processos **atualmente em
+> qualquer unidade que você gerencia** — não apenas uma — e também acompanha,
+> em modo somente leitura (card acinzentado), os processos **originados em
+> uma unidade sua** que já tramitaram para uma unidade que você não gerencia
+> (exceto sigilosos). Quais unidades você gerencia é definido pelo
+> Administrador.
 
 ### Painel de Indicadores (KPIs)
 

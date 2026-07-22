@@ -34,7 +34,15 @@ vi.mock("@/components/protected-shell", () => ({
 }));
 
 vi.mock("@/components/auth-provider", () => ({
-  useAuth: () => ({ usuario: { id: "u-1", nome: "Servidor", email: "s@example.com", perfil: "servidor" } }),
+  useAuth: () => ({
+    usuario: {
+      id: "u-1",
+      nome: "Servidor",
+      email: "s@example.com",
+      perfil: "servidor",
+      unidade_id: "un-1",
+    },
+  }),
 }));
 
 vi.mock("@/lib/api", async () => {
@@ -96,6 +104,35 @@ describe("DetalheProcessoPage", () => {
       { id: "un-2", nome: "AJUR", sigla: "AJUR", ativo: true },
     ]);
     historicoProcesso.mockResolvedValue(HISTORICO_VAZIO);
+  });
+
+  it("Servidor fora da unidade atual vê o detalhe em modo leitura, sem controles de ação (change visibilidade-processos-origem, D2/D5)", async () => {
+    obterProcesso.mockResolvedValue({ ...PROCESSO_BASE, unidade_atual_id: "un-2" });
+
+    render(<DetalheProcessoPage />);
+
+    expect(
+      await screen.findByText(
+        "Acompanhamento em modo leitura — este processo está atualmente em outra unidade.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Despachar" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Devolver" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Marcar como Sigiloso" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Remover Sigilo" })).not.toBeInTheDocument();
+  });
+
+  it("Servidor na própria unidade atual não vê o aviso de modo leitura", async () => {
+    obterProcesso.mockResolvedValue(PROCESSO_BASE);
+
+    render(<DetalheProcessoPage />);
+
+    await screen.findByRole("button", { name: "Despachar" });
+    expect(
+      screen.queryByText(
+        "Acompanhamento em modo leitura — este processo está atualmente em outra unidade.",
+      ),
+    ).not.toBeInTheDocument();
   });
 
   it("pede confirmação de conclusão na última etapa e conclui ao confirmar (PRD US 2.2 Cen.2/4)", async () => {

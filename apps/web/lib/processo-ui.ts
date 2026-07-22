@@ -6,6 +6,11 @@ import type { Schemas } from "@/lib/api";
 
 export type StatusProcesso = "aberto" | "em_tramitacao" | "concluido" | "arquivado";
 
+// Change visibilidade-processos-origem (design D4) — preferência do checkbox
+// "Exibir concluídos e arquivados", desmarcado por padrão, persistida por
+// navegador (não por usuário), mesmo padrão da chave do modo Kanban/Lista.
+export const CHAVE_EXIBIR_FINALIZADOS = "setes:processos:exibir-finalizados";
+
 // Mapeamento status→cor centralizado (D3): alimenta tanto o cabeçalho de
 // coluna do Kanban quanto a pill de status da Lista, a partir dos tokens
 // semânticos de `tailwind.config.ts` (`status.*`).

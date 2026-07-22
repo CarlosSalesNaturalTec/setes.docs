@@ -17,6 +17,11 @@ class UsuarioResumo(BaseModel):
     # Épico 9 — o frontend usa para exibir/ocultar a rota de relatório de
     # auditoria (US 9.2); ortogonal ao perfil (D1, auditoria-e-relatorios).
     pode_auditar: bool
+    # Change visibilidade-processos-origem (design D2) — o front compara com
+    # `processo.unidade_atual_id` para decidir o modo leitura do Servidor fora
+    # da unidade atual. `None` para perfis sem unidade própria (Gestor,
+    # Administrador).
+    unidade_id: str | None = None
 
     @classmethod
     def de(cls, usuario) -> "UsuarioResumo":  # usuario: app.db.models.Usuario
@@ -27,6 +32,7 @@ class UsuarioResumo(BaseModel):
             perfil=usuario.perfil.value,
             status=usuario.status.value,
             pode_auditar=usuario.pode_auditar,
+            unidade_id=str(usuario.unidade_id) if usuario.unidade_id else None,
         )
 
 

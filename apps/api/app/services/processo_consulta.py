@@ -2,7 +2,10 @@
 
 Todo escopo de unidade é derivado da primitiva de autorização existente
 (`tem_acesso_a_unidade`): Servidor vê só a própria unidade; Gestor, as unidades
-geridas; Administrador, todas. Nenhuma consulta retorna processo fora do escopo.
+geridas; Administrador, todas. Kanban e busca ampliam o escopo à unidade de
+origem do processo, em modo somente leitura, exceto sigiloso fora da unidade
+atual (change visibilidade-processos-origem, design D1). Nenhuma consulta
+retorna processo fora do escopo.
 """
 
 from __future__ import annotations
@@ -10,16 +13,20 @@ from __future__ import annotations
 import uuid
 from datetime import date
 
-from sqlalchemy import or_
+from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.db.models import (
     PerfilUsuario,
     Processo,
+    StatusProcesso,
+    TipoEventoTramitacao,
     Tramitacao,
     UnidadeGestor,
     Usuario,
 )
+
+_STATUS_FINALIZADOS = (StatusProcesso.CONCLUIDO, StatusProcesso.ARQUIVADO)
 
 
 def unidades_visiveis(db: Session, usuario: Usuario) -> list[uuid.UUID] | None:
@@ -42,15 +49,32 @@ def unidades_visiveis(db: Session, usuario: Usuario) -> list[uuid.UUID] | None:
     return []
 
 
+def _filtro_escopo(escopo: list[uuid.UUID]):
+    """Cláusula WHERE do escopo ampliado (design D1): unidade atual OU unidade
+    de origem, com sigiloso restrito à unidade atual — nunca vazado por origem."""
+    return or_(
+        Processo.unidade_atual_id.in_(escopo),
+        and_(Processo.unidade_origem_id.in_(escopo), Processo.sigiloso.is_(False)),
+    )
+
+
+def _unidade_no_escopo(unidade_id: uuid.UUID, escopo: list[uuid.UUID] | None) -> bool:
+    """`None` (Administrador) enxerga qualquer unidade — sempre "no escopo"."""
+    return escopo is None or unidade_id in escopo
+
+
 def listar_kanban(
     db: Session,
     *,
     usuario: Usuario,
     filtro_unidade: uuid.UUID | None = None,
+    incluir_finalizados: bool = False,
     page: int = 1,
     page_size: int = 50,
 ) -> tuple[list[Processo], int]:
-    """Cards do Kanban no escopo do usuário, ordenados por prazo (vencido primeiro)."""
+    """Cards do Kanban no escopo do usuário (atual ∪ origem, D1), ordenados por
+    prazo (vencido primeiro). `incluir_finalizados=False` (default, D4) omite
+    Concluído/Arquivado — não amplia nem reduz o escopo de autorização."""
     escopo = unidades_visiveis(db, usuario)
     query = db.query(Processo).options(
         joinedload(Processo.tipo_processo), joinedload(Processo.unidade_atual)
@@ -58,12 +82,14 @@ def listar_kanban(
     if escopo is not None:
         if not escopo:
             return [], 0
-        query = query.filter(Processo.unidade_atual_id.in_(escopo))
+        query = query.filter(_filtro_escopo(escopo))
     if filtro_unidade is not None:
         # Só filtra dentro do escopo já autorizado — nunca amplia o acesso.
         if escopo is not None and filtro_unidade not in escopo:
             return [], 0
         query = query.filter(Processo.unidade_atual_id == filtro_unidade)
+    if not incluir_finalizados:
+        query = query.filter(Processo.status.notin_(_STATUS_FINALIZADOS))
 
     total = query.count()
     itens = (
@@ -75,6 +101,43 @@ def listar_kanban(
     return itens, total
 
 
+def atributos_contextuais(
+    db: Session, *, usuario: Usuario, processos: list[Processo]
+) -> dict[uuid.UUID, tuple[bool, bool]]:
+    """`somente_leitura` e `devolvido` por processo, no escopo do usuário (D2, D3).
+
+    `somente_leitura` = unidade atual fora do escopo (sempre `False` para
+    Administrador). `devolvido` = último evento do histórico é `DEVOLUCAO` e o
+    processo está na unidade do escopo — mutuamente exclusivos por construção.
+    Uma única consulta em lote (`DISTINCT ON`) para os ids da página, sem N+1
+    e sem tocar em `tramitacao` (histórico imutável).
+    """
+    if not processos:
+        return {}
+
+    escopo = unidades_visiveis(db, usuario)
+    ids = [p.id for p in processos]
+    ultimos = (
+        db.query(Tramitacao.processo_id, Tramitacao.tipo_evento)
+        .filter(Tramitacao.processo_id.in_(ids))
+        .distinct(Tramitacao.processo_id)
+        .order_by(Tramitacao.processo_id, Tramitacao.criado_em.desc())
+        .all()
+    )
+    ultimo_evento_por_processo = {linha.processo_id: linha.tipo_evento for linha in ultimos}
+
+    resultado: dict[uuid.UUID, tuple[bool, bool]] = {}
+    for processo in processos:
+        no_escopo = _unidade_no_escopo(processo.unidade_atual_id, escopo)
+        somente_leitura = not no_escopo
+        devolvido = (
+            no_escopo
+            and ultimo_evento_por_processo.get(processo.id) == TipoEventoTramitacao.DEVOLUCAO
+        )
+        resultado[processo.id] = (somente_leitura, devolvido)
+    return resultado
+
+
 def buscar(
     db: Session,
     *,
@@ -84,7 +147,8 @@ def buscar(
     data_inicial: date | None = None,
     data_final: date | None = None,
 ) -> list[Processo]:
-    """Busca interna restrita ao escopo de unidade (US 2.7)."""
+    """Busca interna restrita ao escopo de unidade (US 2.7) — mesmo escopo
+    ampliado do Kanban (D1): busca e Kanban nunca divergem sobre visibilidade."""
     escopo = unidades_visiveis(db, usuario)
     query = db.query(Processo).options(
         joinedload(Processo.tipo_processo), joinedload(Processo.unidade_atual)
@@ -92,7 +156,7 @@ def buscar(
     if escopo is not None:
         if not escopo:
             return []
-        query = query.filter(Processo.unidade_atual_id.in_(escopo))
+        query = query.filter(_filtro_escopo(escopo))
 
     if numero:
         query = query.filter(Processo.numero == numero)

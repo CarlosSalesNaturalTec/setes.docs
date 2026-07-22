@@ -219,7 +219,7 @@
         "type": "object"
       },
       "CardProcessoResponse": {
-        "description": "Card enxuto do Kanban/busca (US 2.3, 2.7, 2.8).",
+        "description": "Card enxuto do Kanban/busca (US 2.3, 2.7, 2.8).\n\n`somente_leitura` e `devolvido` são **contextuais ao usuário da\nrequisição** (change visibilidade-processos-origem, design D2/D3): não são\npropriedades intrínsecas do processo, variam conforme quem pediu o card.",
         "properties": {
           "assunto": {
             "title": "Assunto",
@@ -229,6 +229,10 @@
             "format": "date-time",
             "title": "Criado Em",
             "type": "string"
+          },
+          "devolvido": {
+            "title": "Devolvido",
+            "type": "boolean"
           },
           "dias_restantes": {
             "title": "Dias Restantes",
@@ -249,6 +253,10 @@
           },
           "sigiloso": {
             "title": "Sigiloso",
+            "type": "boolean"
+          },
+          "somente_leitura": {
+            "title": "Somente Leitura",
             "type": "boolean"
           },
           "status": {
@@ -284,7 +292,9 @@
           "prazo_em",
           "dias_restantes",
           "vencido",
-          "sigiloso"
+          "sigiloso",
+          "somente_leitura",
+          "devolvido"
         ],
         "title": "CardProcessoResponse",
         "type": "object"
@@ -2397,6 +2407,17 @@
           "status": {
             "title": "Status",
             "type": "string"
+          },
+          "unidade_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unidade Id"
           }
         },
         "required": [
@@ -3917,7 +3938,7 @@
     },
     "/processos": {
       "get": {
-        "description": "US 2.3/2.8 — Kanban da unidade (Servidor) ou consolidado (Gestor).",
+        "description": "US 2.3/2.8 — Kanban da unidade (Servidor) ou consolidado (Gestor).\n\nEscopo ampliado por unidade de origem, somente leitura (design D1/D2 do\nchange visibilidade-processos-origem); `incluir_finalizados` (D4) omite\nConcluído/Arquivado por padrão.",
         "operationId": "listar_kanban_processos_get",
         "parameters": [
           {
@@ -3935,6 +3956,16 @@
                 }
               ],
               "title": "Filtro Unidade"
+            }
+          },
+          {
+            "in": "query",
+            "name": "incluir_finalizados",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Incluir Finalizados",
+              "type": "boolean"
             }
           },
           {
