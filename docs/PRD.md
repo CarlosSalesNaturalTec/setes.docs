@@ -24,7 +24,7 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
   * Workflow roteirizado: tramitação de processos entre unidades conforme caminho predefinido por tipo de processo
   * Quadro Kanban com colunas (Aberto, Em Tramitação, Concluído, Arquivado) e transições automáticas de status
   * Upload e anexação de documentos (PDF, Word, imagens) aos processos, com armazenamento no próprio sistema
-  * **Condicional ao Discovery Técnico:** Assinatura digital com certificado ICP-Brasil (e-CPF/e-CNPJ) com validade jurídica plena. Este item depende de confirmação técnica de compatibilidade dos certificados do cliente com as APIs de assinatura dos navegadores-alvo. Caso o Discovery Técnico identifique restrições impeditivas, este item será removido do MVP e migrado para a Fase 2.
+  * ~~**Condicional ao Discovery Técnico:** Assinatura digital com certificado ICP-Brasil (e-CPF/e-CNPJ) com validade jurídica plena.~~ **REMOVIDO DO MVP — movido para a Fase 2** (decisão formalizada em 2026-07-27). O plano de contingência previsto neste item foi acionado: o MVP foi lançado sem assinatura digital, a interface não exibe o botão "Assinar" e os documentos tramitam sem assinatura. Critérios de aceite preservados no Épico 4 como backlog da Fase 2.
   * Notificações internas (ícone no sistema) e por e-mail para eventos relevantes (novo processo recebido, processo concluído, prazo próximo)
   * Dashboard de KPIs para gestores: processos ativos, tempo médio de tramitação, processos parados, produtividade por unidade
   * Consulta pública de processos por número, assunto, tipo de processo ou data, sem necessidade de autenticação
@@ -442,7 +442,16 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
       * **Quando** clico sobre o nome do documento
       * **Então** o download do arquivo é iniciado automaticamente, e o sistema exibe a mensagem "Formato não permite visualização inline — o download será iniciado"
 
-### Épico 4: Assinatura Digital
+### Épico 4: Assinatura Digital — FASE 2 (fora do MVP)
+
+> **Status: movido para a Fase 2 — decisão formalizada em 2026-07-27.** O plano de
+> contingência abaixo foi acionado: o MVP foi lançado sem assinatura digital, a interface
+> não exibe o botão "Assinar" e os documentos tramitam sem assinatura. **Nada deste épico
+> está implementado** — não há capability correspondente em `openspec/specs/`, não há spec
+> Playwright, e `documentos_assinados` no perfil (US 1.5) é campo placeholder que retorna
+> vazio. As US 4.1 e 4.2 abaixo permanecem válidas como backlog da Fase 2; os requisitos
+> funcionais 16, 17, 18 e 41 e as exigências de MP 2.200-2/2001 e ICP-Brasil nos requisitos
+> não funcionais só passam a valer quando o épico for retomado.
 
 **Premissa de Produto:** O usuário deve conseguir assinar documentos utilizando seu certificado digital ICP-Brasil (e-CPF/e-CNPJ), diretamente pelo navegador, sem necessidade de instalar software adicional no computador. **Decisão de produto:** O Épico 4 (Assinatura Digital) está condicionado à confirmação, durante a fase de Discovery Técnico, de que os certificados em uso pelo cliente são compatíveis com as APIs de assinatura disponíveis nos navegadores-alvo (Chrome, Firefox, Edge — versões estáveis mais recentes). **Plano de contingência:** Caso o Discovery Técnico identifique restrições impeditivas, o Épico 4 será movido para a Fase 2 do produto, e o MVP será lançado sem assinatura digital. Neste cenário, a interface não exibirá o botão "Assinar", e os documentos tramitarão sem assinatura digital até a Fase 2.
 
@@ -847,9 +856,9 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
 13. O sistema deve permitir upload de documentos nos formatos PDF, DOC, DOCX, JPG e PNG com tamanho máximo de 20 MB por arquivo
 14. Documentos anexados devem ser armazenados no próprio sistema e vinculados ao processo
 15. O sistema deve permitir visualização inline (no navegador) de documentos PDF e imagens
-16. O sistema deve permitir assinatura digital de documentos utilizando certificado ICP-Brasil (e-CPF/e-CNPJ)
-17. O sistema deve verificar a validade do certificado digital (data de expiração, revogação) antes de aplicar a assinatura
-18. O sistema deve permitir múltiplas assinaturas (coassinatura) no mesmo documento
+16. *(FASE 2 — Épico 4, fora do MVP)* O sistema deve permitir assinatura digital de documentos utilizando certificado ICP-Brasil (e-CPF/e-CNPJ)
+17. *(FASE 2 — Épico 4, fora do MVP)* O sistema deve verificar a validade do certificado digital (data de expiração, revogação) antes de aplicar a assinatura
+18. *(FASE 2 — Épico 4, fora do MVP)* O sistema deve permitir múltiplas assinaturas (coassinatura) no mesmo documento
 19. O sistema deve gerar notificações internas (ícone no menu) para eventos como recebimento de novo processo
 20. O sistema deve enviar e-mails de notificação para novo processo recebido e alerta de prazo próximo ao vencimento
 21. O dashboard de gestão deve exibir: total de processos ativos, tempo médio de tramitação, processos parados e produtividade por unidade
@@ -872,18 +881,18 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
 38. Dados pessoais de processos arquivados devem ser mantidos pelo prazo legal aplicável; após esse prazo, o sistema deve anonimizar ou excluir os dados pessoais automaticamente
 39. O sistema deve permitir que um mesmo usuário mantenha múltiplas sessões ativas simultaneamente em dispositivos diferentes, com expiração independente por inatividade (US 1.9)
 40. O sistema deve permitir ao Gestor visualizar um quadro Kanban consolidado com os processos de todas as unidades que gerencia, com filtro por unidade (US 2.8)
-41. O sistema deve permitir a verificação de integridade e validade de documentos assinados digitalmente, exibindo signatário, data, autoridade certificadora e status da assinatura (US 4.2)
+41. *(FASE 2 — Épico 4, fora do MVP)* O sistema deve permitir a verificação de integridade e validade de documentos assinados digitalmente, exibindo signatário, data, autoridade certificadora e status da assinatura (US 4.2)
 42. O sistema deve gerar notificação interna quando um processo da unidade do usuário é concluído (US 5.3)
 43. O sistema deve gerar notificação interna de alerta quando um processo da unidade do usuário está com prazo a vencer em 2 dias corridos ou menos (US 5.4)
 44. O sistema deve permitir ao Administrador gerenciar solicitações LGPD recebidas, processando pedidos de exclusão ou anonimização de dados pessoais (US 10.2)
 
 ## 6. Requisitos Não Funcionais
 
-* **Segurança:** Todas as senhas devem ser armazenadas com hash criptográfico e nunca em texto plano. A comunicação entre o navegador e o servidor deve ser criptografada (HTTPS). As assinaturas digitais devem seguir os padrões e algoritmos criptográficos vigentes da ICP-Brasil (MP 2.200-2/2001 e normas correlatas). O histórico de tramitação deve ser imutável e à prova de adulteração. **Proteção contra Abuso:** A consulta pública deve implementar limite de requisições por endereço IP de no máximo 60 consultas por minuto. Ao exceder o limite, o sistema deve retornar a mensagem "Muitas consultas realizadas. Aguarde alguns instantes e tente novamente." e liberar o acesso automaticamente após 60 segundos. Este mecanismo visa prevenir scraping massivo sem prejudicar o uso legítimo do cidadão.
+* **Segurança:** Todas as senhas devem ser armazenadas com hash criptográfico e nunca em texto plano. A comunicação entre o navegador e o servidor deve ser criptografada (HTTPS). *(FASE 2 — Épico 4, fora do MVP)* As assinaturas digitais devem seguir os padrões e algoritmos criptográficos vigentes da ICP-Brasil (MP 2.200-2/2001 e normas correlatas). O histórico de tramitação deve ser imutável e à prova de adulteração. **Proteção contra Abuso:** A consulta pública deve implementar limite de requisições por endereço IP de no máximo 60 consultas por minuto. Ao exceder o limite, o sistema deve retornar a mensagem "Muitas consultas realizadas. Aguarde alguns instantes e tente novamente." e liberar o acesso automaticamente após 60 segundos. Este mecanismo visa prevenir scraping massivo sem prejudicar o uso legítimo do cidadão.
 * **Disponibilidade:** O sistema deve estar disponível 24 horas por dia, 7 dias por semana, com tolerância a janelas de manutenção programada de até 2 horas mensais fora do horário comercial.
 * **Performance:** O quadro Kanban deve carregar em até 3 segundos para unidades com até 500 processos ativos. Para unidades com mais de 500 processos ativos, o sistema deve implementar paginação automática (50 cards por página) mantendo o tempo de carregamento abaixo de 3 segundos. A consulta pública deve retornar resultados paginados (20 resultados por página) em até 5 segundos. O upload de documentos de até 20 MB deve ser concluído em até 30 segundos em conexões de banda larga padrão.
 * **Usabilidade:** A interface deve ser responsiva, permitindo o uso por navegadores de desktop e dispositivos móveis. O sistema deve seguir os padrões visuais definidos pelo cliente nas telas de referência. As ações mais frequentes (despachar processo, anexar documento) devem ser acessíveis em no máximo dois cliques a partir da tela principal.
-* **Conformidade Legal:** O sistema deve estar em conformidade com a Lei Geral de Proteção de Dados (LGPD) no tratamento de dados pessoais de servidores, interessados e cidadãos. As assinaturas digitais devem atender aos requisitos da MP 2.200-2/2001 e normas da ICP-Brasil. Os registros de tramitação devem atender aos requisitos de auditoria para órgãos públicos.
+* **Conformidade Legal:** O sistema deve estar em conformidade com a Lei Geral de Proteção de Dados (LGPD) no tratamento de dados pessoais de servidores, interessados e cidadãos. *(FASE 2 — Épico 4, fora do MVP)* As assinaturas digitais devem atender aos requisitos da MP 2.200-2/2001 e normas da ICP-Brasil. Os registros de tramitação devem atender aos requisitos de auditoria para órgãos públicos.
 * **Escalabilidade:** A arquitetura deve suportar o crescimento gradual de usuários e processos sem degradação significativa, comportando no MVP até 500 usuários ativos e 10.000 processos simultâneos.
 * **Manutenibilidade:** A configuração de unidades, tipos de processo, roteiros e prazos de arquivamento deve ser dinâmica (via interface de administração), sem necessidade de intervenção no código-fonte.
 

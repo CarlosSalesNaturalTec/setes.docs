@@ -38,7 +38,18 @@ Todo trabalho de domínio passa por um *change* em `openspec/changes/`. As regra
 
 Skills OpenSpec disponíveis via Skill tool: `opsx:new`, `opsx:propose`, `opsx:apply`,
 `opsx:continue`, `opsx:verify`, `opsx:archive` (e variantes). `openspec/specs/` guarda
-as specs consolidadas por capability; `openspec/changes/archive/` os changes concluídos.
+as specs consolidadas por capability; `openspec/changes/archive/` os changes concluídos,
+nomeados `YYYY-MM-DD-<slug>`.
+
+### Decisões de design são citadas no código (`(Dx)`)
+
+Cada change tem um `design.md` com decisões numeradas **D1, D2, …**. O código as cita
+em comentários/docstrings — `# rate limit em memória do processo (D6)`, `Sessão (D1)`,
+`Change visibilidade-processos-origem (design.md D7)`. São ~50 arquivos com essas
+referências; **os `Dx` só fazem sentido dentro do change que os definiu**. Ao encontrar
+um, localize o `design.md` correspondente em `openspec/changes/archive/` antes de mexer
+na regra — e mantenha a citação ao editar a linha. Ao implementar um change novo, cite
+a decisão da mesma forma.
 
 ## Comandos
 
@@ -73,6 +84,8 @@ uv run pytest tests/test_auth_login.py::test_nome -q  # um teste
 uv run python scripts/export_openapi.py            # exporta o contrato OpenAPI (stdout)
 ```
 
+`ruff check .` cobre `app/`, `tests/` **e `migrations/`** (line-length 100, target py312).
+
 Requer Postgres local — a suíte pytest usa **Postgres real** (fixture `db` em
 `tests/conftest.py`), não sqlite/mocks:
 ```bash
@@ -80,6 +93,14 @@ docker run -d --name setes-postgres-dev -e POSTGRES_USER=app \
   -e POSTGRES_PASSWORD=senha -e POSTGRES_DB=setes -p 5433:5432 postgres:16-alpine
 ```
 Variáveis do `.env` (gitignored) documentadas em `apps/api/README.md` / `app/config.py`.
+
+Isolamento dos testes tem duas consequências práticas:
+- a fixture `db` chama `resetar_banco()` **depois de cada teste** — truncamento global,
+  não transação por teste. A suíte **não é paralelizável** (nada de `-n auto`) e não
+  pode rodar junto com o Playwright ou com um uvicorn apontando para o mesmo banco.
+- a fixture `client` chama `limiter.reset()` porque o rate limit (slowapi) é contador
+  em memória do processo; ao testar `/publico/*`, use essa fixture ou o contador vaza
+  entre testes.
 
 ## Arquitetura
 
@@ -109,12 +130,22 @@ rejeição grava `log_seguranca` (`acesso_negado`).
   anonimizacao_lgpd, numero_processo, sigilo, …). Routers finos, lógica no service.
 - `db/models.py` — SQLAlchemy 2.x; enums de domínio (`StatusProcesso`,
   `PerfilUsuario`, `TipoEventoTramitacao`, …) no topo. `migrations/` é Alembic.
+- `schemas/` — modelos Pydantic de request/response, um arquivo por área (espelha
+  `routers/`). É o que vira o OpenAPI → `packages/api-types`.
 - `security/` — jwt, sessao, senha (bcrypt), oidc (endpoints internos), autorizacao.
 - `jobs/` — Cloud Run Jobs. `entrypoint.py` = manutenção diária (arquivamento, purga
   de documentos, verificação de prazos, expurgo de notificações), idempotente por
   seleção de estado. `entrypoint_lgpd.py` = anonimização trimestral.
 - Endpoints `/internal/*` são OIDC-only (chamados por Cloud Tasks/Scheduler);
   `/publico/*` são sem-auth com rate limiting (`app/rate_limit.py`, slowapi).
+
+### Migrations (Alembic) — revisions sequenciais escritas à mão
+`migrations/versions/` usa IDs **sequenciais legíveis** (`0019_ix_unidade_origem`), não
+os hashes que o Alembic gera. Crie o arquivo manualmente seguindo o padrão do último:
+`revision = "NNNN_<slug>"`, `down_revision` = o número anterior, e docstring com a
+descrição + o change/decisão que a originou (`Change <nome> (design.md D7)`).
+**Não use `alembic revision --autogenerate`** sem renomear revision/arquivo — o hash
+quebra a convenção e a cadeia fica ilegível. Toda migration passa pelo `ruff check`.
 
 ### Frontend `apps/web` (Next.js App Router)
 Rotas em `app/` espelham o domínio (`/processos`, `/admin/*`, `/consulta-publica`,
