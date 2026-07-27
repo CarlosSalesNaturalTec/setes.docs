@@ -5,11 +5,12 @@ context: |
   workflow roteirizado, sigilo, gestão documental e consulta pública.
   Cliente: órgão da administração pública (Bahia).
 
-  Assinatura digital ICP-Brasil (Épico 4 do PRD) NÃO está implementada: o épico
-  é condicional ao Discovery Técnico e o MVP foi para produção sem ele. Não há
-  capability de assinatura em openspec/specs/, e `documentos_assinados` no perfil
-  é placeholder que segue vazio. Ao planejar, não assuma assinatura como existente;
-  se o épico for retomado, aí valem MP 2.200-2/2001 e normas ICP-Brasil.
+  Assinatura digital ICP-Brasil (Épico 4 do PRD) está FORA DE ESCOPO — movida para
+  a Fase 2 por decisão formalizada em 2026-07-27. Não existe no produto: sem
+  capability em openspec/specs/, sem spec Playwright, e `documentos_assinados` no
+  perfil é placeholder vazio. Não proponha changes de assinatura sem decisão explícita
+  de retomada do épico; MP 2.200-2/2001 e normas ICP-Brasil só voltam a ser
+  conformidade obrigatória nesse caso.
 
   Stack:
     Frontend: Next.js 15 (TypeScript, App Router), Tailwind
