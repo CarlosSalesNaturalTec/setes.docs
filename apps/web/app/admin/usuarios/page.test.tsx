@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -210,22 +210,35 @@ describe("AdminUsuariosPage — ações de auditoria e desativação (US 8.3/8.4
   });
 
   it("filtra por nome no backend após o debounce, sem recarregar a página", async () => {
-    vi.useFakeTimers();
-    // `delay: null` impede o userEvent de avançar os timers entre as teclas —
-    // sem isso a digitação poderia estourar o debounce sozinha.
-    const user = userEvent.setup({ delay: null, advanceTimers: vi.advanceTimersByTime });
-    try {
-      render(<AdminUsuariosPage />);
-      await screen.findByText("Servidor Um");
-      expect(listarUsuarios).toHaveBeenCalledWith(1, "");
+    render(<AdminUsuariosPage />);
+    await screen.findByText("Servidor Um");
+    expect(listarUsuarios).toHaveBeenCalledWith(1, "");
 
-      await user.type(screen.getByLabelText("Filtrar por nome"), "mari");
-      // Antes do debounce, nenhuma requisição extra foi disparada.
+    // Os timers falsos só entram depois do carregamento inicial. Sob fake timers
+    // as APIs assíncronas do Testing Library e do userEvent travam: elas esperam
+    // um `setTimeout(…, 0)` e só avançam o relógio quando detectam os fake timers
+    // do Jest (pelo global `jest`), que não existe no Vitest. Daí a digitação ser
+    // simulada com `fireEvent.change`, que é síncrono.
+    vi.useFakeTimers();
+    try {
+      const campo = screen.getByLabelText("Filtrar por nome");
+
+      // Uma tecla a cada 100 ms: cada uma reinicia o debounce de 300 ms, então
+      // nenhuma requisição extra pode sair no meio da digitação.
+      for (const valor of ["m", "ma", "mar", "mari"]) {
+        fireEvent.change(campo, { target: { value: valor } });
+        // `act` cobre o setState do timeout e a resolução da chamada à API.
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(100);
+        });
+      }
       expect(listarUsuarios).toHaveBeenCalledTimes(1);
 
-      await vi.advanceTimersByTimeAsync(300);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(300);
+      });
 
-      await waitFor(() => expect(listarUsuarios).toHaveBeenCalledWith(1, "mari"));
+      expect(listarUsuarios).toHaveBeenCalledWith(1, "mari");
       expect(listarUsuarios).toHaveBeenCalledTimes(2);
     } finally {
       vi.useRealTimers();
