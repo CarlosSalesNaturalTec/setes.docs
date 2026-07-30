@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-import { ADMIN_ROOT } from "./fixtures";
+import { ADMIN_ROOT, SETOR_INICIAL, UNIDADE_INICIAL } from "./fixtures";
+import { cadastrarUsuario } from "./helpers/admin";
 import { login, logout } from "./helpers/auth";
 import { obterUltimoLink } from "./helpers/dev-inbox";
 
@@ -29,16 +30,16 @@ async function cadastrarEAtivar(
   usuario: { nome: string; email: string; senha: string },
   perfil: "servidor" | "gestor",
 ): Promise<void> {
-  await page.goto("/admin/usuarios");
-  await page.getByLabel("Nome", { exact: true }).fill(usuario.nome);
-  await page.getByLabel("E-mail").fill(usuario.email);
-  if (perfil === "gestor") {
-    await page.getByLabel("Perfil").selectOption("gestor");
-  }
-  await page.getByRole("button", { name: "Cadastrar usuário" }).click();
-  await expect(
-    page.getByText(`Usuário cadastrado. Um e-mail de primeiro acesso foi enviado para ${usuario.email}.`),
-  ).toBeVisible();
+  // Servidor exige unidade + setor (D2); Gestor não (o setor é exclusivo do
+  // perfil Servidor). O setor da unidade inicial é criado no spec 02.
+  await cadastrarUsuario(page, {
+    nome: usuario.nome,
+    email: usuario.email,
+    perfil,
+    ...(perfil === "servidor"
+      ? { unidadeNome: UNIDADE_INICIAL.nome, setor: SETOR_INICIAL }
+      : {}),
+  });
 
   const link = await obterUltimoLink(usuario.email);
   await page.goto(link);

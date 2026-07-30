@@ -1,9 +1,12 @@
 import { expect, test } from "@playwright/test";
 
 import { ADMIN_ROOT } from "./fixtures";
+import { cadastrarSetor, cadastrarUsuario } from "./helpers/admin";
 import { login, logout } from "./helpers/auth";
 import { obterUltimoLink } from "./helpers/dev-inbox";
 
+// Servidor exige setor da própria unidade (change setores-e-cadastro-usuario, D2).
+const SETOR_PADRAO = { nome: "Gabinete", sigla: "GAB" };
 const UNIDADE_DASHBOARD = { nome: "Unidade Dashboard", sigla: "DASHB" };
 const TIPO_PROCESSO = { nome: "Processo Dashboard" };
 const SERVIDOR_DASHBOARD = {
@@ -43,27 +46,20 @@ test("Gestora vê os KPIs das unidades geridas, filtra por unidade e aciona o dr
   await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
 
   // Servidor vinculado à unidade — cria o processo ativo usado pelos KPIs.
-  await page.goto("/admin/usuarios");
-  await page.getByLabel("Nome", { exact: true }).fill(SERVIDOR_DASHBOARD.nome);
-  await page.getByLabel("E-mail").fill(SERVIDOR_DASHBOARD.email);
-  await page.getByLabel("Unidade", { exact: true }).selectOption({ label: UNIDADE_DASHBOARD.nome });
-  await page.getByRole("button", { name: "Cadastrar usuário" }).click();
-  await expect(
-    page.getByText(
-      `Usuário cadastrado. Um e-mail de primeiro acesso foi enviado para ${SERVIDOR_DASHBOARD.email}.`,
-    ),
-  ).toBeVisible();
+  await cadastrarSetor(page, UNIDADE_DASHBOARD.nome, SETOR_PADRAO);
+  await cadastrarUsuario(page, {
+    nome: SERVIDOR_DASHBOARD.nome,
+    email: SERVIDOR_DASHBOARD.email,
+    unidadeNome: UNIDADE_DASHBOARD.nome,
+    setor: SETOR_PADRAO,
+  });
 
-  // Gestora sem unidade própria — gerencia a unidade acima.
-  await page.getByLabel("Nome", { exact: true }).fill(GESTORA_DASHBOARD.nome);
-  await page.getByLabel("E-mail").fill(GESTORA_DASHBOARD.email);
-  await page.getByLabel("Perfil").selectOption("gestor");
-  await page.getByRole("button", { name: "Cadastrar usuário" }).click();
-  await expect(
-    page.getByText(
-      `Usuário cadastrado. Um e-mail de primeiro acesso foi enviado para ${GESTORA_DASHBOARD.email}.`,
-    ),
-  ).toBeVisible();
+  // Gestora sem unidade (e sem setor, D2) — gerencia a unidade acima.
+  await cadastrarUsuario(page, {
+    nome: GESTORA_DASHBOARD.nome,
+    email: GESTORA_DASHBOARD.email,
+    perfil: "gestor",
+  });
 
   const linhaGestora = page.getByRole("row", { name: new RegExp(GESTORA_DASHBOARD.nome) });
   await linhaGestora.getByRole("button", { name: "Unidades geridas" }).click();

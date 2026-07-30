@@ -75,7 +75,9 @@ pode repetir** a senha atual nem as **6 últimas** que você já usou.
 
 A tela **"Meu Perfil"** mostra:
 
-- Seus dados de cadastro;
+- Seus dados de cadastro — nome, e-mail, perfil, situação e, quando
+  preenchidos, **unidade, setor, cargo, telefone e chefia direta** (campos em
+  branco simplesmente não aparecem);
 - A **lista de processos em que você atuou** (número, assunto, data e tipo de
   ação);
 - A **lista de documentos que você assinou** digitalmente.
@@ -276,9 +278,15 @@ igual à do Servidor.
 Para não depender da equipe central a cada nova pessoa na sua equipe, você pode
 **cadastrar novos usuários na sua própria unidade**:
 
-1. Informe nome, e-mail e a unidade (que precisa ser uma que você gerencia).
-2. O único perfil que você pode atribuir é **Servidor**.
-3. Confirme. A pessoa recebe o e-mail de primeiro acesso e passa a enxergar
+1. Acione **"Novo usuário"** — o cadastro abre em uma janela sobre a listagem.
+2. Informe nome, e-mail e a unidade (que precisa ser uma que você gerencia).
+3. Escolha o **setor** dentro dessa unidade. Para o perfil Servidor o setor é
+   **obrigatório**, e a lista só oferece setores ativos da unidade escolhida —
+   trocar a unidade limpa o setor.
+4. Se quiser, preencha **telefone, cargo e chefia direta** (a chefia é texto
+   livre: pode ser alguém sem conta no sistema).
+5. O único perfil que você pode atribuir é **Servidor**.
+6. Confirme. A pessoa recebe o e-mail de primeiro acesso e passa a enxergar
    apenas os processos daquela unidade.
 
 **Limites importantes:**
@@ -302,22 +310,48 @@ todos os demais perfis usam no dia a dia.
 ### Gerenciar usuários
 
 - **Cadastrar usuários** de qualquer perfil (Servidor, Gestor ou
-  Administrador), informando nome, e-mail, unidade e perfil. A pessoa recebe o
-  link de primeiro acesso (válido por 48 horas).
+  Administrador) pelo botão **"Novo usuário"**, que abre o formulário em uma
+  janela sobre a listagem. Informe nome, e-mail, perfil, unidade e **setor**, e
+  opcionalmente **telefone, cargo e chefia direta**. A pessoa recebe o link de
+  primeiro acesso (válido por 48 horas).
+- **Filtrar a listagem por nome:** o campo de busca no alto da tela filtra
+  enquanto você digita, por parte do nome e sem diferenciar maiúsculas de
+  minúsculas. Limpe o campo para ver todos de novo.
 - **Resetar a senha** de um usuário quando ele não conseguir se recuperar
   sozinho ou em caso de conta comprometida.
 - **Desativar usuários** para revogar o acesso quando necessário. Quem está
   desativado não consegue entrar.
 
 O sistema recusa cadastros com **e-mail já usado**, **e-mail em formato
-inválido**, **nome em branco** ou **unidade inexistente/inativa**, sempre
-explicando o motivo.
+inválido**, **nome em branco**, **unidade inexistente/inativa**, **Servidor sem
+setor** ou **setor que não pertence à unidade escolhida**, sempre explicando o
+motivo. Usuários com perfil Servidor que ainda estejam sem setor aparecem
+marcados na listagem, para você regularizar o cadastro.
 
 ### Cadastrar unidades administrativas
 
-**Cadastre e gerencie as unidades** (por exemplo, setores e coordenadorias)
-para refletir a estrutura organizacional do órgão. As unidades são a base do
-controle de acesso e do roteiro dos processos.
+**Cadastre e gerencie as unidades** (as coordenadorias e diretorias do órgão)
+para refletir a estrutura organizacional. As unidades são a base do controle de
+acesso e do roteiro dos processos.
+
+### Cadastrar setores de uma unidade
+
+Cada unidade se divide em **setores** — o segundo nível da estrutura
+organizacional. Na tela de unidades, acione **"Setores"** na linha da unidade
+para abrir a lista dela e cadastrar, editar, desativar ou reativar setores.
+
+- A **sigla é única dentro da unidade**, mas pode se repetir entre unidades
+  diferentes (duas unidades podem ter um "GAB").
+- **Setor nunca é excluído**, apenas desativado — o histórico de tramitação
+  precisa continuar referenciando setores antigos.
+- Não é possível desativar um setor enquanto houver **servidor ativo vinculado**
+  a ele; o sistema informa quantos estão impedindo a operação.
+- **Desativar a unidade desativa todos os seus setores.** A tela avisa quantos
+  serão afetados antes de confirmar. Ao reativar a unidade, os setores
+  **permanecem inativos**: cada um precisa ser reativado individualmente.
+
+> **Atenção:** o setor organiza as pessoas e orienta o roteamento, mas **não
+> altera quem enxerga o quê** — o controle de acesso continua sendo por unidade.
 
 ### Cadastrar tipos de processo e desenhar roteiros
 
@@ -341,9 +375,12 @@ concluídos (padrão: 30 dias).
 
 ### Organizar pessoas e responsabilidades
 
-- **Vincular servidor à unidade:** garanta que cada servidor esteja alocado a
-  **exatamente uma unidade por vez**. Ao transferir alguém, o histórico anterior
-  é preservado, mas ele deixa de ver o quadro da unidade antiga.
+- **Vincular servidor à unidade e ao setor:** garanta que cada servidor esteja
+  alocado a **exatamente uma unidade por vez** e a um setor dela. Ao transferir
+  alguém, escolha também o **setor da nova unidade** — o sistema recusa a
+  transferência que deixaria o servidor com um setor da unidade antiga. O
+  histórico anterior é preservado, mas ele deixa de ver o quadro da unidade
+  antiga.
 - **Definir as unidades de um Gestor:** determine **quais unidades** cada Gestor
   gerencia, para dar a ele a visibilidade adequada à sua responsabilidade.
 
@@ -435,7 +472,8 @@ protocolo — é por ele que a solicitação é identificada.
 | Termo | O que significa |
 |-------|-----------------|
 | **Processo** | O documento/assunto administrativo que tramita no sistema, com número, tipo, prazo e interessados. |
-| **Unidade** | Setor ou coordenadoria do órgão (ex.: uma coordenadoria financeira). Base do acesso e do roteiro. |
+| **Unidade** | Coordenadoria ou diretoria do órgão (ex.: uma coordenadoria financeira). Base do acesso e do roteiro. |
+| **Setor** | Subdivisão de uma unidade (ex.: o gabinete da coordenadoria financeira). Organiza as pessoas e orienta o roteamento; **não** altera quem enxerga o quê — isso continua sendo por unidade. |
 | **Tipo de processo** | Categoria do processo que define qual roteiro ele seguirá. |
 | **Roteiro** | O caminho predefinido de unidades por onde um tipo de processo passa, na ordem. |
 | **Tramitação** | O andamento do processo de uma unidade para outra ao longo do roteiro. |

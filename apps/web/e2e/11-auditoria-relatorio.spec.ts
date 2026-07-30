@@ -1,9 +1,12 @@
 import { expect, test } from "@playwright/test";
 
 import { ADMIN_ROOT } from "./fixtures";
+import { cadastrarSetor, cadastrarUsuario } from "./helpers/admin";
 import { login, logout } from "./helpers/auth";
 import { obterUltimoLink } from "./helpers/dev-inbox";
 
+// Servidor exige setor da própria unidade (change setores-e-cadastro-usuario, D2).
+const SETOR_PADRAO = { nome: "Gabinete", sigla: "GAB" };
 const UNIDADE_A = { nome: "Unidade Auditoria A", sigla: "AUDA" };
 const UNIDADE_B = { nome: "Unidade Auditoria B", sigla: "AUDB" };
 const TIPO_PROCESSO = { nome: "Processo Auditoria" };
@@ -32,14 +35,13 @@ async function cadastrarEAtivarServidor(
   usuario: { nome: string; email: string; senha: string },
   unidade: { nome: string },
 ): Promise<void> {
-  await page.goto("/admin/usuarios");
-  await page.getByLabel("Nome", { exact: true }).fill(usuario.nome);
-  await page.getByLabel("E-mail").fill(usuario.email);
-  await page.getByLabel("Unidade", { exact: true }).selectOption({ label: unidade.nome });
-  await page.getByRole("button", { name: "Cadastrar usuário" }).click();
-  await expect(
-    page.getByText(`Usuário cadastrado. Um e-mail de primeiro acesso foi enviado para ${usuario.email}.`),
-  ).toBeVisible();
+  await cadastrarSetor(page, unidade.nome, SETOR_PADRAO);
+  await cadastrarUsuario(page, {
+    nome: usuario.nome,
+    email: usuario.email,
+    unidadeNome: unidade.nome,
+    setor: SETOR_PADRAO,
+  });
 
   const link = await obterUltimoLink(usuario.email);
   await page.goto(link);
@@ -85,14 +87,12 @@ test("Auditor autorizado acessa processo sigiloso de outra unidade; usuário sem
   await cadastrarEAtivarServidor(page, INTRUSO, UNIDADE_B);
 
   await login(page, ADMIN_ROOT.email, ADMIN_ROOT.senha);
-  await page.goto("/admin/usuarios");
-  await page.getByLabel("Nome", { exact: true }).fill(AUDITOR.nome);
-  await page.getByLabel("E-mail").fill(AUDITOR.email);
-  await page.getByLabel("Unidade", { exact: true }).selectOption({ label: UNIDADE_B.nome });
-  await page.getByRole("button", { name: "Cadastrar usuário" }).click();
-  await expect(
-    page.getByText(`Usuário cadastrado. Um e-mail de primeiro acesso foi enviado para ${AUDITOR.email}.`),
-  ).toBeVisible();
+  await cadastrarUsuario(page, {
+    nome: AUDITOR.nome,
+    email: AUDITOR.email,
+    unidadeNome: UNIDADE_B.nome,
+    setor: SETOR_PADRAO,
+  });
   const linhaAuditor = page.getByRole("row", { name: new RegExp(AUDITOR.nome) });
   await linhaAuditor.getByRole("button", { name: "Conceder Permissão de Auditoria" }).click();
   await expect(linhaAuditor.getByRole("button", { name: "Revogar Permissão de Auditoria" })).toBeVisible();

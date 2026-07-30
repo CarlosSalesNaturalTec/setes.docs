@@ -43,6 +43,7 @@ from app.security.autorizacao import (
 from app.security.senha import hash_senha_inutilizavel
 from app.services import processo_consulta
 from app.services.tokens import gerar_token
+from app.services.usuarios import validar_vinculo_setor
 
 router = APIRouter(tags=["usuarios"])
 
@@ -161,13 +162,21 @@ def cadastrar_usuario(
                 status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=MSG_UNIDADE_INVALIDA
             )
 
+    perfil = PerfilUsuario(payload.perfil)
+    setor_id = uuid.UUID(payload.setor_id) if payload.setor_id else None
+    validar_vinculo_setor(db, perfil=perfil, unidade_id=unidade_id, setor_id=setor_id)
+
     novo = Usuario(
         nome=payload.nome.strip(),
         email=payload.email,
         senha_hash=hash_senha_inutilizavel(),
-        perfil=PerfilUsuario(payload.perfil),
+        perfil=perfil,
         status=StatusUsuario.PENDENTE_PRIMEIRO_ACESSO,
         unidade_id=unidade_id,
+        setor_id=setor_id,
+        telefone=payload.telefone,
+        cargo=payload.cargo,
+        chefia_direta=payload.chefia_direta,
     )
     db.add(novo)
     db.commit()
@@ -217,7 +226,16 @@ def transferir_unidade(
     if unidade is None or not unidade.ativo:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=MSG_UNIDADE_INVALIDA)
 
+    # A coerência setor↔unidade vale para toda escrita, inclusive aqui (D2):
+    # omitir `setor_id` mantém o setor atual, que pertence à unidade antiga e
+    # por isso é rejeitado — transferir exige escolher um setor da nova unidade.
+    novo_setor_id = uuid.UUID(payload.setor_id) if payload.setor_id else alvo.setor_id
+    validar_vinculo_setor(
+        db, perfil=alvo.perfil, unidade_id=nova_unidade_id, setor_id=novo_setor_id
+    )
+
     alvo.unidade_id = nova_unidade_id
+    alvo.setor_id = novo_setor_id
     db.commit()
 
     return UsuarioResponse.de(alvo)
@@ -267,14 +285,23 @@ def listar_usuarios(
     db: Annotated[Session, Depends(get_db)],
     page: int = 1,
     page_size: int = 20,
+    nome: str | None = None,
 ) -> ListaUsuariosResponse:
-    """Administrador lista todos; Gestor só lista usuários das unidades que gerencia."""
+    """Administrador lista todos; Gestor só lista usuários das unidades que gerencia.
+
+    `nome` filtra por fragmento, insensível a maiúsculas/minúsculas, no backend
+    (D5) — o filtro restringe o conjunto exibido, nunca amplia o escopo de
+    autorização já aplicado acima.
+    """
     query = db.query(Usuario)
     if usuario_atual.perfil == PerfilUsuario.GESTOR:
         unidades_geridas = (
             db.query(UnidadeGestor.unidade_id).filter(UnidadeGestor.gestor_id == usuario_atual.id)
         )
         query = query.filter(Usuario.unidade_id.in_(unidades_geridas))
+
+    if nome and nome.strip():
+        query = query.filter(Usuario.nome.ilike(f"%{nome.strip()}%"))
 
     total = query.count()
     itens = query.order_by(Usuario.nome).offset((page - 1) * page_size).limit(page_size).all()
@@ -381,14 +408,7 @@ def meu_perfil(
     parâmetro de ID manipulável, então não existe rota que permita ver o
     perfil de terceiros (US 1.5 Cen.2 / task 10.2). A lista de processos atuados
     (Cen.1) acompanha o usuário mesmo após transferência (US 1.4 Cen.3)."""
-    processos = processo_consulta.processos_atuados(db, usuario_atual)
-    return MeuPerfilResponse(
-        usuario=UsuarioResponse.de(usuario_atual),
-        processos=processos,
-        mensagem_processos=(
-            "Nenhum processo registrado" if not processos else ""
-        ),
-    )
+    return _meu_perfil_response(db, usuario_atual)
 
 
 @router.patch("/usuarios/me/perfil", response_model=MeuPerfilResponse)
@@ -397,15 +417,40 @@ def atualizar_meu_perfil(
     usuario_atual: Annotated[Usuario, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
 ) -> MeuPerfilResponse:
-    """US 1.5 — auto-serviço restrito ao próprio nome (task 2.2); e-mail e
-    perfil permanecem sob gestão exclusiva do Administrador."""
+    """US 1.5 — auto-serviço do próprio nome (task 2.2) e dos dados funcionais
+    (setor, telefone, cargo, chefia direta); e-mail, perfil e unidade permanecem
+    sob gestão exclusiva do Administrador. O setor continua validado contra a
+    unidade do próprio usuário (D2)."""
+    informados = payload.model_fields_set  # PATCH parcial: o que não veio não é tocado
+    if "setor_id" in informados:
+        setor_id = uuid.UUID(payload.setor_id) if payload.setor_id else None
+        validar_vinculo_setor(
+            db,
+            perfil=usuario_atual.perfil,
+            unidade_id=usuario_atual.unidade_id,
+            setor_id=setor_id,
+        )
+        usuario_atual.setor_id = setor_id
+
     usuario_atual.nome = payload.nome.strip()
+    for campo in ("telefone", "cargo", "chefia_direta"):
+        if campo in informados:
+            setattr(usuario_atual, campo, getattr(payload, campo))
     db.commit()
     db.refresh(usuario_atual)
 
-    processos = processo_consulta.processos_atuados(db, usuario_atual)
+    return _meu_perfil_response(db, usuario_atual)
+
+
+def _meu_perfil_response(db: Session, usuario: Usuario) -> MeuPerfilResponse:
+    """US 1.5 — monta a resposta com os nomes de unidade/setor resolvidos: o
+    catálogo de setores é restrito ao Administrador, então o próprio usuário
+    não conseguiria traduzir os ids para exibição."""
+    processos = processo_consulta.processos_atuados(db, usuario)
     return MeuPerfilResponse(
-        usuario=UsuarioResponse.de(usuario_atual),
+        usuario=UsuarioResponse.de(usuario),
+        unidade_nome=usuario.unidade.nome if usuario.unidade else None,
+        setor_nome=usuario.setor.nome if usuario.setor else None,
         processos=processos,
         mensagem_processos=(
             "Nenhum processo registrado" if not processos else ""

@@ -1,9 +1,12 @@
 import { expect, test } from "@playwright/test";
 
 import { ADMIN_ROOT } from "./fixtures";
+import { cadastrarSetor, cadastrarUsuario } from "./helpers/admin";
 import { login, logout } from "./helpers/auth";
 import { obterUltimoLink } from "./helpers/dev-inbox";
 
+// Servidor exige setor da própria unidade (change setores-e-cadastro-usuario, D2).
+const SETOR_PADRAO = { nome: "Gabinete", sigla: "GAB" };
 const UNIDADE_PROCESSO = { nome: "Protocolo Central", sigla: "PROTC" };
 const TIPO_PROCESSO = { nome: "Protocolo Simples" };
 const SERVIDOR_PROTOCOLO = {
@@ -39,16 +42,13 @@ test("Servidor cria processo e despacha até a conclusão, com registro no hist�
   await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
 
   // Servidor vinculado à nova unidade.
-  await page.goto("/admin/usuarios");
-  await page.getByLabel("Nome", { exact: true }).fill(SERVIDOR_PROTOCOLO.nome);
-  await page.getByLabel("E-mail").fill(SERVIDOR_PROTOCOLO.email);
-  await page.getByLabel("Unidade", { exact: true }).selectOption({ label: UNIDADE_PROCESSO.nome });
-  await page.getByRole("button", { name: "Cadastrar usuário" }).click();
-  await expect(
-    page.getByText(
-      `Usuário cadastrado. Um e-mail de primeiro acesso foi enviado para ${SERVIDOR_PROTOCOLO.email}.`,
-    ),
-  ).toBeVisible();
+  await cadastrarSetor(page, UNIDADE_PROCESSO.nome, SETOR_PADRAO);
+  await cadastrarUsuario(page, {
+    nome: SERVIDOR_PROTOCOLO.nome,
+    email: SERVIDOR_PROTOCOLO.email,
+    unidadeNome: UNIDADE_PROCESSO.nome,
+    setor: SETOR_PADRAO,
+  });
 
   const link = await obterUltimoLink(SERVIDOR_PROTOCOLO.email);
   await page.goto(link);
@@ -138,16 +138,13 @@ test("Servidor despacha processo para a próxima unidade e vê sucesso, sem fals
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
   await expect(page.getByRole("heading", { name: TIPO_PROCESSO_DUAS_ETAPAS.nome })).toBeVisible();
 
-  await page.goto("/admin/usuarios");
-  await page.getByLabel("Nome", { exact: true }).fill(SERVIDOR_ORIGEM.nome);
-  await page.getByLabel("E-mail").fill(SERVIDOR_ORIGEM.email);
-  await page.getByLabel("Unidade", { exact: true }).selectOption({ label: UNIDADE_ORIGEM.nome });
-  await page.getByRole("button", { name: "Cadastrar usuário" }).click();
-  await expect(
-    page.getByText(
-      `Usuário cadastrado. Um e-mail de primeiro acesso foi enviado para ${SERVIDOR_ORIGEM.email}.`,
-    ),
-  ).toBeVisible();
+  await cadastrarSetor(page, UNIDADE_ORIGEM.nome, SETOR_PADRAO);
+  await cadastrarUsuario(page, {
+    nome: SERVIDOR_ORIGEM.nome,
+    email: SERVIDOR_ORIGEM.email,
+    unidadeNome: UNIDADE_ORIGEM.nome,
+    setor: SETOR_PADRAO,
+  });
 
   const link = await obterUltimoLink(SERVIDOR_ORIGEM.email);
   await page.goto(link);

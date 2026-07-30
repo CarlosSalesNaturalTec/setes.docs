@@ -134,6 +134,37 @@ function PerfilConteudo() {
           <dd className="capitalize">{perfil.usuario.perfil}</dd>
           <dt className="text-gray-500">Status</dt>
           <dd className="capitalize">{perfil.usuario.status.replaceAll("_", " ")}</dd>
+          {/* Campos vazios são omitidos — nunca renderizam "null" na tela. */}
+          {perfil.unidade_nome && (
+            <>
+              <dt className="text-gray-500">Unidade</dt>
+              <dd>{perfil.unidade_nome}</dd>
+            </>
+          )}
+          {perfil.setor_nome && (
+            <>
+              <dt className="text-gray-500">Setor</dt>
+              <dd>{perfil.setor_nome}</dd>
+            </>
+          )}
+          {perfil.usuario.cargo && (
+            <>
+              <dt className="text-gray-500">Cargo</dt>
+              <dd>{perfil.usuario.cargo}</dd>
+            </>
+          )}
+          {perfil.usuario.telefone && (
+            <>
+              <dt className="text-gray-500">Telefone</dt>
+              <dd>{perfil.usuario.telefone}</dd>
+            </>
+          )}
+          {perfil.usuario.chefia_direta && (
+            <>
+              <dt className="text-gray-500">Chefia direta</dt>
+              <dd>{perfil.usuario.chefia_direta}</dd>
+            </>
+          )}
         </dl>
 
         <EditarNomeForm nomeAtual={perfil.usuario.nome} onSalvo={setPerfil} />
