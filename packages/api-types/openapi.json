@@ -3727,6 +3727,20 @@
         ]
       }
     },
+    "/internal/dev/reset-rate-limit": {
+      "post": {
+        "operationId": "resetar_rate_limit_internal_dev_reset_rate_limit_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Resetar Rate Limit",
+        "tags": [
+          "dev"
+        ]
+      }
+    },
     "/internal/tasks/email": {
       "post": {
         "description": "Processa uma tarefa de e-mail entregue pelo Cloud Tasks.\n\nContrato de falha (US 5.2 Cen.3): em QUALQUER falha de entrega, registra em\nlog e retorna 200 (ACK). A fila usa maxAttempts=1, então não há redespacho.\nNunca propaga exceção — isso faria o Cloud Tasks tratar como retryable.",

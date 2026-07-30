@@ -348,6 +348,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/internal/dev/reset-rate-limit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resetar Rate Limit */
+        post: operations["resetar_rate_limit_internal_dev_reset_rate_limit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/internal/tasks/email": {
         parameters: {
             query?: never;
@@ -2862,6 +2879,24 @@ export interface operations {
         };
     };
     resetar_internal_dev_reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    resetar_rate_limit_internal_dev_reset_rate_limit_post: {
         parameters: {
             query?: never;
             header?: never;

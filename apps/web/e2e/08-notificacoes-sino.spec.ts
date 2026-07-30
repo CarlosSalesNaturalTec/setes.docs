@@ -103,10 +103,14 @@ test("Despacho entre unidades incrementa o sino do destinatário; marcar como li
   await expect(page.getByTestId("notificacoes-contador")).toHaveText("1");
 
   await page.getByLabel("Notificações").click();
-  await expect(page.getByText(ASSUNTO_PROCESSO)).toBeVisible();
-  await expect(page.getByText(new RegExp(`vindo de ${UNIDADE_ORIGEM.nome}`))).toBeVisible();
+  // O assunto aparece duas vezes nesta tela — no item do sino e no card do
+  // Kanban (o processo agora está nesta unidade). O item da notificação é o
+  // único que é um `button`; buscar só pelo texto viola o strict mode.
+  const itemNotificacao = page.getByRole("button", { name: new RegExp(ASSUNTO_PROCESSO) });
+  await expect(itemNotificacao).toBeVisible();
+  await expect(itemNotificacao.getByText(new RegExp(`vindo de ${UNIDADE_ORIGEM.nome}`))).toBeVisible();
 
-  await page.getByText(ASSUNTO_PROCESSO).click();
+  await itemNotificacao.click();
   await expect(page.getByTestId("notificacoes-contador")).toHaveCount(0);
 
   await page.reload();

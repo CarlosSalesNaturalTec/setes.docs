@@ -172,5 +172,10 @@ test("Servidor despacha processo para a próxima unidade e vê sucesso, sem fals
   await expect(
     page.getByText("Acesso negado — você não tem permissão para visualizar este processo"),
   ).toHaveCount(0);
-  await expect(page.getByText("Processo a ser encaminhado")).toHaveCount(0);
+  // O processo não some do Kanban da origem: desde o change
+  // visibilidade-processos-origem (D1/D2) ele permanece como acompanhamento
+  // somente leitura, com o card acinzentado (openspec/specs/quadro-kanban).
+  await expect(page.getByText("Processo a ser encaminhado").locator("..")).toHaveClass(
+    /bg-gray-100/,
+  );
 });

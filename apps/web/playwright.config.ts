@@ -9,13 +9,15 @@ const uvicornBin =
     ? path.join(apiDir, ".venv", "Scripts", "uvicorn.exe")
     : path.join(apiDir, ".venv", "bin", "uvicorn");
 
-// Flags de dev/E2E (Settings.dev_email_inbox / dev_db_reset, app/config.py) —
-// nunca setadas no `.env` de desenvolvimento normal (ver apps/api/.env):
-// habilitam a caixa de entrada em memória (sem provedor de e-mail real) e o
-// reset de banco consumidos pelos fluxos críticos em `e2e/`.
+// Flags de dev/E2E (Settings.dev_email_inbox / dev_db_reset /
+// dev_rate_limit_reset, app/config.py) — nunca setadas no `.env` de
+// desenvolvimento normal (ver apps/api/.env): habilitam a caixa de entrada em
+// memória (sem provedor de e-mail real), o reset de banco e o reset do
+// contador de rate limit consumidos pelos fluxos críticos em `e2e/`.
 const API_ENV = {
   DEV_EMAIL_INBOX: "true",
   DEV_DB_RESET: "true",
+  DEV_RATE_LIMIT_RESET: "true",
 };
 
 export default defineConfig({
@@ -26,6 +28,10 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
+  // Os fluxos mais longos (auditoria, visibilidade por origem) encadeiam 4-6
+  // sessões diferentes — login, logout e navegação de cada ator — e estouram o
+  // default de 30 s do Playwright antes de qualquer asserção falhar de fato.
+  timeout: 90_000,
   reporter: "list",
   globalSetup: "./e2e/global-setup.ts",
   use: {
