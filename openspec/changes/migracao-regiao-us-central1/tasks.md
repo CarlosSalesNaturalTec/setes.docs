@@ -1,0 +1,40 @@
+## 1. Pré-requisitos de conformidade (ANTES de qualquer alteração — design D5)
+
+- [ ] 1.1 Registrar em documentação a **base legal** adotada para a transferência internacional de dados (LGPD, Lei 13.709/2018, Art. 33), identificando **quem autorizou** a decisão pelo lado do cliente e **quando**. Aceite: documento versionado no repositório, referenciado por este change.
+- [ ] 1.2 Registrar a **autorização explícita de descarte integral** dos dados existentes (banco e bucket), com identificação do responsável pelo cliente. Aceite: autorização escrita anexada antes de qualquer `terraform destroy`.
+- [ ] 1.3 Atualizar a política de privacidade e o aviso de tratamento para informar que os dados passam a ser tratados **fora do território nacional**. Aceite: textos publicados coerentes com a nova realidade de tratamento.
+
+> **Bloqueio**: nenhuma tarefa das seções seguintes pode ser iniciada enquanto 1.1, 1.2 e 1.3 não estiverem concluídas.
+
+## 2. Infraestrutura — preparação (design D2)
+
+- [ ] 2.1 `infra/org_policies.tf`: afrouxar ou remover a restrição de localização de recursos **antes** do destroy, de modo que a criação em `us-central1` não seja bloqueada. Aceite: `terraform plan` na região nova não acusa violação de política.
+- [ ] 2.2 Conferir se `.github/workflows/deploy.yml` possui alguma referência de região fora de `var.region` (Artifact Registry, Cloud Run Job efêmero de migrations) e parametrizá-la. Aceite: nenhuma região literal remanescente no workflow.
+
+## 3. Infraestrutura — troca de região (design D1, D4)
+
+- [ ] 3.1 `terraform destroy` do ambiente atual, após confirmação das tarefas da seção 1. Aceite: ambiente `southamerica-east1` removido, sem recursos órfãos faturando.
+- [ ] 3.2 `infra/variables.tf` e `infra/terraform.tfvars.example`: `region` passa a `us-central1`. Aceite: nenhum recurso regional referencia outra região.
+- [ ] 3.3 Revisar os textos de justificativa de residência em `infra/variables.tf`, `infra/storage.tf`, `infra/secrets.tf` e `infra/org_policies.tf` — a residência deixa de ser requisito e passa a ser região única escolhida por custo, com transferência internacional documentada (D4). Aceite: busca por "Brasil", "residência" e "southamerica" na pasta `infra/` não retorna nenhuma afirmação de conformidade desatualizada.
+- [ ] 3.4 `terraform apply`: rede, Cloud SQL, bucket de documentos, Secret Manager, Cloud Tasks, Cloud Scheduler, Cloud Run Jobs e Artifact Registry criados em `us-central1`. Aceite: `terraform plan` limpo após o apply.
+
+## 4. Reconstrução do ambiente (design D2, D3)
+
+- [ ] 4.1 Repovoar os segredos no Secret Manager: `db-password` e `jwt-signing-key` **regerados**, `sendgrid-api-key` com o valor vigente. Valores nunca versionados no repositório. Aceite: os três segredos existem com versão ativa.
+- [ ] 4.2 Publicar as imagens de `web` e `api` no Artifact Registry da região nova. Aceite: imagens acessíveis pelo Cloud Run da nova região.
+- [ ] 4.3 Executar `alembic upgrade head` pelo Cloud Run Job efêmero, reconstruindo o schema **do zero** no banco vazio. Aceite: `alembic current` na revision mais recente; nenhuma migration nova foi necessária.
+- [ ] 4.4 Deploy dos serviços `web` e `api` via Workload Identity Federation (sem chave JSON). Aceite: `/health` da api responde e o front carrega.
+- [ ] 4.5 Executar o fluxo de inicialização do sistema para criar o primeiro Administrador. Aceite: login do Administrador funcional no ambiente novo.
+
+## 5. Validação ponta a ponta
+
+- [ ] 5.1 Validar no ambiente reconstruído os fluxos dos changes anteriores: cadastro de unidade/setor/usuário; criação de processo; Envio, Devolução, Reatribuição e Conclusão; quadro pessoal com ação e acompanhamento; filtros e arquivados; geração de documento a partir de modelo com download; abas de "Meu Perfil". Aceite: todos os fluxos verdes no ambiente novo.
+- [ ] 5.2 Validar as rotinas agendadas (manutenção diária, anonimização LGPD trimestral) e a fila de e-mails do Cloud Tasks na região nova. Aceite: jobs disparam e concluem; e-mail de teste entregue.
+- [ ] 5.3 Confirmar que o bucket novo mantém `public_access_prevention` e que o conteúdo continua acessível somente pela aplicação. Aceite: acesso direto por URL do bucket é negado.
+
+## 6. Documentação mestre
+
+- [ ] 6.1 `openspec/config.yaml`: corrigir o `context` — cliente é **instituição privada**, não órgão da administração pública da Bahia; manter explícito que a **LGPD permanece obrigatória** (D6). Aceite: nenhum change futuro herda a premissa incorreta.
+- [ ] 6.2 `docs/PRD.md`: revisar o RNF de conformidade legal, retirando a afirmação de residência de dados em território nacional e registrando a transferência internacional com sua base legal. Aceite: PRD sem contradição com as specs deste change.
+- [ ] 6.3 `docs/manual-usuario.md`: atualização **completa** com as alterações dos seis changes — setores e novos campos de usuário; tramitação manual com Envio, Devolução, Reatribuição e Conclusão explícita; quadro pessoal com distinção de ação e acompanhamento, filtros e arquivados; modelos de documento; "Meu Perfil" em abas. Aceite: manual sem nenhuma menção a roteiro automático, quadro por unidade ou formulário inline de usuário.
+- [ ] 6.4 Registrar em `docs/` a decisão de região com seu racional (custo × latência × conformidade), citando que o cliente foi informado de que São Paulo responde mais rápido para usuários brasileiros. Aceite: decisão rastreável sem depender da memória de quem participou.
