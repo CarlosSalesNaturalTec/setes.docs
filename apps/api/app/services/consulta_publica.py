@@ -30,7 +30,7 @@ from app.schemas.consulta_publica import (
 # D3 — eventos de movimentação; `marcar_sigilo`/`remover_sigilo` são internos
 # e nunca aparecem no histórico público.
 EVENTOS_MOVIMENTACAO = (
-    TipoEventoTramitacao.DESPACHO,
+    TipoEventoTramitacao.ENVIO,
     TipoEventoTramitacao.DEVOLUCAO,
     TipoEventoTramitacao.CONCLUSAO,
     TipoEventoTramitacao.ARQUIVAMENTO_AUTOMATICO,

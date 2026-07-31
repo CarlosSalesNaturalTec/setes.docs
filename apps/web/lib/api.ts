@@ -264,24 +264,25 @@ export const api = {
   reativarSetor: (setorId: string) =>
     post<undefined, Schemas["SetorResponse"]>(`/setores/${setorId}/reativar`, undefined, { auth: true }),
 
-  // Tipos de processo e roteiros
+  // Tipos de processo (change tramitacao-manual: sem roteiro)
   listarTiposProcesso: () => get<Schemas["TipoProcessoResponse"][]>("/tipos-processo", { auth: true }),
   criarTipoProcesso: (body: Schemas["CriarTipoProcessoRequest"]) =>
     post<Schemas["CriarTipoProcessoRequest"], Schemas["TipoProcessoResponse"]>("/tipos-processo", body, {
       auth: true,
     }),
-  atualizarRoteiro: (tipoProcessoId: string, body: Schemas["AtualizarRoteiroRequest"]) =>
-    put<Schemas["AtualizarRoteiroRequest"], Schemas["RoteiroResponse"]>(
-      `/tipos-processo/${tipoProcessoId}/roteiro`,
-      body,
-      { auth: true },
-    ),
   atualizarTipoProcesso: (tipoProcessoId: string, body: Schemas["TipoProcessoUpdate"]) =>
     patch<Schemas["TipoProcessoUpdate"], Schemas["TipoProcessoResponse"]>(
       `/tipos-processo/${tipoProcessoId}`,
       body,
       { auth: true },
     ),
+
+  // Apoio à cascata unidade→setor→servidor da tela de Tramitação.
+  listarServidoresAtivosPorSetor: (setorId: string) =>
+    get<Schemas["UsuarioResumoResponse"][]>("/usuarios/ativos-por-setor", {
+      auth: true,
+      query: { setor_id: setorId },
+    }),
 
   // Processos e workflow (Épico 2)
   criarProcesso: (body: Schemas["CriarProcessoRequest"]) =>
@@ -304,9 +305,9 @@ export const api = {
     get<Schemas["ProcessoResponse"]>(`/processos/${processoId}`, { auth: true }),
   historicoProcesso: (processoId: string) =>
     get<Schemas["HistoricoResponse"]>(`/processos/${processoId}/historico`, { auth: true }),
-  despacharProcesso: (processoId: string, body: Schemas["DespacharRequest"]) =>
-    post<Schemas["DespacharRequest"], Schemas["ProcessoResponse"]>(
-      `/processos/${processoId}/despachar`,
+  enviarProcesso: (processoId: string, body: Schemas["EnviarRequest"]) =>
+    post<Schemas["EnviarRequest"], Schemas["ProcessoResponse"]>(
+      `/processos/${processoId}/enviar`,
       body,
       { auth: true },
     ),
@@ -314,6 +315,18 @@ export const api = {
     post<Schemas["DevolverRequest"], Schemas["ProcessoResponse"]>(
       `/processos/${processoId}/devolver`,
       body,
+      { auth: true },
+    ),
+  reatribuirProcesso: (processoId: string, body: Schemas["ReatribuirRequest"]) =>
+    post<Schemas["ReatribuirRequest"], Schemas["ProcessoResponse"]>(
+      `/processos/${processoId}/reatribuir`,
+      body,
+      { auth: true },
+    ),
+  concluirProcesso: (processoId: string) =>
+    post<Schemas["ConcluirRequest"], Schemas["ProcessoResponse"]>(
+      `/processos/${processoId}/concluir`,
+      {},
       { auth: true },
     ),
   marcarSigilo: (processoId: string) =>

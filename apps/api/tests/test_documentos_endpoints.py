@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from app.db.models import Documento
-from tests.helpers_processo import auth, gestor_de, login, tipo_com_roteiro, unidade, usuario
+from tests.helpers_processo import auth, enviar_para, gestor_de, login, servidor_com_setor, tipo_processo, unidade
 
 PDF = b"%PDF-1.4\n1 0 obj\n<< >>\nendobj\n%%EOF"
 DOCX = b"PK\x03\x04" + b"\x00" * 20
@@ -11,8 +11,8 @@ DOCX = b"PK\x03\x04" + b"\x00" * 20
 
 def _processo_aberto(client, db):
     cofin, ajur = unidade(db, "COFIN"), unidade(db, "AJUR")
-    tipo = tipo_com_roteiro(db, cofin, ajur)
-    criador = usuario(db, unidade_id=cofin.id, email=f"criador-{cofin.id}@ex.com")
+    tipo = tipo_processo(db)
+    criador, _setor = servidor_com_setor(db, cofin, email=f"criador-{cofin.id}@ex.com")
     token = login(client, criador.email)
     resp = client.post(
         "/processos",
@@ -105,13 +105,13 @@ def test_remover_com_processo_aberto(client, db):
     assert resp_lista.json()["items"] == []
 
 
-def test_remover_bloqueado_apos_despacho(client, db):
+def test_remover_bloqueado_apos_envio(client, db):
     """US 3.1 Cen.4 — um Gestor de ambas as unidades mantém acesso ao processo
-    mesmo após o despacho, e é bloqueado pela regra de custódia (409), não por
+    mesmo após o envio, e é bloqueado pela regra de custódia (409), não por
     acesso negado (403)."""
     proc_id, token, _criador, cofin, ajur = _processo_aberto(client, db)
     doc = _anexar(client, token, proc_id, "parecer.pdf", PDF, "application/pdf").json()
-    client.post(f"/processos/{proc_id}/despachar", json={}, headers=auth(token))
+    enviar_para(client, db, processo_id=proc_id, token_origem=token, unidade_destino=ajur)
 
     gestor = gestor_de(db, cofin, ajur, email=f"gestor-{cofin.id}@ex.com")
     token_gestor = login(client, gestor.email)

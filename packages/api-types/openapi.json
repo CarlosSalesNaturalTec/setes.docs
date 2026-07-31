@@ -80,19 +80,6 @@
         "title": "AtualizarMeuPerfilRequest",
         "type": "object"
       },
-      "AtualizarRoteiroRequest": {
-        "properties": {
-          "unidade_ids": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Unidade Ids",
-            "type": "array"
-          }
-        },
-        "title": "AtualizarRoteiroRequest",
-        "type": "object"
-      },
       "AtualizarSistemaConfigRequest": {
         "properties": {
           "dias_antecedencia_alerta_prazo": {
@@ -415,6 +402,12 @@
         "title": "CardProcessoResponse",
         "type": "object"
       },
+      "ConcluirRequest": {
+        "description": "Conclusão (US 2.5/2.2): ação própria, sem payload — a confirmação é\ntratada na interface antes do envio da requisição.",
+        "properties": {},
+        "title": "ConcluirRequest",
+        "type": "object"
+      },
       "ContadorNotificacoesResponse": {
         "properties": {
           "nao_lidas": {
@@ -469,13 +462,6 @@
             "minLength": 1,
             "title": "Nome",
             "type": "string"
-          },
-          "unidade_ids": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Unidade Ids",
-            "type": "array"
           }
         },
         "required": [
@@ -529,17 +515,6 @@
         "title": "DashboardKpisResponse",
         "type": "object"
       },
-      "DespacharRequest": {
-        "properties": {
-          "confirmar": {
-            "default": false,
-            "title": "Confirmar",
-            "type": "boolean"
-          }
-        },
-        "title": "DespacharRequest",
-        "type": "object"
-      },
       "DevEmailItem": {
         "properties": {
           "body": {
@@ -569,6 +544,7 @@
         "type": "object"
       },
       "DevolverRequest": {
+        "description": "O destino da Devolução é resolvido no serviço a partir do histórico\n(D3) — nunca aceito do cliente. `motivo` é validado no serviço (US 2.2b\nCen.3 exige a mensagem exata \"Selecione um motivo para a devolução\").",
         "properties": {
           "justificativa": {
             "anyOf": [
@@ -857,22 +833,39 @@
         "title": "EmailTaskPayload",
         "type": "object"
       },
-      "EtapaRoteiroResponse": {
+      "EnviarRequest": {
+        "description": "Destino explícito do Envio (D2) — unidade, setor e servidor, com mensagem.",
         "properties": {
-          "ordem": {
-            "title": "Ordem",
-            "type": "integer"
+          "mensagem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mensagem"
           },
-          "unidade_id": {
-            "title": "Unidade Id",
+          "servidor_destino_id": {
+            "title": "Servidor Destino Id",
+            "type": "string"
+          },
+          "setor_destino_id": {
+            "title": "Setor Destino Id",
+            "type": "string"
+          },
+          "unidade_destino_id": {
+            "title": "Unidade Destino Id",
             "type": "string"
           }
         },
         "required": [
-          "unidade_id",
-          "ordem"
+          "unidade_destino_id",
+          "setor_destino_id",
+          "servidor_destino_id"
         ],
-        "title": "EtapaRoteiroResponse",
+        "title": "EnviarRequest",
         "type": "object"
       },
       "EventoHistoricoResponse": {
@@ -897,6 +890,17 @@
             ],
             "title": "Justificativa"
           },
+          "mensagem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mensagem"
+          },
           "motivo": {
             "anyOf": [
               {
@@ -918,6 +922,50 @@
               }
             ],
             "title": "Responsavel Id"
+          },
+          "servidor_destino_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Servidor Destino Id"
+          },
+          "servidor_origem_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Servidor Origem Id"
+          },
+          "setor_destino_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Setor Destino Id"
+          },
+          "setor_origem_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Setor Origem Id"
           },
           "status_resultante": {
             "title": "Status Resultante",
@@ -955,10 +1003,15 @@
           "tipo_evento",
           "unidade_origem_id",
           "unidade_destino_id",
+          "setor_origem_id",
+          "setor_destino_id",
+          "servidor_origem_id",
+          "servidor_destino_id",
           "responsavel_id",
           "status_resultante",
           "motivo",
           "justificativa",
+          "mensagem",
           "criado_em"
         ],
         "title": "EventoHistoricoResponse",
@@ -1505,6 +1558,17 @@
             "title": "Id",
             "type": "string"
           },
+          "justificativa": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Justificativa"
+          },
           "lida_em": {
             "anyOf": [
               {
@@ -1582,6 +1646,7 @@
           "unidade_nome",
           "unidade_origem_id",
           "unidade_origem_nome",
+          "justificativa",
           "prazo_referencia",
           "lida_em",
           "criado_em"
@@ -1908,10 +1973,6 @@
             "title": "Numero",
             "type": "string"
           },
-          "ordem_atual": {
-            "title": "Ordem Atual",
-            "type": "integer"
-          },
           "prazo_dias": {
             "title": "Prazo Dias",
             "type": "integer"
@@ -1921,8 +1982,12 @@
             "title": "Prazo Em",
             "type": "string"
           },
-          "roteiro_id": {
-            "title": "Roteiro Id",
+          "servidor_atual_id": {
+            "title": "Servidor Atual Id",
+            "type": "string"
+          },
+          "setor_atual_id": {
+            "title": "Setor Atual Id",
             "type": "string"
           },
           "sigiloso": {
@@ -1952,10 +2017,10 @@
           "assunto",
           "status",
           "tipo_processo_id",
-          "roteiro_id",
           "unidade_atual_id",
           "unidade_origem_id",
-          "ordem_atual",
+          "setor_atual_id",
+          "servidor_atual_id",
           "prazo_dias",
           "prazo_em",
           "criado_por_id",
@@ -2027,6 +2092,36 @@
           "quantidade"
         ],
         "title": "ProdutividadeUnidadeItem",
+        "type": "object"
+      },
+      "ReatribuirRequest": {
+        "description": "Reatribuição (D2): permanece na unidade atual — não há campo de\nunidade — podendo trocar de setor; servidor de destino obrigatório.",
+        "properties": {
+          "justificativa": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Justificativa"
+          },
+          "servidor_destino_id": {
+            "title": "Servidor Destino Id",
+            "type": "string"
+          },
+          "setor_destino_id": {
+            "title": "Setor Destino Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "setor_destino_id",
+          "servidor_destino_id"
+        ],
+        "title": "ReatribuirRequest",
         "type": "object"
       },
       "RecuperarSenhaRequest": {
@@ -2112,32 +2207,6 @@
           "tempo_medio_tramitacao_dias"
         ],
         "title": "RelatorioAuditoriaResponse",
-        "type": "object"
-      },
-      "RoteiroResponse": {
-        "properties": {
-          "etapas": {
-            "items": {
-              "$ref": "#/components/schemas/EtapaRoteiroResponse"
-            },
-            "title": "Etapas",
-            "type": "array"
-          },
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "vigente": {
-            "title": "Vigente",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "vigente",
-          "etapas"
-        ],
-        "title": "RoteiroResponse",
         "type": "object"
       },
       "SetorResponse": {
@@ -2415,23 +2484,19 @@
           "prazo_anonimizacao_anos": {
             "title": "Prazo Anonimizacao Anos",
             "type": "integer"
-          },
-          "roteiro": {
-            "$ref": "#/components/schemas/RoteiroResponse"
           }
         },
         "required": [
           "id",
           "nome",
           "ativo",
-          "roteiro",
           "prazo_anonimizacao_anos"
         ],
         "title": "TipoProcessoResponse",
         "type": "object"
       },
       "TipoProcessoUpdate": {
-        "description": "US 10.3 Cen.2/3 — só o prazo de anonimização é editável por esta rota\n(nome/roteiro têm rotas próprias). Inteiro positivo (Cen.3).",
+        "description": "US 10.3 Cen.2/3 — só o prazo de anonimização é editável por esta rota\n(nome tem rota própria). Inteiro positivo (Cen.3).",
         "properties": {
           "prazo_anonimizacao_anos": {
             "exclusiveMinimum": 0,
@@ -2686,6 +2751,25 @@
           "pode_auditar"
         ],
         "title": "UsuarioResumo",
+        "type": "object"
+      },
+      "UsuarioResumoResponse": {
+        "description": "Item mínimo para selects de destino de tramitação (change\ntramitacao-manual) — só id/nome, nunca e-mail ou dados pessoais de\ncontato: qualquer servidor autenticado pode consultar, não só Admin/Gestor.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome"
+        ],
+        "title": "UsuarioResumoResponse",
         "type": "object"
       },
       "ValidationError": {
@@ -4541,10 +4625,10 @@
         ]
       }
     },
-    "/processos/{processo_id}/despachar": {
+    "/processos/{processo_id}/concluir": {
       "post": {
-        "description": "US 2.2 — despacho para a próxima unidade; na última, conclusão confirmada.",
-        "operationId": "despachar_processo_processos__processo_id__despachar_post",
+        "description": "US 2.5 — conclusão como ação própria, independente de qualquer envio.",
+        "operationId": "concluir_processo_processos__processo_id__concluir_post",
         "parameters": [
           {
             "in": "path",
@@ -4577,7 +4661,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DespacharRequest"
+                "$ref": "#/components/schemas/ConcluirRequest"
               }
             }
           },
@@ -4605,7 +4689,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Despachar Processo",
+        "summary": "Concluir Processo",
         "tags": [
           "processos"
         ]
@@ -4613,7 +4697,7 @@
     },
     "/processos/{processo_id}/devolver": {
       "post": {
-        "description": "US 2.2b — devolução para a unidade anterior, com motivo obrigatório.",
+        "description": "US 2.2b — devolução ao remetente anterior, resolvido automaticamente (D3).",
         "operationId": "devolver_processo_processos__processo_id__devolver_post",
         "parameters": [
           {
@@ -5015,6 +5099,76 @@
         ]
       }
     },
+    "/processos/{processo_id}/enviar": {
+      "post": {
+        "description": "US 2.2 — envio com destino explícito (unidade, setor, servidor).",
+        "operationId": "enviar_processo_processos__processo_id__enviar_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "processo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Processo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnviarRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Enviar Processo",
+        "tags": [
+          "processos"
+        ]
+      }
+    },
     "/processos/{processo_id}/historico": {
       "get": {
         "description": "US 2.4 — linha do tempo imutável; vazia para processo recém-criado.",
@@ -5070,6 +5224,76 @@
           }
         },
         "summary": "Historico Processo",
+        "tags": [
+          "processos"
+        ]
+      }
+    },
+    "/processos/{processo_id}/reatribuir": {
+      "post": {
+        "description": "Reatribuição por atribuição indevida — mesma unidade, ortogonal ao status (D2, D4).",
+        "operationId": "reatribuir_processo_processos__processo_id__reatribuir_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "processo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Processo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReatribuirRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reatribuir Processo",
         "tags": [
           "processos"
         ]
@@ -5748,7 +5972,7 @@
     },
     "/tipos-processo": {
       "get": {
-        "description": "Catálogo de tipos de processo com o roteiro vigente de cada um.\n\nLeitura aberta a qualquer usuário autenticado (Servidor precisa listar o\ncatálogo para criar processo — US 2.1); cadastro/edição de roteiro\npermanecem admin-only (US 8.2, `_require_admin` abaixo).",
+        "description": "Catálogo de tipos de processo — leitura aberta a qualquer usuário\nautenticado (Servidor precisa listar o catálogo para criar processo —\nUS 2.1); cadastro/edição permanecem admin-only (`_require_admin` abaixo).",
         "operationId": "listar_tipos_processo_tipos_processo_get",
         "parameters": [
           {
@@ -5922,76 +6146,6 @@
           }
         },
         "summary": "Atualizar Tipo Processo",
-        "tags": [
-          "tipos-processo"
-        ]
-      }
-    },
-    "/tipos-processo/{tipo_processo_id}/roteiro": {
-      "put": {
-        "description": "US 8.2 Cen.2 — cria nova versão vigente; a anterior fica congelada\n(`vigente=false`) e suas `roteiro_etapa` nunca são alteradas — processos já\ncriados sob ela mantêm o roteiro do momento de sua criação.",
-        "operationId": "atualizar_roteiro_tipos_processo__tipo_processo_id__roteiro_put",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "tipo_processo_id",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "title": "Tipo Processo Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "header",
-            "name": "authorization",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AtualizarRoteiroRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RoteiroResponse"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Atualizar Roteiro",
         "tags": [
           "tipos-processo"
         ]
@@ -6298,7 +6452,7 @@
     },
     "/unidades/{unidade_id}/setores": {
       "get": {
-        "description": "Setores da unidade. Restrito ao Administrador junto com as demais rotas\nde setor (task 2.4) — o único consumidor hoje é a administração; se a tela\nde tramitação precisar da cascata para outros perfis, o alargamento entra\nno change que a introduzir, com justificativa própria.",
+        "description": "Setores da unidade. Aberto a qualquer usuário autenticado (change\ntramitacao-manual, design.md — fluxo de Reatribuição): a cascata\nunidade→setor→servidor da tela de Tramitação precisa que o Servidor\nresolva os setores da própria unidade, não só o Administrador. Cadastro/\nedição/desativação de setor continuam admin-only (rotas abaixo).",
         "operationId": "listar_setores_unidades__unidade_id__setores_get",
         "parameters": [
           {
@@ -6576,6 +6730,70 @@
           }
         },
         "summary": "Cadastrar Usuario",
+        "tags": [
+          "usuarios"
+        ]
+      }
+    },
+    "/usuarios/ativos-por-setor": {
+      "get": {
+        "description": "Apoio à cascata unidade→setor→servidor da tela de Tramitação (change\ntramitacao-manual, design.md — fluxo de Reatribuição). Aberto a qualquer\nusuário autenticado — diferente de `GET /usuarios` (Admin/Gestor-only) —\nmas devolve só id/nome de servidores **ativos**, nunca dados pessoais de\ncontato nem usuários inativos.",
+        "operationId": "listar_servidores_ativos_por_setor_usuarios_ativos_por_setor_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "setor_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Setor Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UsuarioResumoResponse"
+                  },
+                  "title": "Response Listar Servidores Ativos Por Setor Usuarios Ativos Por Setor Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Listar Servidores Ativos Por Setor",
         "tags": [
           "usuarios"
         ]

@@ -17,7 +17,7 @@ const SERVIDOR_ADMIN_RO = {
 
 // Task 9.3 — o Administrador tem acesso read-only ao Kanban consolidado
 // (US 2.3/2.8): mantém o link "Processos", mas nenhum controle de ação
-// (Novo processo/Despachar/Devolver/sigilo) é exibido, pois o backend já
+// (Novo processo/Tramitar/Concluir/sigilo) é exibido, pois o backend já
 // rejeita essas ações para perfis não-Servidor.
 test("Administrador não vê controles de ação em Processos nem no detalhe de um processo", async ({
   page,
@@ -32,10 +32,6 @@ test("Administrador não vê controles de ação em Processos nem no detalhe de 
 
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_PROCESSO_ADMIN_RO.nome);
-  await page
-    .getByLabel("Adicionar unidade ao roteiro")
-    .selectOption({ label: UNIDADE_ADMIN_RO.nome });
-  await page.getByRole("button", { name: "Adicionar etapa" }).click();
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
   await expect(page.getByRole("heading", { name: TIPO_PROCESSO_ADMIN_RO.nome })).toBeVisible();
 
@@ -75,8 +71,8 @@ test("Administrador não vê controles de ação em Processos nem no detalhe de 
 
   await page.goto(urlProcesso);
   await expect(page.getByText("Processo para verificação de read-only do Admin")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Despachar" })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Devolver" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Tramitar" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Concluir" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Marcar como Sigiloso" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Remover Sigilo" })).toHaveCount(0);
 });

@@ -15,15 +15,15 @@ from app.db.models import (
     Tramitacao,
 )
 from app.services.lgpd import NOME_ANONIMIZADO, anonimizar_interessados
-from tests.helpers_processo import processo_concluido, tipo_com_roteiro, unidade, usuario
+from tests.helpers_processo import processo_concluido, servidor_com_setor, tipo_processo, unidade
 
 CPF_ORIGINAL = "52998224725"
 
 
 def _processo_com_interessado(db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id, email=f"criador-{cofin.id}@ex.com")
+    tipo = tipo_processo(db)
+    criador, _setor_criador = servidor_com_setor(db, cofin, email=f"criador-{cofin.id}@ex.com")
     processo = processo_concluido(
         db,
         unidade=cofin,

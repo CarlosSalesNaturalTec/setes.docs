@@ -74,15 +74,10 @@ def test_listar_unidades_permite_servidor_comum(client, db):
     assert len(resp.json()) == 1
 
 
-def test_listar_tipos_processo_inclui_roteiro_vigente(client, db):
-    cofin = Unidade(nome="COFIN", sigla="COFIN", ativo=True)
-    db.add(cofin)
-    db.commit()
+def test_listar_tipos_processo(client, db):
     _usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin@example.com")
     token = _login(client, "admin@example.com")
-    client.post(
-        "/tipos-processo", json={"nome": "Licitação", "unidade_ids": [str(cofin.id)]}, headers=_auth(token)
-    )
+    client.post("/tipos-processo", json={"nome": "Licitação"}, headers=_auth(token))
 
     resp = client.get("/tipos-processo", headers=_auth(token))
 
@@ -90,7 +85,6 @@ def test_listar_tipos_processo_inclui_roteiro_vigente(client, db):
     body = resp.json()
     assert len(body) == 1
     assert body[0]["nome"] == "Licitação"
-    assert len(body[0]["roteiro"]["etapas"]) == 1
 
 
 def test_obter_unidades_geridas(client, db):

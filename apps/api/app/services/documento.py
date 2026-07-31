@@ -42,7 +42,7 @@ _EXTENSAO_MIME: dict[str, str] = {
     "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 }
 
-_EVENTOS_MOVIMENTACAO = (TipoEventoTramitacao.DESPACHO, TipoEventoTramitacao.DEVOLUCAO)
+_EVENTOS_MOVIMENTACAO = (TipoEventoTramitacao.ENVIO, TipoEventoTramitacao.DEVOLUCAO)
 
 
 def _erro(codigo: int, detalhe: str) -> HTTPException:

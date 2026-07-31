@@ -247,40 +247,20 @@ def processos_atuados(db: Session, usuario: Usuario) -> list[dict]:
 def contar_processos_sob_responsabilidade(db: Session, usuario: Usuario) -> int:
     """Processos "parados com" o usuário, guarda da desativação (US 8.4, D2).
 
-    Conta processos em andamento (`aberto`/`em_tramitacao`) cujo **último**
-    responsável de tramitação é o usuário, ou que ele criou e ainda não teve
-    nenhuma tramitação — não todo processo que ele já tocou no passado.
+    Change tramitacao-manual (design.md — Risks/Trade-offs): conta por
+    `servidor_atual_id`, o responsável corrente denormalizado no processo —
+    mais preciso que a heurística anterior de "último responsável de
+    tramitação" (que exigia reconstruir o histórico por processo).
     """
     from app.db.models import StatusProcesso
 
     em_andamento = [StatusProcesso.ABERTO, StatusProcesso.EM_TRAMITACAO]
-    total = 0
-    processos = (
+    return (
         db.query(Processo)
         .filter(Processo.status.in_(em_andamento))
-        .filter(
-            or_(
-                Processo.criado_por_id == usuario.id,
-                Processo.id.in_(
-                    db.query(Tramitacao.processo_id).filter(Tramitacao.responsavel_id == usuario.id)
-                ),
-            )
-        )
-        .all()
+        .filter(Processo.servidor_atual_id == usuario.id)
+        .count()
     )
-    for processo in processos:
-        ultima = (
-            db.query(Tramitacao)
-            .filter(Tramitacao.processo_id == processo.id)
-            .order_by(Tramitacao.criado_em.desc())
-            .first()
-        )
-        if ultima is None:
-            if processo.criado_por_id == usuario.id:
-                total += 1
-        elif ultima.responsavel_id == usuario.id:
-            total += 1
-    return total
 
 
 def contar_em_andamento(db: Session, unidade_id: uuid.UUID) -> int:

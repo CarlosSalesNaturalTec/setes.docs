@@ -75,8 +75,6 @@ test("Auditor autorizado acessa processo sigiloso de outra unidade; usuário sem
 
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_PROCESSO.nome);
-  await page.getByLabel("Adicionar unidade ao roteiro").selectOption({ label: UNIDADE_A.nome });
-  await page.getByRole("button", { name: "Adicionar etapa" }).click();
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
   await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
 

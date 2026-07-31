@@ -23,11 +23,11 @@ type ModoVisualizacao = "kanban" | "lista";
 
 const CHAVE_MODO_VISUALIZACAO = "setes:processos:modo-visualizacao";
 
-// Rótulos da confirmação de sucesso pós-despacho/devolução (ver
+// Rótulos da confirmação de sucesso pós-envio/devolução (ver
 // openspec/changes/corrigir-feedback-despacho-devolucao) — a ação já concluída
 // é comunicada aqui, e não como erro de acesso ao processo movido.
 const VERBO_ACAO: Record<string, string> = {
-  despacho: "despachado",
+  envio: "enviado",
   devolucao: "devolvido",
 };
 

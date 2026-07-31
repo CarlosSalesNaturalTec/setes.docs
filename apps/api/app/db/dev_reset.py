@@ -21,8 +21,6 @@ TABELAS_NEGOCIO = (
     "token_autenticacao",
     "senha_historico",
     "log_seguranca",
-    "roteiro_etapa",
-    "roteiro",
     "tipo_processo",
     "unidade_gestor",
     "usuario",

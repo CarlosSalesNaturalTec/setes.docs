@@ -7,15 +7,15 @@ from datetime import datetime, timedelta, timezone
 
 from app.db.models import LogSeguranca, ProcessoInteressado, StatusProcesso, TipoEventoLog
 from app.services.anonimizacao_lgpd import processar_anonimizacao_automatica
-from tests.helpers_processo import processo_concluido, tipo_com_roteiro, unidade, usuario
+from tests.helpers_processo import processo_concluido, servidor_com_setor, tipo_processo, unidade
 
 AGORA = datetime(2026, 7, 15, 4, 0, 0, tzinfo=timezone.utc)
 
 
 def _base(db, *, prazo_anos=5):
     cofin = unidade(db, "COFIN")
-    criador = usuario(db, unidade_id=cofin.id, email=f"criador-{cofin.id}@ex.com")
-    tipo = tipo_com_roteiro(db, cofin)
+    criador, _setor_criador = servidor_com_setor(db, cofin, email=f"criador-{cofin.id}@ex.com")
+    tipo = tipo_processo(db)
     tipo.prazo_anonimizacao_anos = prazo_anos
     db.commit()
     return cofin, criador, tipo

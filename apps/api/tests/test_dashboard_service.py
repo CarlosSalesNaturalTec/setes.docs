@@ -12,16 +12,16 @@ from tests.helpers_processo import (
     gestor_de,
     processo_ativo,
     processo_concluido,
-    tipo_com_roteiro,
+    servidor_com_setor,
+    tipo_processo,
     unidade,
-    usuario,
 )
 
 
 def _tramitacao(db, *, processo, responsavel, criado_em):
     evento = Tramitacao(
         processo_id=processo.id,
-        tipo_evento=TipoEventoTramitacao.DESPACHO,
+        tipo_evento=TipoEventoTramitacao.ENVIO,
         unidade_origem_id=processo.unidade_atual_id,
         unidade_destino_id=processo.unidade_atual_id,
         responsavel_id=responsavel.id,
@@ -37,9 +37,9 @@ def test_escopo_exclui_unidade_nao_gerida(db):
     cofin = unidade(db, "COFIN")
     ajur = unidade(db, "AJUR")
     gestor = gestor_de(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id)
-    tipo_cofin = tipo_com_roteiro(db, cofin)
-    tipo_ajur = tipo_com_roteiro(db, ajur)
+    criador, _setor_criador = servidor_com_setor(db, cofin)
+    tipo_cofin = tipo_processo(db)
+    tipo_ajur = tipo_processo(db)
 
     hoje = date.today()
     processo_ativo(db, unidade=cofin, criador=criador, tipo=tipo_cofin, prazo_em=hoje + timedelta(days=10))
@@ -71,8 +71,8 @@ def test_unidade_id_dentro_do_escopo_restringe_a_uma_unidade(db):
 def test_tempo_medio_considera_apenas_concluidos_ultimos_12_meses(db):
     cofin = unidade(db, "COFIN")
     gestor = gestor_de(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id)
-    tipo = tipo_com_roteiro(db, cofin)
+    criador, _setor_criador = servidor_com_setor(db, cofin)
+    tipo = tipo_processo(db)
 
     agora = datetime.now(timezone.utc)
     dentro = processo_concluido(
@@ -105,8 +105,8 @@ def test_tempo_medio_considera_apenas_concluidos_ultimos_12_meses(db):
 def test_parados_usa_limiar_do_config_e_criado_em_sem_tramitacao(db):
     cofin = unidade(db, "COFIN")
     gestor = gestor_de(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id)
-    tipo = tipo_com_roteiro(db, cofin)
+    criador, _setor_criador = servidor_com_setor(db, cofin)
+    tipo = tipo_processo(db)
 
     hoje = date.today()
     agora = datetime.now(timezone.utc)
@@ -143,8 +143,8 @@ def test_parados_usa_limiar_do_config_e_criado_em_sem_tramitacao(db):
 def test_produtividade_conta_apenas_mes_corrente(db):
     cofin = unidade(db, "COFIN")
     gestor = gestor_de(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id)
-    tipo = tipo_com_roteiro(db, cofin)
+    criador, _setor_criador = servidor_com_setor(db, cofin)
+    tipo = tipo_processo(db)
 
     hoje = date.today()
     inicio_mes = hoje.replace(day=1)
@@ -170,8 +170,8 @@ def test_produtividade_conta_apenas_mes_corrente(db):
 def test_prazos_em_risco_vencido_e_a_vencer(db):
     cofin = unidade(db, "COFIN")
     gestor = gestor_de(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id)
-    tipo = tipo_com_roteiro(db, cofin)
+    criador, _setor_criador = servidor_com_setor(db, cofin)
+    tipo = tipo_processo(db)
     hoje = date.today()
 
     vencido = processo_ativo(db, unidade=cofin, criador=criador, tipo=tipo, prazo_em=hoje - timedelta(days=1))
@@ -205,8 +205,8 @@ def test_estado_vazio_gestor_sem_processos(db):
 def test_distribuicoes_contam_apenas_ativos(db):
     cofin = unidade(db, "COFIN")
     gestor = gestor_de(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id)
-    tipo = tipo_com_roteiro(db, cofin)
+    criador, _setor_criador = servidor_com_setor(db, cofin)
+    tipo = tipo_processo(db)
     hoje = date.today()
 
     for _ in range(5):
@@ -244,8 +244,8 @@ def test_distribuicoes_contam_apenas_ativos(db):
 def test_distribuicao_conta_sigiloso(db):
     cofin = unidade(db, "COFIN")
     gestor = gestor_de(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id)
-    tipo = tipo_com_roteiro(db, cofin)
+    criador, _setor_criador = servidor_com_setor(db, cofin)
+    tipo = tipo_processo(db)
     hoje = date.today()
 
     processo_ativo(db, unidade=cofin, criador=criador, tipo=tipo, prazo_em=hoje + timedelta(days=10))
@@ -261,12 +261,12 @@ def test_distribuicao_conta_sigiloso(db):
 def test_distribuicao_por_usuario_agrupa_por_autor_e_ordena_desc(db):
     cofin = unidade(db, "COFIN")
     gestor = gestor_de(db, cofin)
-    ricardo = usuario(db, unidade_id=cofin.id, email="ricardo@example.com")
+    ricardo, _setor_ricardo = servidor_com_setor(db, cofin, email="ricardo@example.com")
     ricardo.nome = "Ricardo Pita"
-    ana = usuario(db, unidade_id=cofin.id, email="ana@example.com")
+    ana, _setor_ana = servidor_com_setor(db, cofin, email="ana@example.com")
     ana.nome = "Ana Souza"
     db.commit()
-    tipo = tipo_com_roteiro(db, cofin)
+    tipo = tipo_processo(db)
     hoje = date.today()
 
     for _ in range(5):

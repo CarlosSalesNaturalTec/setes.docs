@@ -6,7 +6,7 @@ from __future__ import annotations
 from datetime import date
 
 from app.db.models import SolicitacaoLgpd
-from tests.helpers_processo import processo_ativo, tipo_com_roteiro, unidade, usuario
+from tests.helpers_processo import processo_ativo, servidor_com_setor, tipo_processo, unidade
 
 PDF = b"%PDF-1.4\n1 0 obj\n<< >>\nendobj\n%%EOF"
 
@@ -15,8 +15,8 @@ CPF_VALIDO = "529.982.247-25"
 
 def _processo(db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id, email=f"criador-{cofin.id}@ex.com")
+    tipo = tipo_processo(db)
+    criador, _setor_criador = servidor_com_setor(db, cofin, email=f"criador-{cofin.id}@ex.com")
     return processo_ativo(db, unidade=cofin, criador=criador, tipo=tipo, prazo_em=date.today())
 
 

@@ -20,11 +20,11 @@ const SERVIDOR_DOCUMENTOS = {
   senha: "SenhaDocumentos1",
 };
 
-// Task 8.1 — E2E obrigatório do fluxo de anexo (US 3.1, US 3.2). Usa um
-// roteiro de unidade única: o despacho conclui o processo sem mudar
-// `unidade_atual_id` (design.md), então o mesmo Servidor permanece com
-// acesso e podemos observar o bloqueio de remoção pós-despacho na própria UI.
-test("Servidor anexa, visualiza inline, baixa e remove um documento; remoção é bloqueada após despacho", async ({
+// Task 8.1 — E2E obrigatório do fluxo de anexo (US 3.1, US 3.2). A conclusão
+// (change tramitacao-manual) é ação própria e não muda `unidade_atual_id`,
+// então o mesmo Servidor permanece com acesso e podemos observar o bloqueio
+// de remoção pós-conclusão na própria UI.
+test("Servidor anexa, visualiza inline, baixa e remove um documento; remoção é bloqueada após conclusão", async ({
   page,
 }) => {
   await login(page, ADMIN_ROOT.email, ADMIN_ROOT.senha);
@@ -37,10 +37,6 @@ test("Servidor anexa, visualiza inline, baixa e remove um documento; remoção �
 
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_PROCESSO.nome);
-  await page
-    .getByLabel("Adicionar unidade ao roteiro")
-    .selectOption({ label: UNIDADE_DOCUMENTOS.nome });
-  await page.getByRole("button", { name: "Adicionar etapa" }).click();
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
   await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
 
@@ -97,17 +93,17 @@ test("Servidor anexa, visualiza inline, baixa e remove um documento; remoção �
   await modalRemocao.getByRole("button", { name: "Remover" }).click();
   await expect(page.getByText("Nenhum documento anexado.")).toBeVisible();
 
-  // Anexa um segundo documento e despacha (roteiro de unidade única -> conclusão).
+  // Anexa um segundo documento e conclui o processo (ação própria, US 2.5).
   await page.getByLabel("Anexar Documento").setInputFiles(PARECER_PDF);
   await expect(page.getByRole("button", { name: "parecer.pdf" })).toBeVisible();
 
   await page.getByRole("button", { name: "Detalhes" }).click();
-  await page.getByRole("button", { name: "Despachar" }).click();
+  await page.getByRole("button", { name: "Concluir" }).click();
   const modalConclusao = page.getByRole("dialog", { name: "Confirmar conclusão" });
   await modalConclusao.getByRole("button", { name: "Concluir processo" }).click();
   await expect(page.getByText("Concluído")).toBeVisible();
 
-  // Remoção bloqueada após despacho — a ação não fica mais disponível (US 3.1 Cen.4).
+  // Remoção bloqueada após conclusão — a ação não fica mais disponível (US 3.1 Cen.4).
   await page.getByRole("button", { name: "Documentos" }).click();
   await expect(page.getByRole("button", { name: "parecer.pdf" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Remover" })).toHaveCount(0);

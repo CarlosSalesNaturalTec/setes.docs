@@ -1,9 +1,11 @@
 """Endpoints de processo e workflow (Épico 2).
 
 Criação (US 2.1), Kanban (US 2.3/2.8), busca (US 2.7), detalhe (US 1.4 Cen.2),
-histórico (US 2.4), despacho (US 2.2) e devolução (US 2.2b). A autorização por
-unidade reutiliza `require_acesso_unidade` (D6) — toda rejeição grava
-`log_seguranca`.
+histórico (US 2.4) e as três ações de tramitação manual — Envio, Devolução e
+Reatribuição — mais a Conclusão como ação própria (change tramitacao-manual,
+design.md D2). A autorização por unidade reutiliza `require_acesso_unidade`
+(D6); a guarda de papel por ação (D5) é aplicada dentro do serviço, depois
+dela. Toda rejeição grava `log_seguranca`.
 """
 
 from __future__ import annotations
@@ -31,13 +33,15 @@ from app.email.provider import EmailMessage
 from app.email.queue import config_from_settings, enqueue_email_seguro
 from app.schemas.processo import (
     CardProcessoResponse,
+    ConcluirRequest,
     CriarProcessoRequest,
-    DespacharRequest,
     DevolverRequest,
+    EnviarRequest,
     EventoHistoricoResponse,
     HistoricoResponse,
     KanbanResponse,
     ProcessoResponse,
+    ReatribuirRequest,
 )
 from app.security.autorizacao import (
     get_current_user,
@@ -53,6 +57,10 @@ from app.services import sigilo as sigilo_service
 router = APIRouter(prefix="/processos", tags=["processos"])
 
 _require_servidor = require_perfil(PerfilUsuario.SERVIDOR)
+# Reatribuir e Concluir também podem ser feitos pelo Gestor da unidade (D5) —
+# a checagem de qual gestor/unidade é feita no serviço, depois da autorização
+# por unidade; aqui só se amplia o perfil aceito além de Servidor.
+_require_servidor_ou_gestor = require_perfil(PerfilUsuario.SERVIDOR, PerfilUsuario.GESTOR)
 
 MSG_PROCESSO_NAO_ENCONTRADO = "Processo não encontrado."
 MSG_ACESSO_NEGADO_PROCESSO = (
@@ -316,22 +324,22 @@ def _enfileirar_emails_novo_processo(
         )
 
 
-@router.post("/{processo_id}/despachar", response_model=ProcessoResponse)
-def despachar_processo(
+@router.post("/{processo_id}/enviar", response_model=ProcessoResponse)
+def enviar_processo(
     processo_id: uuid.UUID,
-    payload: DespacharRequest,
+    payload: EnviarRequest,
     request: Request,
     servidor: Annotated[Usuario, Depends(_require_servidor)],
     db: Annotated[Session, Depends(get_db)],
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> ProcessoResponse:
-    """US 2.2 — despacho para a próxima unidade; na última, conclusão confirmada."""
+    """US 2.2 — envio com destino explícito (unidade, setor, servidor)."""
     processo = _carregar_processo(db, processo_id)
     require_acesso_unidade(
         db, usuario=servidor, unidade_id=processo.unidade_atual_id, rota=request.url.path
     )
-    processo, notificacoes = processo_service.despachar(
-        db, processo=processo, responsavel=servidor, confirmar=payload.confirmar
+    processo, notificacoes = processo_service.enviar(
+        db, processo=processo, responsavel=servidor, payload=payload, rota=request.url.path
     )
     novo_processo = [n for n in notificacoes if n.tipo == TipoNotificacao.NOVO_PROCESSO]
     _enfileirar_emails_novo_processo(
@@ -348,13 +356,51 @@ def devolver_processo(
     servidor: Annotated[Usuario, Depends(_require_servidor)],
     db: Annotated[Session, Depends(get_db)],
 ) -> ProcessoResponse:
-    """US 2.2b — devolução para a unidade anterior, com motivo obrigatório."""
+    """US 2.2b — devolução ao remetente anterior, resolvido automaticamente (D3)."""
     processo = _carregar_processo(db, processo_id)
     require_acesso_unidade(
         db, usuario=servidor, unidade_id=processo.unidade_atual_id, rota=request.url.path
     )
     processo = processo_service.devolver(
-        db, processo=processo, responsavel=servidor, payload=payload
+        db, processo=processo, responsavel=servidor, payload=payload, rota=request.url.path
+    )
+    return ProcessoResponse.de(processo)
+
+
+@router.post("/{processo_id}/reatribuir", response_model=ProcessoResponse)
+def reatribuir_processo(
+    processo_id: uuid.UUID,
+    payload: ReatribuirRequest,
+    request: Request,
+    servidor: Annotated[Usuario, Depends(_require_servidor_ou_gestor)],
+    db: Annotated[Session, Depends(get_db)],
+) -> ProcessoResponse:
+    """Reatribuição por atribuição indevida — mesma unidade, ortogonal ao status (D2, D4)."""
+    processo = _carregar_processo(db, processo_id)
+    require_acesso_unidade(
+        db, usuario=servidor, unidade_id=processo.unidade_atual_id, rota=request.url.path
+    )
+    processo, _notificacoes = processo_service.reatribuir(
+        db, processo=processo, responsavel=servidor, payload=payload, rota=request.url.path
+    )
+    return ProcessoResponse.de(processo)
+
+
+@router.post("/{processo_id}/concluir", response_model=ProcessoResponse)
+def concluir_processo(
+    processo_id: uuid.UUID,
+    _payload: ConcluirRequest,
+    request: Request,
+    servidor: Annotated[Usuario, Depends(_require_servidor_ou_gestor)],
+    db: Annotated[Session, Depends(get_db)],
+) -> ProcessoResponse:
+    """US 2.5 — conclusão como ação própria, independente de qualquer envio."""
+    processo = _carregar_processo(db, processo_id)
+    require_acesso_unidade(
+        db, usuario=servidor, unidade_id=processo.unidade_atual_id, rota=request.url.path
+    )
+    processo, _notificacoes = processo_service.concluir(
+        db, processo=processo, responsavel=servidor, rota=request.url.path
     )
     return ProcessoResponse.de(processo)
 

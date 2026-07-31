@@ -1,4 +1,8 @@
-"""Builders compartilhados dos testes de processo/workflow (Épico 2)."""
+"""Builders compartilhados dos testes de processo/workflow (Épico 2).
+
+Change tramitacao-manual: processos nascem sem roteiro, atribuídos ao criador
+(`setor_atual_id`/`servidor_atual_id`) — os builders abaixo refletem isso.
+"""
 
 from __future__ import annotations
 
@@ -10,8 +14,7 @@ from sqlalchemy.orm import Session
 from app.db.models import (
     PerfilUsuario,
     Processo,
-    Roteiro,
-    RoteiroEtapa,
+    Setor,
     StatusProcesso,
     StatusUsuario,
     TipoProcesso,
@@ -20,7 +23,6 @@ from app.db.models import (
     Usuario,
 )
 from app.security.senha import hash_senha
-from app.services.roteiros import obter_roteiro_vigente
 
 SENHA = "SenhaForte1"
 
@@ -38,8 +40,24 @@ def unidade(db: Session, nome: str = "COFIN") -> Unidade:
     return u
 
 
+def setor(db: Session, unidade_alvo: Unidade, nome: str = "Protocolo") -> Setor:
+    # Sigla única por sufixo (D1: única *dentro* da unidade) — evita colisão
+    # entre setores de nomes com prefixo igual (ex.: "Setor"/"Setor2") em
+    # testes que criam vários setores na mesma unidade.
+    sigla = f"{nome[:3].upper()}{uuid.uuid4().hex[:5].upper()}"
+    s = Setor(unidade_id=unidade_alvo.id, nome=nome, sigla=sigla, ativo=True)
+    db.add(s)
+    db.commit()
+    return s
+
+
 def usuario(
-    db: Session, *, perfil=PerfilUsuario.SERVIDOR, unidade_id=None, email: str | None = None
+    db: Session,
+    *,
+    perfil=PerfilUsuario.SERVIDOR,
+    unidade_id=None,
+    setor_id=None,
+    email: str | None = None,
 ) -> Usuario:
     u = Usuario(
         nome="Fulano",
@@ -48,10 +66,21 @@ def usuario(
         perfil=perfil,
         status=StatusUsuario.ATIVO,
         unidade_id=unidade_id,
+        setor_id=setor_id,
     )
     db.add(u)
     db.commit()
     return u
+
+
+def servidor_com_setor(
+    db: Session, unidade_alvo: Unidade, *, nome_setor: str = "Protocolo", email: str | None = None
+) -> tuple[Usuario, Setor]:
+    """Atalho: cria (ou reaproveita) um setor da unidade e um Servidor nele —
+    todo processo exige criador com setor vinculado (US 2.1 Cen. sem setor)."""
+    s = setor(db, unidade_alvo, nome=nome_setor)
+    u = usuario(db, unidade_id=unidade_alvo.id, setor_id=s.id, email=email)
+    return u, s
 
 
 def gestor_de(db: Session, *unidades: Unidade, email: str | None = None) -> Usuario:
@@ -62,18 +91,17 @@ def gestor_de(db: Session, *unidades: Unidade, email: str | None = None) -> Usua
     return g
 
 
-def tipo_com_roteiro(db: Session, *unidades: Unidade, nome: str = "Licitação") -> TipoProcesso:
-    """Cria um tipo de processo e um roteiro vigente com as `unidades` na ordem dada."""
+def tipo_processo(db: Session, nome: str = "Licitação") -> TipoProcesso:
     tipo = TipoProcesso(nome=f"{nome}-{uuid.uuid4().hex[:6]}", ativo=True)
     db.add(tipo)
     db.commit()
-    roteiro = Roteiro(tipo_processo_id=tipo.id, vigente=True)
-    db.add(roteiro)
-    db.commit()
-    for ordem, u in enumerate(unidades, start=1):
-        db.add(RoteiroEtapa(roteiro_id=roteiro.id, unidade_id=u.id, ordem=ordem))
-    db.commit()
     return tipo
+
+
+# Alias — nome anterior citado por alguns testes; roteiro deixou de existir,
+# então "com roteiro" e "sem roteiro" são hoje o mesmo tipo de processo.
+tipo_com_roteiro = tipo_processo
+tipo_sem_roteiro = tipo_processo
 
 
 def processo_concluido(
@@ -87,17 +115,16 @@ def processo_concluido(
     status: StatusProcesso = StatusProcesso.CONCLUIDO,
 ) -> Processo:
     """Cria um processo diretamente já `Concluído`, com `arquivar_em` sob
-    controle do teste (arquivamento não passa pelo fluxo HTTP de despacho)."""
-    roteiro = obter_roteiro_vigente(db, tipo.id)
+    controle do teste (arquivamento não passa pelo fluxo HTTP de conclusão)."""
     processo = Processo(
         numero=f"2026/{uuid.uuid4().int % 999999:06d}",
         assunto="Processo de teste",
         tipo_processo_id=tipo.id,
-        roteiro_id=roteiro.id,
         status=status,
         unidade_atual_id=unidade.id,
         unidade_origem_id=unidade.id,
-        ordem_atual=0,
+        setor_atual_id=criador.setor_id,
+        servidor_atual_id=criador.id,
         prazo_dias=30,
         prazo_em=date.today(),
         criado_por_id=criador.id,
@@ -120,16 +147,15 @@ def processo_ativo(
 ) -> Processo:
     """Cria um processo diretamente `Aberto`/`Em Tramitação` com `prazo_em` sob
     controle do teste (rotina de prazo não passa pelo fluxo HTTP de criação)."""
-    roteiro = obter_roteiro_vigente(db, tipo.id)
     processo = Processo(
         numero=f"2026/{uuid.uuid4().int % 999999:06d}",
         assunto="Processo de teste",
         tipo_processo_id=tipo.id,
-        roteiro_id=roteiro.id,
         status=status,
         unidade_atual_id=unidade.id,
         unidade_origem_id=unidade.id,
-        ordem_atual=0,
+        setor_atual_id=criador.setor_id,
+        servidor_atual_id=criador.id,
         prazo_dias=30,
         prazo_em=prazo_em,
         criado_por_id=criador.id,
@@ -139,11 +165,35 @@ def processo_ativo(
     return processo
 
 
-def tipo_sem_roteiro(db: Session, nome: str = "SemRoteiro") -> TipoProcesso:
-    tipo = TipoProcesso(nome=f"{nome}-{uuid.uuid4().hex[:6]}", ativo=True)
-    db.add(tipo)
-    db.commit()
-    return tipo
+def enviar_para(
+    client,
+    db: Session,
+    *,
+    processo_id: str,
+    token_origem: str,
+    unidade_destino: Unidade,
+    nome_setor: str = "Setor",
+    email_destino: str | None = None,
+    mensagem: str | None = "Segue",
+) -> tuple:
+    """Cria setor+servidor na `unidade_destino` e envia o processo para lá —
+    atalho comum aos testes que precisam de um Envio válido antes de exercitar
+    Devolução/Reatribuição/Conclusão. Retorna (resposta, servidor_destino, setor_destino)."""
+    setor_destino = setor(db, unidade_destino, nome_setor)
+    servidor_destino = usuario(
+        db, unidade_id=unidade_destino.id, setor_id=setor_destino.id, email=email_destino
+    )
+    resp = client.post(
+        f"/processos/{processo_id}/enviar",
+        json={
+            "unidade_destino_id": str(unidade_destino.id),
+            "setor_destino_id": str(setor_destino.id),
+            "servidor_destino_id": str(servidor_destino.id),
+            "mensagem": mensagem,
+        },
+        headers=auth(token_origem),
+    )
+    return resp, servidor_destino, setor_destino
 
 
 def login(client, email: str) -> str:

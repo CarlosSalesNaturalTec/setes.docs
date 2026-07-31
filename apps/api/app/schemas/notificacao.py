@@ -17,6 +17,9 @@ class NotificacaoResponse(BaseModel):
     unidade_nome: str
     unidade_origem_id: str | None
     unidade_origem_nome: str | None
+    # Change tramitacao-manual (D8): justificativa da reatribuição
+    # (REATRIBUIDO_PARA_VOCE) ou descrição do novo destino (DESTINO_CORRIGIDO).
+    justificativa: str | None
     prazo_referencia: date | None
     lida_em: datetime | None
     criado_em: datetime
@@ -35,6 +38,7 @@ class NotificacaoResponse(BaseModel):
                 str(notificacao.unidade_origem_id) if notificacao.unidade_origem_id else None
             ),
             unidade_origem_nome=notificacao.unidade_origem_nome,
+            justificativa=notificacao.justificativa,
             prazo_referencia=notificacao.prazo_referencia,
             lida_em=notificacao.lida_em,
             criado_em=notificacao.criado_em,

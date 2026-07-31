@@ -33,6 +33,7 @@ from app.schemas.usuarios import (
     TransferirUnidadeRequest,
     UnidadesGeridasRequest,
     UsuarioResponse,
+    UsuarioResumoResponse,
 )
 from app.security.autorizacao import (
     get_current_user,
@@ -309,6 +310,30 @@ def listar_usuarios(
     return ListaUsuariosResponse(
         items=[UsuarioResponse.de(u) for u in itens], total=total, page=page, page_size=page_size
     )
+
+
+@router.get("/usuarios/ativos-por-setor", response_model=list[UsuarioResumoResponse])
+def listar_servidores_ativos_por_setor(
+    setor_id: uuid.UUID,
+    _usuario: Annotated[Usuario, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> list[UsuarioResumoResponse]:
+    """Apoio à cascata unidade→setor→servidor da tela de Tramitação (change
+    tramitacao-manual, design.md — fluxo de Reatribuição). Aberto a qualquer
+    usuário autenticado — diferente de `GET /usuarios` (Admin/Gestor-only) —
+    mas devolve só id/nome de servidores **ativos**, nunca dados pessoais de
+    contato nem usuários inativos."""
+    servidores = (
+        db.query(Usuario)
+        .filter(
+            Usuario.setor_id == setor_id,
+            Usuario.perfil == PerfilUsuario.SERVIDOR,
+            Usuario.status == StatusUsuario.ATIVO,
+        )
+        .order_by(Usuario.nome)
+        .all()
+    )
+    return [UsuarioResumoResponse.de(u) for u in servidores]
 
 
 @router.post("/usuarios/{usuario_id}/permissao-auditoria", response_model=UsuarioResponse)

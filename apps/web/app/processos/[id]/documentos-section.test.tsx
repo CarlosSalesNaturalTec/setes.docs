@@ -41,13 +41,18 @@ const DOC_PDF = {
 
 const EVENTO_DESPACHO = {
   id: "ev-1",
-  tipo_evento: "despacho",
+  tipo_evento: "envio",
   unidade_origem_id: "un-1",
   unidade_destino_id: "un-2",
+  setor_origem_id: "setor-1",
+  setor_destino_id: "setor-2",
+  servidor_origem_id: "user-1",
+  servidor_destino_id: "user-2",
   responsavel_id: "user-1",
   status_resultante: "em_tramitacao",
   motivo: null,
   justificativa: null,
+  mensagem: null,
   criado_em: "2026-07-15T09:00:00Z",
 };
 
@@ -56,10 +61,15 @@ const EVENTO_DEVOLUCAO = {
   tipo_evento: "devolucao",
   unidade_origem_id: "un-2",
   unidade_destino_id: "un-1",
+  setor_origem_id: "setor-2",
+  setor_destino_id: "setor-1",
+  servidor_origem_id: "user-2",
+  servidor_destino_id: "user-1",
   responsavel_id: "user-2",
   status_resultante: "em_tramitacao",
   motivo: "correcao_dados",
   justificativa: null,
+  mensagem: null,
   criado_em: "2026-07-15T10:00:00Z",
 };
 

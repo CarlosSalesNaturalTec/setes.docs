@@ -8,8 +8,12 @@ const {
   obterProcesso,
   historicoProcesso,
   listarUnidades,
-  despacharProcesso,
+  listarSetores,
+  listarServidoresAtivosPorSetor,
+  enviarProcesso,
   devolverProcesso,
+  reatribuirProcesso,
+  concluirProcesso,
   marcarSigilo,
   removerSigilo,
   push,
@@ -17,8 +21,12 @@ const {
   obterProcesso: vi.fn(),
   historicoProcesso: vi.fn(),
   listarUnidades: vi.fn(),
-  despacharProcesso: vi.fn(),
+  listarSetores: vi.fn(),
+  listarServidoresAtivosPorSetor: vi.fn(),
+  enviarProcesso: vi.fn(),
   devolverProcesso: vi.fn(),
+  reatribuirProcesso: vi.fn(),
+  concluirProcesso: vi.fn(),
   marcarSigilo: vi.fn(),
   removerSigilo: vi.fn(),
   push: vi.fn(),
@@ -53,8 +61,12 @@ vi.mock("@/lib/api", async () => {
       obterProcesso,
       historicoProcesso,
       listarUnidades,
-      despacharProcesso,
+      listarSetores,
+      listarServidoresAtivosPorSetor,
+      enviarProcesso,
       devolverProcesso,
+      reatribuirProcesso,
+      concluirProcesso,
       marcarSigilo,
       removerSigilo,
     },
@@ -71,8 +83,8 @@ const PROCESSO_BASE = {
   unidade_atual_id: "un-1",
   unidade_origem_id: "un-1",
   tipo_processo_id: "tipo-1",
-  roteiro_id: "rot-1",
-  ordem_atual: 0,
+  setor_atual_id: "setor-1",
+  servidor_atual_id: "u-1",
   prazo_dias: 10,
   prazo_em: "2026-08-01",
   criado_por_id: "user-1",
@@ -89,13 +101,20 @@ const HISTORICO_VAZIO = {
   mensagem_vazio: "Nenhuma movimentação registrada",
 };
 
+const SETORES_AJUR = [{ id: "setor-2", unidade_id: "un-2", nome: "Análise", sigla: "ANL", ativo: true }];
+const SERVIDORES_SETOR_2 = [{ id: "u-2", nome: "Maria Silva" }];
+
 describe("DetalheProcessoPage", () => {
   beforeEach(() => {
     obterProcesso.mockReset();
     historicoProcesso.mockReset();
     listarUnidades.mockReset();
-    despacharProcesso.mockReset();
+    listarSetores.mockReset();
+    listarServidoresAtivosPorSetor.mockReset();
+    enviarProcesso.mockReset();
     devolverProcesso.mockReset();
+    reatribuirProcesso.mockReset();
+    concluirProcesso.mockReset();
     marcarSigilo.mockReset();
     removerSigilo.mockReset();
     push.mockReset();
@@ -103,6 +122,8 @@ describe("DetalheProcessoPage", () => {
       { id: "un-1", nome: "COFIN", sigla: "COFIN", ativo: true },
       { id: "un-2", nome: "AJUR", sigla: "AJUR", ativo: true },
     ]);
+    listarSetores.mockResolvedValue(SETORES_AJUR);
+    listarServidoresAtivosPorSetor.mockResolvedValue(SERVIDORES_SETOR_2);
     historicoProcesso.mockResolvedValue(HISTORICO_VAZIO);
   });
 
@@ -116,8 +137,8 @@ describe("DetalheProcessoPage", () => {
         "Acompanhamento em modo leitura — este processo está atualmente em outra unidade.",
       ),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Despachar" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Devolver" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Tramitar" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Concluir" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Marcar como Sigiloso" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Remover Sigilo" })).not.toBeInTheDocument();
   });
@@ -127,7 +148,7 @@ describe("DetalheProcessoPage", () => {
 
     render(<DetalheProcessoPage />);
 
-    await screen.findByRole("button", { name: "Despachar" });
+    await screen.findByRole("button", { name: "Tramitar" });
     expect(
       screen.queryByText(
         "Acompanhamento em modo leitura — este processo está atualmente em outra unidade.",
@@ -135,62 +156,126 @@ describe("DetalheProcessoPage", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("pede confirmação de conclusão na última etapa e conclui ao confirmar (PRD US 2.2 Cen.2/4)", async () => {
-    obterProcesso
-      .mockResolvedValueOnce(PROCESSO_BASE)
-      .mockResolvedValue({ ...PROCESSO_BASE, status: "concluido", concluido_em: "2026-07-16T10:00:00Z" });
-    despacharProcesso.mockImplementation((_id: string, body: { confirmar: boolean }) =>
-      body.confirmar
-        ? Promise.resolve({ ...PROCESSO_BASE, status: "concluido" })
-        : Promise.reject(
-            new ApiError(409, "Este é o destino final do roteiro. Deseja concluir o processo?"),
-          ),
-    );
+  it("cascata unidade→setor→servidor no Envio, e envia com destino explícito", async () => {
+    obterProcesso.mockResolvedValue(PROCESSO_BASE);
+    enviarProcesso.mockResolvedValue({ ...PROCESSO_BASE, unidade_atual_id: "un-2" });
 
     render(<DetalheProcessoPage />);
-    await userEvent.click(await screen.findByRole("button", { name: "Despachar" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Tramitar" }));
 
-    const modal = await screen.findByRole("dialog", { name: "Confirmar conclusão" });
+    const modal = await screen.findByRole("dialog", { name: "Tramitar processo" });
+    // Tipo de ação já inicia em "Envio" — cascata começa vazia.
+    expect(within(modal).queryByLabelText("Setor de destino")).toBeDisabled();
+
+    await userEvent.selectOptions(within(modal).getByLabelText("Unidade de destino"), "un-2");
+    await waitFor(() => expect(listarSetores).toHaveBeenCalledWith("un-2", true));
+    await userEvent.selectOptions(within(modal).getByLabelText("Setor de destino"), "setor-2");
+    await waitFor(() => expect(listarServidoresAtivosPorSetor).toHaveBeenCalledWith("setor-2"));
+    await userEvent.selectOptions(within(modal).getByLabelText("Servidor de destino"), "u-2");
+    await userEvent.type(within(modal).getByLabelText("Mensagem"), "Segue para análise");
+    await userEvent.click(within(modal).getByRole("button", { name: "Enviar" }));
+
+    await waitFor(() =>
+      expect(enviarProcesso).toHaveBeenCalledWith("proc-1", {
+        unidade_destino_id: "un-2",
+        setor_destino_id: "setor-2",
+        servidor_destino_id: "u-2",
+        mensagem: "Segue para análise",
+      }),
+    );
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/processos?acao=envio&destino=AJUR"));
+  });
+
+  it("bloqueia o envio para o próprio servidor atual antes de chamar a API", async () => {
+    obterProcesso.mockResolvedValue(PROCESSO_BASE);
+    listarServidoresAtivosPorSetor.mockResolvedValue([{ id: "u-1", nome: "Eu mesmo" }]);
+
+    render(<DetalheProcessoPage />);
+    await userEvent.click(await screen.findByRole("button", { name: "Tramitar" }));
+    const modal = await screen.findByRole("dialog", { name: "Tramitar processo" });
+
+    await userEvent.selectOptions(within(modal).getByLabelText("Unidade de destino"), "un-2");
+    await userEvent.selectOptions(within(modal).getByLabelText("Setor de destino"), "setor-2");
+    await userEvent.selectOptions(within(modal).getByLabelText("Servidor de destino"), "u-1");
+    await userEvent.click(within(modal).getByRole("button", { name: "Enviar" }));
+
     expect(
-      within(modal).getByText("Este é o destino final do roteiro. Deseja concluir o processo?"),
+      within(modal).getByText("O destino deve ser um servidor diferente do responsável atual."),
+    ).toBeInTheDocument();
+    expect(enviarProcesso).not.toHaveBeenCalled();
+  });
+
+  it("campos condicionais mudam conforme o tipo de ação selecionado", async () => {
+    obterProcesso.mockResolvedValue(PROCESSO_BASE);
+
+    render(<DetalheProcessoPage />);
+    await userEvent.click(await screen.findByRole("button", { name: "Tramitar" }));
+    const modal = await screen.findByRole("dialog", { name: "Tramitar processo" });
+
+    expect(within(modal).getByLabelText("Unidade de destino")).toBeInTheDocument();
+
+    await userEvent.selectOptions(within(modal).getByLabelText("Tipo de ação"), "devolver");
+    expect(within(modal).queryByLabelText("Unidade de destino")).not.toBeInTheDocument();
+    expect(within(modal).getByLabelText("Motivo")).toBeInTheDocument();
+    expect(
+      within(modal).getByText("O processo será devolvido automaticamente para quem o enviou."),
     ).toBeInTheDocument();
 
-    await userEvent.click(within(modal).getByRole("button", { name: "Concluir processo" }));
-
-    await waitFor(() => expect(despacharProcesso).toHaveBeenCalledTimes(2));
-    expect(despacharProcesso).toHaveBeenLastCalledWith("proc-1", { confirmar: true });
-    expect(await screen.findByText("Concluído")).toBeInTheDocument();
+    await userEvent.selectOptions(within(modal).getByLabelText("Tipo de ação"), "reatribuir");
+    expect(within(modal).queryByLabelText("Motivo")).not.toBeInTheDocument();
+    expect(within(modal).getByLabelText("Justificativa")).toBeInTheDocument();
   });
 
-  it("cancelar no modal de conclusão não altera o processo (PRD US 2.2 Cen.3)", async () => {
+  it("unidade fica travada (readonly) na Reatribuição — é sempre a unidade atual", async () => {
     obterProcesso.mockResolvedValue(PROCESSO_BASE);
-    despacharProcesso.mockRejectedValue(
-      new ApiError(409, "Este é o destino final do roteiro. Deseja concluir o processo?"),
+
+    render(<DetalheProcessoPage />);
+    await userEvent.click(await screen.findByRole("button", { name: "Tramitar" }));
+    const modal = await screen.findByRole("dialog", { name: "Tramitar processo" });
+    await userEvent.selectOptions(within(modal).getByLabelText("Tipo de ação"), "reatribuir");
+
+    const campoUnidade = within(modal).getByLabelText("Unidade") as HTMLInputElement;
+    expect(campoUnidade).toBeDisabled();
+    expect(campoUnidade.value).toBe("COFIN");
+    await waitFor(() => expect(listarSetores).toHaveBeenCalledWith("un-1", true));
+  });
+
+  it("reatribuição preserva status/prazo e informa que o prazo foi mantido", async () => {
+    obterProcesso.mockResolvedValue(PROCESSO_BASE);
+    listarSetores.mockResolvedValue([{ id: "setor-3", unidade_id: "un-1", nome: "Protocolo", sigla: "PROT", ativo: true }]);
+    listarServidoresAtivosPorSetor.mockResolvedValue([{ id: "u-3", nome: "João Souza" }]);
+    reatribuirProcesso.mockResolvedValue({ ...PROCESSO_BASE, setor_atual_id: "setor-3", servidor_atual_id: "u-3" });
+
+    render(<DetalheProcessoPage />);
+    await userEvent.click(await screen.findByRole("button", { name: "Tramitar" }));
+    const modal = await screen.findByRole("dialog", { name: "Tramitar processo" });
+    await userEvent.selectOptions(within(modal).getByLabelText("Tipo de ação"), "reatribuir");
+    await userEvent.selectOptions(within(modal).getByLabelText("Setor de destino"), "setor-3");
+    await userEvent.selectOptions(within(modal).getByLabelText("Servidor de destino"), "u-3");
+    await userEvent.type(within(modal).getByLabelText("Justificativa"), "Atribuído por engano");
+    await userEvent.click(within(modal).getByRole("button", { name: "Reatribuir" }));
+
+    await waitFor(() =>
+      expect(reatribuirProcesso).toHaveBeenCalledWith("proc-1", {
+        setor_destino_id: "setor-3",
+        servidor_destino_id: "u-3",
+        justificativa: "Atribuído por engano",
+      }),
     );
-
-    render(<DetalheProcessoPage />);
-    await userEvent.click(await screen.findByRole("button", { name: "Despachar" }));
-
-    const modal = await screen.findByRole("dialog", { name: "Confirmar conclusão" });
-    await userEvent.click(within(modal).getByRole("button", { name: "Cancelar" }));
-
-    expect(screen.queryByRole("dialog", { name: "Confirmar conclusão" })).not.toBeInTheDocument();
-    expect(despacharProcesso).toHaveBeenCalledTimes(1);
-    expect(screen.getByText("Em Tramitação")).toBeInTheDocument();
+    expect(await screen.findByText("Processo reatribuído. O prazo foi mantido.")).toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
   });
 
-  it("exige a seleção de um motivo antes de confirmar a devolução (PRD US 2.2b Cen.3)", async () => {
+  it("exige seleção de motivo antes de confirmar a Devolução (PRD US 2.2b Cen.3)", async () => {
     obterProcesso.mockResolvedValue(PROCESSO_BASE);
 
     render(<DetalheProcessoPage />);
-    await userEvent.click(await screen.findByRole("button", { name: "Devolver" }));
-
-    const modal = await screen.findByRole("dialog", { name: "Devolver processo" });
+    await userEvent.click(await screen.findByRole("button", { name: "Tramitar" }));
+    const modal = await screen.findByRole("dialog", { name: "Tramitar processo" });
+    await userEvent.selectOptions(within(modal).getByLabelText("Tipo de ação"), "devolver");
     await userEvent.click(within(modal).getByRole("button", { name: "Confirmar devolução" }));
 
-    expect(
-      within(modal).getByText("Selecione um motivo para a devolução"),
-    ).toBeInTheDocument();
+    expect(within(modal).getByText("Selecione um motivo para a devolução")).toBeInTheDocument();
     expect(devolverProcesso).not.toHaveBeenCalled();
 
     await userEvent.selectOptions(within(modal).getByLabelText("Motivo"), "documentacao_insuficiente");
@@ -204,45 +289,6 @@ describe("DetalheProcessoPage", () => {
     );
   });
 
-  it("despacho que muda a unidade exibe sucesso e navega ao Kanban sem reler o processo (correção de feedback pós-despacho)", async () => {
-    obterProcesso.mockResolvedValue(PROCESSO_BASE);
-    despacharProcesso.mockResolvedValue({
-      ...PROCESSO_BASE,
-      unidade_atual_id: "un-2",
-      status: "em_tramitacao",
-    });
-
-    render(<DetalheProcessoPage />);
-    await userEvent.click(await screen.findByRole("button", { name: "Despachar" }));
-
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/processos?acao=despacho&destino=AJUR"));
-    expect(obterProcesso).toHaveBeenCalledTimes(1);
-    expect(
-      screen.queryByText("Acesso negado — você não tem permissão para visualizar este processo"),
-    ).not.toBeInTheDocument();
-  });
-
-  it("conclusão na própria unidade permanece na tela, sem navegar (PRD US 2.2 Cen.2/4)", async () => {
-    obterProcesso.mockResolvedValue(PROCESSO_BASE);
-    despacharProcesso.mockImplementation((_id: string, body: { confirmar: boolean }) =>
-      body.confirmar
-        ? Promise.resolve({ ...PROCESSO_BASE, status: "concluido" })
-        : Promise.reject(
-            new ApiError(409, "Este é o destino final do roteiro. Deseja concluir o processo?"),
-          ),
-    );
-
-    render(<DetalheProcessoPage />);
-    await userEvent.click(await screen.findByRole("button", { name: "Despachar" }));
-    const modal = await screen.findByRole("dialog", { name: "Confirmar conclusão" });
-    await userEvent.click(within(modal).getByRole("button", { name: "Concluir processo" }));
-
-    expect(await screen.findByText("Concluído")).toBeInTheDocument();
-    await waitFor(() => expect(historicoProcesso).toHaveBeenCalledTimes(2));
-    expect(push).not.toHaveBeenCalled();
-    expect(obterProcesso).toHaveBeenCalledTimes(1);
-  });
-
   it("devolução que muda a unidade exibe sucesso e navega ao Kanban (PRD US 2.2b)", async () => {
     obterProcesso.mockResolvedValue(PROCESSO_BASE);
     devolverProcesso.mockResolvedValue({
@@ -252,26 +298,60 @@ describe("DetalheProcessoPage", () => {
     });
 
     render(<DetalheProcessoPage />);
-    await userEvent.click(await screen.findByRole("button", { name: "Devolver" }));
-    const modal = await screen.findByRole("dialog", { name: "Devolver processo" });
+    await userEvent.click(await screen.findByRole("button", { name: "Tramitar" }));
+    const modal = await screen.findByRole("dialog", { name: "Tramitar processo" });
+    await userEvent.selectOptions(within(modal).getByLabelText("Tipo de ação"), "devolver");
     await userEvent.selectOptions(within(modal).getByLabelText("Motivo"), "documentacao_insuficiente");
     await userEvent.click(within(modal).getByRole("button", { name: "Confirmar devolução" }));
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/processos?acao=devolucao&destino=AJUR"));
-    expect(
-      screen.queryByText("Acesso negado — você não tem permissão para visualizar este processo"),
-    ).not.toBeInTheDocument();
   });
 
-  it("falha real do despacho exibe erro sem navegar nem confirmar sucesso (PRD US 2.2)", async () => {
-    obterProcesso.mockResolvedValue(PROCESSO_BASE);
-    despacharProcesso.mockRejectedValue(new ApiError(403, "Acesso negado — você não tem permissão para despachar este processo."));
+  it("botão Concluir abre confirmação própria e conclui o processo (US 2.5)", async () => {
+    obterProcesso
+      .mockResolvedValueOnce(PROCESSO_BASE)
+      .mockResolvedValue({ ...PROCESSO_BASE, status: "concluido", concluido_em: "2026-07-16T10:00:00Z" });
+    concluirProcesso.mockResolvedValue({ ...PROCESSO_BASE, status: "concluido" });
 
     render(<DetalheProcessoPage />);
-    await userEvent.click(await screen.findByRole("button", { name: "Despachar" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Concluir" }));
+
+    const modal = await screen.findByRole("dialog", { name: "Confirmar conclusão" });
+    await userEvent.click(within(modal).getByRole("button", { name: "Concluir processo" }));
+
+    await waitFor(() => expect(concluirProcesso).toHaveBeenCalledWith("proc-1"));
+    expect(await screen.findByText("Concluído")).toBeInTheDocument();
+  });
+
+  it("cancelar a confirmação de conclusão não altera nada (US 2.5)", async () => {
+    obterProcesso.mockResolvedValue(PROCESSO_BASE);
+
+    render(<DetalheProcessoPage />);
+    await userEvent.click(await screen.findByRole("button", { name: "Concluir" }));
+    const modal = await screen.findByRole("dialog", { name: "Confirmar conclusão" });
+    await userEvent.click(within(modal).getByRole("button", { name: "Cancelar" }));
+
+    expect(screen.queryByRole("dialog", { name: "Confirmar conclusão" })).not.toBeInTheDocument();
+    expect(concluirProcesso).not.toHaveBeenCalled();
+    expect(screen.getByText("Em Tramitação")).toBeInTheDocument();
+  });
+
+  it("falha real do envio exibe erro sem navegar (PRD US 2.2)", async () => {
+    obterProcesso.mockResolvedValue(PROCESSO_BASE);
+    enviarProcesso.mockRejectedValue(
+      new ApiError(403, "Acesso negado — você não tem permissão para realizar esta ação."),
+    );
+
+    render(<DetalheProcessoPage />);
+    await userEvent.click(await screen.findByRole("button", { name: "Tramitar" }));
+    const modal = await screen.findByRole("dialog", { name: "Tramitar processo" });
+    await userEvent.selectOptions(within(modal).getByLabelText("Unidade de destino"), "un-2");
+    await userEvent.selectOptions(within(modal).getByLabelText("Setor de destino"), "setor-2");
+    await userEvent.selectOptions(within(modal).getByLabelText("Servidor de destino"), "u-2");
+    await userEvent.click(within(modal).getByRole("button", { name: "Enviar" }));
 
     expect(
-      await screen.findByText("Acesso negado — você não tem permissão para despachar este processo."),
+      await within(modal).findByText("Acesso negado — você não tem permissão para realizar esta ação."),
     ).toBeInTheDocument();
     expect(push).not.toHaveBeenCalled();
   });
@@ -280,10 +360,62 @@ describe("DetalheProcessoPage", () => {
     obterProcesso.mockResolvedValue(PROCESSO_BASE);
 
     render(<DetalheProcessoPage />);
-    await screen.findByRole("button", { name: "Despachar" });
+    await screen.findByRole("button", { name: "Tramitar" });
     await userEvent.click(screen.getByRole("button", { name: "Histórico" }));
 
     expect(await screen.findByText(/Nenhuma movimentação registrada/)).toBeInTheDocument();
+  });
+
+  it("renderiza o histórico distinguindo Envio, Devolução, Reatribuição e Conclusão (PRD US 2.4)", async () => {
+    obterProcesso.mockResolvedValue(PROCESSO_BASE);
+    historicoProcesso.mockResolvedValue({
+      processo_id: "proc-1",
+      criado_em: "2026-07-15T10:00:00Z",
+      eventos: [
+        {
+          id: "ev-1",
+          tipo_evento: "envio",
+          unidade_origem_id: "un-1",
+          unidade_destino_id: "un-2",
+          setor_origem_id: "setor-1",
+          setor_destino_id: "setor-2",
+          servidor_origem_id: "u-1",
+          servidor_destino_id: "u-2",
+          responsavel_id: "u-1",
+          status_resultante: "em_tramitacao",
+          motivo: null,
+          justificativa: null,
+          mensagem: "Segue para análise",
+          criado_em: "2026-07-15T11:00:00Z",
+        },
+        {
+          id: "ev-2",
+          tipo_evento: "reatribuicao",
+          unidade_origem_id: "un-2",
+          unidade_destino_id: "un-2",
+          setor_origem_id: "setor-2",
+          setor_destino_id: "setor-3",
+          servidor_origem_id: "u-2",
+          servidor_destino_id: "u-3",
+          responsavel_id: "u-2",
+          status_resultante: "em_tramitacao",
+          motivo: null,
+          justificativa: "Setor errado",
+          mensagem: null,
+          criado_em: "2026-07-15T12:00:00Z",
+        },
+      ],
+      mensagem_vazio: null,
+    });
+
+    render(<DetalheProcessoPage />);
+    await screen.findByRole("button", { name: "Tramitar" });
+    await userEvent.click(screen.getByRole("button", { name: "Histórico" }));
+
+    expect(await screen.findByText("Envio")).toBeInTheDocument();
+    expect(screen.getByText("Reatribuição")).toBeInTheDocument();
+    expect(screen.getByText("Mensagem: Segue para análise")).toBeInTheDocument();
+    expect(screen.getByText("Justificativa: Setor errado")).toBeInTheDocument();
   });
 
   it("exibe o indicador de sigilo e a ação de remover quando o processo é sigiloso (PRD US 2.6 Cen.3)", async () => {
