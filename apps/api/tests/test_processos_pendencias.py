@@ -86,7 +86,7 @@ def test_meu_perfil_vazio_para_recem_cadastrado(client, db):
 
 def test_servidor_transferido_mantem_historico_de_atuacao(client, db):
     """US 1.4 Cen.3 — atuação na unidade anterior permanece após transferência."""
-    cofin, ajur, dirad = unidade(db, "COFIN"), unidade(db, "AJUR"), unidade(db, "DIRAD")
+    cofin, ajur, _dirad = unidade(db, "COFIN"), unidade(db, "AJUR"), unidade(db, "DIRAD")
     tipo = tipo_processo(db)
     serv, _setor = servidor_com_setor(db, cofin, email="movel@ex.com")
     token = login(client, "movel@ex.com")

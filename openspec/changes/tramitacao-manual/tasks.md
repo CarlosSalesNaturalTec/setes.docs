@@ -27,14 +27,14 @@
 
 - [x] 4.1 `services/notificacao.py`: `gerar_notificacoes` passa a receber destinatário único (`usuario_id`) em vez de fan-out por unidade; remover `servidores_da_unidade` se ficar sem uso. Aceite: uma notificação por evento, não N.
 - [x] 4.2 Emitir `REATRIBUIDO_PARA_VOCE` ao servidor de destino e `DESTINO_CORRIGIDO` ao remetente original (omitida quando o remetente é o próprio autor da reatribuição ou não existe). Texto factual, sem juízo. Aceite: dois inserts na mesma transação do evento.
-- [ ] 4.3 Testes pytest de notificação (obrigatórios — histórico de tramitação): destinatário único no envio; ambos os avisos na reatribuição; ausência de `DESTINO_CORRIGIDO` quando não há remetente original.
+- [x] 4.3 Testes pytest de notificação (obrigatórios — histórico de tramitação): destinatário único no envio; ambos os avisos na reatribuição; ausência de `DESTINO_CORRIGIDO` quando não há remetente original.
 
 ## 5. Backend — rotas e schemas
 
 - [x] 5.1 `schemas/processo.py`: `EnviarRequest` (unidade/setor/servidor destino + mensagem), `DevolverRequest` (motivo + justificativa, **sem** destino), `ReatribuirRequest` (setor + servidor destino + justificativa), `ConcluirRequest`; `ProcessoResponse` e `EventoHistoricoResponse` com setor/servidor de origem e destino e mensagem. Aceite: OpenAPI reflete as três ações.
 - [x] 5.2 `routers/processos.py`: `POST /processos/{id}/enviar`, `/devolver`, `/reatribuir`, `/concluir`, substituindo `/despachar`. Autorização por unidade preservada, guarda de papel do D5 aplicada em seguida. Aceite: rota `/despachar` não existe mais.
 - [x] 5.3 Endpoints de apoio à cascata: `GET /unidades/{id}/setores` (já criado no change anterior) e `GET /usuarios?setor_id=` retornando apenas servidores **ativos** do setor. Aceite: listas alimentam os selects sem expor usuários inativos.
-- [ ] 5.4 Testes pytest de tramitação (obrigatórios — histórico imutável + dados pessoais): envio com destino válido; envio para si mesmo rejeitado; devolução resolvendo o remetente correto; devolução sem remetente anterior bloqueada; reatribuição preservando status e prazo; reatribuição para outra unidade rejeitada; reatribuição para o mesmo servidor rejeitada; conclusão explícita a partir de `aberto` e de `em_tramitacao`; histórico com a sequência completa de detentores; **acesso negado** com log em: agir sobre processo de unidade fora do escopo, Envio/Devolução por quem não é o servidor atual, Reatribuir por servidor sem nenhum dos três papéis do D5.
+- [x] 5.4 Testes pytest de tramitação (obrigatórios — histórico imutável + dados pessoais): envio com destino válido; envio para si mesmo rejeitado; devolução resolvendo o remetente correto; devolução sem remetente anterior bloqueada; reatribuição preservando status e prazo; reatribuição para outra unidade rejeitada; reatribuição para o mesmo servidor rejeitada; conclusão explícita a partir de `aberto` e de `em_tramitacao`; histórico com a sequência completa de detentores; **acesso negado** com log em: agir sobre processo de unidade fora do escopo, Envio/Devolução por quem não é o servidor atual, Reatribuir por servidor sem nenhum dos três papéis do D5.
 
 ## 6. Contrato
 
@@ -47,13 +47,13 @@
 - [x] 7.3 `app/processos/[id]/page.tsx`: histórico exibindo, por evento, o tipo de ação, servidor de origem e destino, setor e mensagem/justificativa. Aceite: reatribuições distinguíveis de envios na linha do tempo.
 - [x] 7.4 `app/processos/novo/page.tsx` e `app/admin/tipos-processo/page.tsx`: remover toda a UI de roteiro/etapas. Aceite: nenhuma referência a roteiro no `apps/web`.
 - [x] 7.5 `lib/api.ts` e `lib/processo-ui.ts`: métodos das quatro ações e rótulos dos novos tipos de evento. Aceite: sem `any` nos payloads.
-- [ ] 7.6 Testes Vitest: cascata unidade→setor→servidor; bloqueio de envio para o próprio servidor atual; unidade readonly na reatribuição; campos condicionais por tipo de ação; render do histórico com os três tipos.
+- [x] 7.6 Testes Vitest: cascata unidade→setor→servidor; bloqueio de envio para o próprio servidor atual; unidade readonly na reatribuição; campos condicionais por tipo de ação; render do histórico com os três tipos.
 
 ## 8. Testes E2E Playwright (obrigatório — altera despacho)
 
 - [x] 8.1 **Primeiro**: atualizar `tests/helpers_processo.py` (pytest) para criar processos sem roteiro, com setor e servidor atuais. Aceite: a suíte pytest volta a coletar sem erros de importação antes de qualquer outra tarefa de teste deste change.
-- [ ] 8.2 Reescrever `e2e/05-processos-despacho.spec.ts`: Servidor A cria processo (aparece no Kanban de A) → envia para Servidor B de outra unidade → B devolve com motivo → A reenvia → B **reatribui** para C do mesmo setor → C conclui. Verificar em cada passo o histórico e a notificação do destinatário, incluindo o aviso de destino corrigido para A. Aceite: `pnpm test:e2e` verde.
-- [ ] 8.3 Ajustar `e2e/04-unidades-tipos-processo.spec.ts` (sem roteiro), `e2e/13-admin-readonly-processos.spec.ts` e `e2e/14-visibilidade-processos-origem.spec.ts` às novas ações. Aceite: suíte E2E completa verde.
+- [x] 8.2 Reescrever `e2e/05-processos-despacho.spec.ts`: Servidor A cria processo (aparece no Kanban de A) → envia para Servidor B de outra unidade → B devolve com motivo → A reenvia → B **reatribui** para C do mesmo setor → C conclui. Verificar em cada passo o histórico e a notificação do destinatário, incluindo o aviso de destino corrigido para A. Aceite: `pnpm test:e2e` verde.
+- [x] 8.3 Ajustar `e2e/04-unidades-tipos-processo.spec.ts` (sem roteiro), `e2e/13-admin-readonly-processos.spec.ts` e `e2e/14-visibilidade-processos-origem.spec.ts` às novas ações. Aceite: suíte E2E completa verde.
 
 ## 9. Documentação mestre
 

@@ -17,7 +17,7 @@ def _criar(client, db, tipo, u, email):
 
 
 def test_historico_vazio_de_processo_recem_criado(client, db):
-    cofin, ajur = unidade(db, "COFIN"), unidade(db, "AJUR")
+    cofin = unidade(db, "COFIN")
     tipo = tipo_processo(db)
     proc, token = _criar(client, db, tipo, cofin, "h1@ex.com")
 

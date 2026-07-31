@@ -390,19 +390,35 @@ describe("DetalheProcessoPage", () => {
         },
         {
           id: "ev-2",
-          tipo_evento: "reatribuicao",
+          tipo_evento: "devolucao",
           unidade_origem_id: "un-2",
-          unidade_destino_id: "un-2",
+          unidade_destino_id: "un-1",
           setor_origem_id: "setor-2",
-          setor_destino_id: "setor-3",
+          setor_destino_id: "setor-1",
           servidor_origem_id: "u-2",
-          servidor_destino_id: "u-3",
+          servidor_destino_id: "u-1",
           responsavel_id: "u-2",
+          status_resultante: "em_tramitacao",
+          motivo: "documentacao_insuficiente",
+          justificativa: "Faltam anexos",
+          mensagem: null,
+          criado_em: "2026-07-15T12:00:00Z",
+        },
+        {
+          id: "ev-3",
+          tipo_evento: "reatribuicao",
+          unidade_origem_id: "un-1",
+          unidade_destino_id: "un-1",
+          setor_origem_id: "setor-1",
+          setor_destino_id: "setor-3",
+          servidor_origem_id: "u-1",
+          servidor_destino_id: "u-3",
+          responsavel_id: "u-1",
           status_resultante: "em_tramitacao",
           motivo: null,
           justificativa: "Setor errado",
           mensagem: null,
-          criado_em: "2026-07-15T12:00:00Z",
+          criado_em: "2026-07-15T13:00:00Z",
         },
       ],
       mensagem_vazio: null,
@@ -413,8 +429,11 @@ describe("DetalheProcessoPage", () => {
     await userEvent.click(screen.getByRole("button", { name: "Histórico" }));
 
     expect(await screen.findByText("Envio")).toBeInTheDocument();
+    expect(screen.getByText("Devolução")).toBeInTheDocument();
     expect(screen.getByText("Reatribuição")).toBeInTheDocument();
     expect(screen.getByText("Mensagem: Segue para análise")).toBeInTheDocument();
+    expect(screen.getByText("Motivo: documentacao_insuficiente")).toBeInTheDocument();
+    expect(screen.getByText("Justificativa: Faltam anexos")).toBeInTheDocument();
     expect(screen.getByText("Justificativa: Setor errado")).toBeInTheDocument();
   });
 

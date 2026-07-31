@@ -20,7 +20,6 @@ from tests.helpers_processo import (
     servidor_com_setor,
     tipo_processo,
     unidade,
-    usuario,
 )
 
 PDF = b"%PDF-1.4\n1 0 obj\n<< >>\nendobj\n%%EOF"

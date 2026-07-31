@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from app.db.models import (
     LogSeguranca,
-    PerfilUsuario,
     Processo,
     StatusProcesso,
     TipoEventoLog,
@@ -205,6 +204,29 @@ def test_devolucao_sem_remetente_anterior_e_bloqueada(client, db):
     )
     assert resp.status_code == 409
     assert "remetente anterior" in resp.json()["detail"]
+
+
+def test_devolucao_por_quem_nao_e_responsavel_atual_acesso_negado(client, db):
+    cofin, ajur = unidade(db, "COFIN"), unidade(db, "AJUR")
+    tipo = tipo_processo(db)
+    serv_a, _ = servidor_com_setor(db, cofin)
+    setor_ajur = setor(db, ajur, "Análise")
+    serv_b = usuario(db, unidade_id=ajur.id, setor_id=setor_ajur.id, email="b@ex.com")
+    serv_d = usuario(db, unidade_id=ajur.id, setor_id=setor_ajur.id, email="d@ex.com")
+    token_a = login(client, serv_a.email)
+    proc = _criar_processo(client, serv_a, token_a, tipo)
+    _enviar(client, proc["id"], token_a, unidade_id=ajur.id, setor_id=setor_ajur.id, servidor_id=serv_b.id)
+
+    # Servidor D, da mesma unidade (AJUR) do processo, mas não é o responsável atual (B é).
+    token_d = login(client, serv_d.email)
+    resp = client.post(
+        f"/processos/{proc['id']}/devolver",
+        json={"motivo": "correcao_dados", "justificativa": "Tentativa indevida"},
+        headers=auth(token_d),
+    )
+    assert resp.status_code == 403
+    logs = db.query(LogSeguranca).filter(LogSeguranca.tipo_evento == TipoEventoLog.ACESSO_NEGADO).all()
+    assert len(logs) >= 1
 
 
 def test_devolucao_sem_motivo_e_rejeitada(client, db):
