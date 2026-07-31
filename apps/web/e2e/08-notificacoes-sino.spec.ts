@@ -1,9 +1,12 @@
 import { expect, test } from "@playwright/test";
 
 import { ADMIN_ROOT } from "./fixtures";
+import { cadastrarSetor, cadastrarUsuario } from "./helpers/admin";
 import { login, logout } from "./helpers/auth";
 import { obterUltimoLink } from "./helpers/dev-inbox";
 
+// Servidor exige setor da própria unidade (change setores-e-cadastro-usuario, D2).
+const SETOR_PADRAO = { nome: "Gabinete", sigla: "GAB" };
 const UNIDADE_ORIGEM = { nome: "Unidade Origem Sino", sigla: "ORISN" };
 const UNIDADE_DESTINO = { nome: "Unidade Destino Sino", sigla: "DESIN" };
 const TIPO_PROCESSO = { nome: "Fluxo com Sino" };
@@ -24,14 +27,13 @@ async function cadastrarEAtivar(
   servidor: { nome: string; email: string; senha: string },
   unidadeNome: string,
 ): Promise<void> {
-  await page.goto("/admin/usuarios");
-  await page.getByLabel("Nome", { exact: true }).fill(servidor.nome);
-  await page.getByLabel("E-mail").fill(servidor.email);
-  await page.getByLabel("Unidade", { exact: true }).selectOption({ label: unidadeNome });
-  await page.getByRole("button", { name: "Cadastrar usuário" }).click();
-  await expect(
-    page.getByText(`Usuário cadastrado. Um e-mail de primeiro acesso foi enviado para ${servidor.email}.`),
-  ).toBeVisible();
+  await cadastrarSetor(page, unidadeNome, SETOR_PADRAO);
+  await cadastrarUsuario(page, {
+    nome: servidor.nome,
+    email: servidor.email,
+    unidadeNome,
+    setor: SETOR_PADRAO,
+  });
 
   const link = await obterUltimoLink(servidor.email);
   await page.goto(link);
@@ -101,10 +103,14 @@ test("Despacho entre unidades incrementa o sino do destinatário; marcar como li
   await expect(page.getByTestId("notificacoes-contador")).toHaveText("1");
 
   await page.getByLabel("Notificações").click();
-  await expect(page.getByText(ASSUNTO_PROCESSO)).toBeVisible();
-  await expect(page.getByText(new RegExp(`vindo de ${UNIDADE_ORIGEM.nome}`))).toBeVisible();
+  // O assunto aparece duas vezes nesta tela — no item do sino e no card do
+  // Kanban (o processo agora está nesta unidade). O item da notificação é o
+  // único que é um `button`; buscar só pelo texto viola o strict mode.
+  const itemNotificacao = page.getByRole("button", { name: new RegExp(ASSUNTO_PROCESSO) });
+  await expect(itemNotificacao).toBeVisible();
+  await expect(itemNotificacao.getByText(new RegExp(`vindo de ${UNIDADE_ORIGEM.nome}`))).toBeVisible();
 
-  await page.getByText(ASSUNTO_PROCESSO).click();
+  await itemNotificacao.click();
   await expect(page.getByTestId("notificacoes-contador")).toHaveCount(0);
 
   await page.reload();

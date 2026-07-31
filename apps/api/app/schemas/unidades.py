@@ -35,3 +35,33 @@ class EditarUnidadeRequest(BaseModel):
     nome: str | None = None
     sigla: str | None = None
     gestor_responsavel_id: str | None = None
+
+
+class SetorResponse(BaseModel):
+    """Setor — segundo nível da estrutura organizacional (D1)."""
+
+    id: str
+    unidade_id: str
+    nome: str
+    sigla: str
+    ativo: bool
+
+    @classmethod
+    def de(cls, setor) -> "SetorResponse":  # setor: app.db.models.Setor
+        return cls(
+            id=str(setor.id),
+            unidade_id=str(setor.unidade_id),
+            nome=setor.nome,
+            sigla=setor.sigla,
+            ativo=setor.ativo,
+        )
+
+
+class CadastrarSetorRequest(BaseModel):
+    nome: str = Field(min_length=1, max_length=200)
+    sigla: str = Field(min_length=1, max_length=20)
+
+
+class EditarSetorRequest(BaseModel):
+    nome: str | None = Field(default=None, max_length=200)
+    sigla: str | None = Field(default=None, max_length=20)

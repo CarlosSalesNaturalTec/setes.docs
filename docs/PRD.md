@@ -51,8 +51,24 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
   * **Critérios de Aceitação:**
     * *Cenário 1: Cadastro de servidor com sucesso*
       * **Dado** que estou autenticado como Administrador
-      * **Quando** preencho nome, e-mail, unidade, perfil (Servidor/Gestor/Administrador) e confirmo o cadastro
-      * **Então** o novo usuário é criado com status "Ativo — pendente de primeiro acesso"
+      * **Quando** aciono "Novo usuário", preencho no modal de cadastro nome, e-mail, unidade, **setor** da unidade, perfil (Servidor/Gestor/Administrador) e, opcionalmente, telefone, cargo e chefia direta, e confirmo o cadastro
+      * **Então** o novo usuário é criado com status "Ativo — pendente de primeiro acesso", o modal é fechado e a listagem é atualizada
+    * *Cenário 6: Setor é obrigatório para o perfil Servidor*
+      * **Dado** que estou autenticado como Administrador cadastrando um usuário com perfil Servidor
+      * **Quando** submeto o cadastro informando unidade mas sem informar setor
+      * **Então** o sistema rejeita o cadastro informando que o setor é obrigatório para o perfil Servidor. Gestor e Administrador podem ser cadastrados sem setor.
+    * *Cenário 7: Setor de outra unidade*
+      * **Dado** que estou cadastrando um Servidor na unidade COFIN
+      * **Quando** informo um setor que pertence a outra unidade (ex.: AJUR)
+      * **Então** o sistema rejeita a operação informando que o setor não pertence à unidade do usuário — a mesma validação vale para toda edição, inclusive a transferência de unidade (US 8.6)
+    * *Cenário 8: Chefia direta externa ao sistema*
+      * **Dado** que a chefia direta do servidor não possui conta no SETES.DOCS
+      * **Quando** informo o nome dessa chefia no campo "Chefia Direta"
+      * **Então** o valor é aceito e persistido como texto livre, sem exigir que a pessoa exista como usuário
+    * *Cenário 9: Filtro por nome na listagem de usuários*
+      * **Dado** que estou na tela de administração de usuários, onde o cadastro é feito por modal e não por formulário no corpo da página
+      * **Quando** digito um fragmento de nome no campo de filtro (ex.: "mari")
+      * **Então** a listagem passa a exibir apenas os usuários cujo nome contém o fragmento, sem diferenciar maiúsculas de minúsculas e sem recarregar a página; limpar o campo restaura a listagem completa
     * *Cenário 1a: Envio de credenciais ao novo usuário*
       * **Dado** que um usuário foi cadastrado com sucesso
       * **Quando** o cadastro é concluído
@@ -145,7 +161,7 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
     * *Cenário 1: Visualização do perfil com histórico*
       * **Dado** que estou autenticado no sistema
       * **Quando** acesso a tela "Meu Perfil"
-      * **Então** visualizo meus dados cadastrais, a lista de processos em que atuei (com número, assunto, data da ação e tipo de ação realizada) e a lista de documentos que assinei digitalmente (com nome do documento, processo vinculado e data da assinatura)
+      * **Então** visualizo meus dados cadastrais — incluindo unidade, setor, cargo, telefone e chefia direta, com os campos vazios omitidos —, a lista de processos em que atuei (com número, assunto, data da ação e tipo de ação realizada) e a lista de documentos que assinei digitalmente (com nome do documento, processo vinculado e data da assinatura)
     * *Cenário 2: Perfil de usuário recém-cadastrado sem histórico*
       * **Dado** que sou um usuário recém-cadastrado que nunca atuou em nenhum processo
       * **Quando** acesso a tela "Meu Perfil"
@@ -645,7 +661,19 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
     * *Cenário 4: Desativação de unidade sem processos pendentes*
       * **Dado** que estou autenticado como Administrador e a unidade COFIN não possui processos em andamento
       * **Quando** desativo a unidade COFIN
-      * **Então** a unidade é marcada como inativa, seus usuários vinculados são automaticamente desvinculados (perdendo acesso ao sistema até serem realocados por um Administrador), e a unidade deixa de aparecer como opção em novos roteiros de tramitação, mas permanece no histórico de processos já tramitados
+      * **Então** a unidade é marcada como inativa, seus usuários vinculados são automaticamente desvinculados de unidade e setor (perdendo acesso ao sistema até serem realocados por um Administrador), e a unidade deixa de aparecer como opção em novos roteiros de tramitação, mas permanece no histórico de processos já tramitados
+    * *Cenário 5: Cadastro de setores da unidade*
+      * **Dado** que estou autenticado como Administrador e a unidade COFIN existe
+      * **Quando** cadastro um setor com nome e sigla nessa unidade
+      * **Então** o setor é criado como ativo e passa a estar disponível para vinculação de servidores. O **Setor** é o segundo nível da estrutura organizacional (Unidade 1:N Setor); a sigla é única dentro da unidade, mas pode se repetir entre unidades diferentes. Setor **não** é fronteira de permissão — o escopo de acesso continua sendo a Unidade.
+    * *Cenário 6: Setor não é excluído, apenas desativado*
+      * **Dado** que existe um setor cadastrado
+      * **Quando** consulto as ações disponíveis para o setor
+      * **Então** só existem desativar e reativar — não há exclusão, porque o histórico de tramitação referencia o setor. A desativação é bloqueada enquanto houver servidor ativo vinculado, com mensagem informando a quantidade.
+    * *Cenário 7: Desativação de unidade cascateia para os setores*
+      * **Dado** que a unidade COFIN possui setores ativos
+      * **Quando** desativo a unidade COFIN, confirmando o aviso que exibe a quantidade de setores afetados
+      * **Então** a unidade e todos os seus setores passam a inativos. Reativar a unidade **não** reativa os setores: cada um exige reativação explícita.
 
 * **US 8.2:** Como Administrador, eu quero cadastrar tipos de processo e definir seus roteiros de tramitação para que o sistema conduza cada processo pelo caminho correto.
   * **Critérios de Aceitação:**

@@ -10,11 +10,22 @@ from sqlalchemy.orm import Session
 
 from app.db.models import PerfilUsuario, Unidade, Usuario
 from app.db.session import get_db
-from app.schemas.unidades import CadastroUnidadeRequest, EditarUnidadeRequest, UnidadeResponse
+from app.schemas.unidades import (
+    CadastrarSetorRequest,
+    CadastroUnidadeRequest,
+    EditarSetorRequest,
+    EditarUnidadeRequest,
+    SetorResponse,
+    UnidadeResponse,
+)
 from app.security.autorizacao import get_current_user, require_perfil
+from app.services import unidades as servico
 from app.services.unidades import contar_processos_em_andamento
 
 router = APIRouter(prefix="/unidades", tags=["unidades"])
+# Setor é recurso próprio (D1) — path raiz `/setores/{id}` para editar/ativar,
+# enquanto a criação/listagem vive sob a unidade dona.
+router_setores = APIRouter(prefix="/setores", tags=["unidades"])
 
 _require_admin = require_perfil(PerfilUsuario.ADMINISTRADOR)
 
@@ -101,7 +112,14 @@ def desativar_unidade(
         )
 
     unidade.ativo = False
-    db.query(Usuario).filter(Usuario.unidade_id == unidade_id).update({"unidade_id": None})
+    # Desvincula também o setor: a invariante `setor.unidade_id ==
+    # usuario.unidade_id` (D2) não sobreviveria a um servidor sem unidade e
+    # com setor da unidade desativada.
+    db.query(Usuario).filter(Usuario.unidade_id == unidade_id).update(
+        {"unidade_id": None, "setor_id": None}
+    )
+    # Cascata de contenção: desativar a unidade desativa seus setores (D3).
+    servico.desativar_setores_da_unidade(db, unidade_id)
     db.commit()
 
     return UnidadeResponse.de(unidade)
@@ -114,7 +132,9 @@ def reativar_unidade(
     db: Annotated[Session, Depends(get_db)],
 ) -> UnidadeResponse:
     """US 8.1 — reativa (idempotente); não repovoa `Usuario.unidade_id` dos
-    servidores desvinculados na desativação (revínculo permanece manual)."""
+    servidores desvinculados na desativação (revínculo permanece manual) e
+    **não** reativa os setores desativados em cascata: a reativação de cada
+    setor é ação administrativa explícita (D3)."""
     unidade = db.get(Unidade, unidade_id)
     if unidade is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unidade não encontrada.")
@@ -123,3 +143,71 @@ def reativar_unidade(
     db.commit()
 
     return UnidadeResponse.de(unidade)
+
+
+# --- Setores da unidade (D1, D3) --------------------------------------------
+
+
+@router.get("/{unidade_id}/setores", response_model=list[SetorResponse])
+def listar_setores(
+    unidade_id: uuid.UUID,
+    _admin: Annotated[Usuario, Depends(_require_admin)],
+    db: Annotated[Session, Depends(get_db)],
+    apenas_ativos: bool = False,
+) -> list[SetorResponse]:
+    """Setores da unidade. Restrito ao Administrador junto com as demais rotas
+    de setor (task 2.4) — o único consumidor hoje é a administração; se a tela
+    de tramitação precisar da cascata para outros perfis, o alargamento entra
+    no change que a introduzir, com justificativa própria."""
+    setores = servico.listar_setores(db, unidade_id, apenas_ativos=apenas_ativos)
+    return [SetorResponse.de(s) for s in setores]
+
+
+@router.post(
+    "/{unidade_id}/setores", response_model=SetorResponse, status_code=status.HTTP_201_CREATED
+)
+def cadastrar_setor(
+    unidade_id: uuid.UUID,
+    payload: CadastrarSetorRequest,
+    _admin: Annotated[Usuario, Depends(_require_admin)],
+    db: Annotated[Session, Depends(get_db)],
+) -> SetorResponse:
+    unidade = db.get(Unidade, unidade_id)
+    if unidade is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unidade não encontrada.")
+
+    setor = servico.cadastrar_setor(
+        db, unidade_id=unidade_id, nome=payload.nome, sigla=payload.sigla
+    )
+    return SetorResponse.de(setor)
+
+
+@router_setores.patch("/{setor_id}", response_model=SetorResponse)
+def editar_setor(
+    setor_id: uuid.UUID,
+    payload: EditarSetorRequest,
+    _admin: Annotated[Usuario, Depends(_require_admin)],
+    db: Annotated[Session, Depends(get_db)],
+) -> SetorResponse:
+    setor = servico.editar_setor(db, setor_id=setor_id, nome=payload.nome, sigla=payload.sigla)
+    return SetorResponse.de(setor)
+
+
+@router_setores.post("/{setor_id}/desativar", response_model=SetorResponse)
+def desativar_setor(
+    setor_id: uuid.UUID,
+    _admin: Annotated[Usuario, Depends(_require_admin)],
+    db: Annotated[Session, Depends(get_db)],
+) -> SetorResponse:
+    """Nunca exclui — só desativa (D3), e apenas se nenhum Servidor ativo
+    estiver vinculado."""
+    return SetorResponse.de(servico.desativar_setor(db, setor_id))
+
+
+@router_setores.post("/{setor_id}/reativar", response_model=SetorResponse)
+def reativar_setor(
+    setor_id: uuid.UUID,
+    _admin: Annotated[Usuario, Depends(_require_admin)],
+    db: Annotated[Session, Depends(get_db)],
+) -> SetorResponse:
+    return SetorResponse.de(servico.reativar_setor(db, setor_id))

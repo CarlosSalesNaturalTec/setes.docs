@@ -15,6 +15,13 @@ export const UNIDADE_INICIAL = {
   sigla: "SEGE",
 };
 
+// Setor da unidade inicial — o perfil Servidor exige setor da própria unidade
+// (change setores-e-cadastro-usuario, D2). Criado no spec 02.
+export const SETOR_INICIAL = {
+  nome: "Gabinete",
+  sigla: "GAB",
+};
+
 export const NOVO_SERVIDOR = {
   nome: "Servidor Novo",
   email: "servidor.novo@example.com",

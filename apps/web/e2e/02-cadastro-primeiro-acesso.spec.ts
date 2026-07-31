@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-import { ADMIN_ROOT, NOVO_SERVIDOR } from "./fixtures";
+import { ADMIN_ROOT, NOVO_SERVIDOR, SETOR_INICIAL, UNIDADE_INICIAL } from "./fixtures";
+import { cadastrarSetor, cadastrarUsuario } from "./helpers/admin";
 import { login, logout } from "./helpers/auth";
 import { obterUltimoLink } from "./helpers/dev-inbox";
 
@@ -9,16 +10,15 @@ import { obterUltimoLink } from "./helpers/dev-inbox";
 test("cadastro de usuário, primeiro acesso via e-mail mockado e login", async ({ page }) => {
   await login(page, ADMIN_ROOT.email, ADMIN_ROOT.senha);
 
-  await page.goto("/admin/usuarios");
-  await page.getByLabel("Nome", { exact: true }).fill(NOVO_SERVIDOR.nome);
-  await page.getByLabel("E-mail").fill(NOVO_SERVIDOR.email);
-  await page.getByRole("button", { name: "Cadastrar usuário" }).click();
+  // Setor da unidade inicial: Servidor exige setor da própria unidade (D2).
+  await cadastrarSetor(page, UNIDADE_INICIAL.nome, SETOR_INICIAL);
 
-  await expect(
-    page.getByText(
-      `Usuário cadastrado. Um e-mail de primeiro acesso foi enviado para ${NOVO_SERVIDOR.email}.`,
-    ),
-  ).toBeVisible();
+  await cadastrarUsuario(page, {
+    nome: NOVO_SERVIDOR.nome,
+    email: NOVO_SERVIDOR.email,
+    unidadeNome: UNIDADE_INICIAL.nome,
+    setor: SETOR_INICIAL,
+  });
 
   const link = await obterUltimoLink(NOVO_SERVIDOR.email);
   await page.goto(link);

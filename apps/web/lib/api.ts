@@ -195,9 +195,12 @@ export const api = {
       { auth: true },
     ),
 
-  // Gestão de usuários
-  listarUsuarios: (page = 1) =>
-    get<Schemas["ListaUsuariosResponse"]>("/usuarios", { auth: true, query: { page } }),
+  // Gestão de usuários — `nome` filtra por fragmento no backend (D5).
+  listarUsuarios: (page = 1, nome?: string) =>
+    get<Schemas["ListaUsuariosResponse"]>("/usuarios", {
+      auth: true,
+      query: { page, nome: nome || undefined },
+    }),
   cadastrarUsuario: (body: Schemas["CadastroUsuarioRequest"]) =>
     post<Schemas["CadastroUsuarioRequest"], Schemas["UsuarioResponse"]>("/usuarios", body, { auth: true }),
   transferirUnidade: (usuarioId: string, body: Schemas["TransferirUnidadeRequest"]) =>
@@ -239,6 +242,27 @@ export const api = {
     post<undefined, Schemas["UnidadeResponse"]>(`/unidades/${unidadeId}/desativar`, undefined, { auth: true }),
   reativarUnidade: (unidadeId: string) =>
     post<undefined, Schemas["UnidadeResponse"]>(`/unidades/${unidadeId}/reativar`, undefined, { auth: true }),
+
+  // Setores da unidade (D1) — sem rota de exclusão: setor só é desativado (D3).
+  listarSetores: (unidadeId: string, apenasAtivos = false) =>
+    get<Schemas["SetorResponse"][]>(`/unidades/${unidadeId}/setores`, {
+      auth: true,
+      query: { apenas_ativos: apenasAtivos },
+    }),
+  cadastrarSetor: (unidadeId: string, body: Schemas["CadastrarSetorRequest"]) =>
+    post<Schemas["CadastrarSetorRequest"], Schemas["SetorResponse"]>(
+      `/unidades/${unidadeId}/setores`,
+      body,
+      { auth: true },
+    ),
+  editarSetor: (setorId: string, body: Schemas["EditarSetorRequest"]) =>
+    patch<Schemas["EditarSetorRequest"], Schemas["SetorResponse"]>(`/setores/${setorId}`, body, {
+      auth: true,
+    }),
+  desativarSetor: (setorId: string) =>
+    post<undefined, Schemas["SetorResponse"]>(`/setores/${setorId}/desativar`, undefined, { auth: true }),
+  reativarSetor: (setorId: string) =>
+    post<undefined, Schemas["SetorResponse"]>(`/setores/${setorId}/reativar`, undefined, { auth: true }),
 
   // Tipos de processo e roteiros
   listarTiposProcesso: () => get<Schemas["TipoProcessoResponse"][]>("/tipos-processo", { auth: true }),

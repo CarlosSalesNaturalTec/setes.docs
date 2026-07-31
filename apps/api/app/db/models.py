@@ -156,6 +156,37 @@ class Unidade(Base):
     usuarios: Mapped[list["Usuario"]] = relationship(
         "Usuario", back_populates="unidade", foreign_keys="Usuario.unidade_id"
     )
+    setores: Mapped[list["Setor"]] = relationship(
+        "Setor", back_populates="unidade", order_by="Setor.nome"
+    )
+
+
+class Setor(Base):
+    """Segundo nível da estrutura organizacional (D1) — 1:N com `Unidade`.
+
+    Sigla única *dentro* da unidade: duas unidades podem ter um "GAB". Nunca é
+    excluído, apenas desativado (`ativo`), porque o histórico imutável de
+    tramitação passa a referenciá-lo (D3). Setor **não** é fronteira de
+    permissão — o escopo de acesso continua sendo a Unidade.
+    """
+
+    __tablename__ = "setor"
+    __table_args__ = (
+        UniqueConstraint("unidade_id", "sigla", name="uq_setor_unidade_sigla"),
+        Index("ix_setor_unidade_id", "unidade_id"),
+    )
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    unidade_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("unidade.id"), nullable=False
+    )
+    nome: Mapped[str] = mapped_column(String(200), nullable=False)
+    sigla: Mapped[str] = mapped_column(String(20), nullable=False)
+    ativo: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default="true", default=True
+    )
+
+    unidade: Mapped[Unidade] = relationship("Unidade", back_populates="setores")
 
 
 class Usuario(Base):
@@ -186,6 +217,18 @@ class Usuario(Base):
     unidade_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("unidade.id"), nullable=True
     )
+    # Nullable no schema, obrigatório apenas para o perfil Servidor (D2) — a
+    # regra depende de `perfil`, então é validada na aplicação, não por CHECK.
+    # Invariante adicional: `setor.unidade_id == usuario.unidade_id`.
+    setor_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("setor.id"), nullable=True
+    )
+    # Dados pessoais de servidor (identificação funcional): fora da consulta
+    # pública. `chefia_direta` é texto livre, sem FK — a chefia pode ser pessoa
+    # externa ao sistema (D4).
+    telefone: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    cargo: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    chefia_direta: Mapped[str | None] = mapped_column(String(200), nullable=True)
     tentativas_login_falhas: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     bloqueado_ate: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     criado_em: Mapped[datetime] = mapped_column(
@@ -198,6 +241,7 @@ class Usuario(Base):
     unidade: Mapped[Unidade | None] = relationship(
         "Unidade", back_populates="usuarios", foreign_keys=[unidade_id]
     )
+    setor: Mapped[Setor | None] = relationship("Setor", foreign_keys=[setor_id])
 
 
 class UnidadeGestor(Base):

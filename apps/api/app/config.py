@@ -70,6 +70,14 @@ class Settings(BaseSettings):
     # garantir "banco limpo" entre execuções. Nunca setado em produção.
     dev_db_reset: bool = Field(default=False, alias="DEV_DB_RESET")
 
+    # Dev/E2E only: habilita POST /internal/dev/reset-rate-limit, que zera o
+    # contador em memória do rate limit de `/auth/*` (D6) — o mesmo
+    # `limiter.reset()` que a fixture `client` do pytest já faz entre testes.
+    # A suíte Playwright roda dezenas de logins do mesmo IP (127.0.0.1) em
+    # poucos minutos e estouraria os 10/min sem isso. Nunca setado em produção:
+    # o limite é uma defesa real e não deve ser zerável de fora.
+    dev_rate_limit_reset: bool = Field(default=False, alias="DEV_RATE_LIMIT_RESET")
+
     # Cloud Storage (Épico 3, D4) — bucket `${project_id}-documentos`
     # (provisionado no bootstrap). Em produção, `documentos_storage_local` fica
     # `False` e o backend real (google-cloud-storage, ADC via SA do Cloud Run)

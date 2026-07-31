@@ -18,13 +18,60 @@
         "type": "object"
       },
       "AtualizarMeuPerfilRequest": {
-        "description": "US 1.5 — auto-serviço restrito ao próprio nome (task 2.1).",
+        "description": "US 1.5 — auto-serviço do próprio nome (task 2.1) e dos dados funcionais\nde contato. `setor_id` é aceito porque Setor não é fronteira de permissão\n(design.md Non-Goals) e continua validado contra a unidade do usuário (D2);\ne-mail, perfil e unidade seguem sob gestão exclusiva do Administrador.",
         "properties": {
+          "cargo": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cargo"
+          },
+          "chefia_direta": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chefia Direta"
+          },
           "nome": {
             "maxLength": 200,
             "minLength": 1,
             "title": "Nome",
             "type": "string"
+          },
+          "setor_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Setor Id"
+          },
+          "telefone": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Telefone"
           }
         },
         "required": [
@@ -147,6 +194,28 @@
         "title": "Body_criar_solicitacao_publico_lgpd_solicitacoes_post",
         "type": "object"
       },
+      "CadastrarSetorRequest": {
+        "properties": {
+          "nome": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Nome",
+            "type": "string"
+          },
+          "sigla": {
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Sigla",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nome",
+          "sigla"
+        ],
+        "title": "CadastrarSetorRequest",
+        "type": "object"
+      },
       "CadastroUnidadeRequest": {
         "properties": {
           "gestor_responsavel_id": {
@@ -181,6 +250,30 @@
       },
       "CadastroUsuarioRequest": {
         "properties": {
+          "cargo": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cargo"
+          },
+          "chefia_direta": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chefia Direta"
+          },
           "email": {
             "title": "Email",
             "type": "string"
@@ -197,6 +290,29 @@
             ],
             "title": "Perfil",
             "type": "string"
+          },
+          "setor_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Setor Id"
+          },
+          "telefone": {
+            "anyOf": [
+              {
+                "maxLength": 30,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Telefone"
           },
           "unidade_id": {
             "anyOf": [
@@ -640,6 +756,36 @@
           }
         },
         "title": "DocumentosRemovidosListResponse",
+        "type": "object"
+      },
+      "EditarSetorRequest": {
+        "properties": {
+          "nome": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nome"
+          },
+          "sigla": {
+            "anyOf": [
+              {
+                "maxLength": 20,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sigla"
+          }
+        },
+        "title": "EditarSetorRequest",
         "type": "object"
       },
       "EditarUnidadeRequest": {
@@ -1268,6 +1414,28 @@
             },
             "title": "Processos",
             "type": "array"
+          },
+          "setor_nome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Setor Nome"
+          },
+          "unidade_nome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unidade Nome"
           },
           "usuario": {
             "$ref": "#/components/schemas/UsuarioResponse"
@@ -1972,6 +2140,40 @@
         "title": "RoteiroResponse",
         "type": "object"
       },
+      "SetorResponse": {
+        "description": "Setor — segundo nível da estrutura organizacional (D1).",
+        "properties": {
+          "ativo": {
+            "title": "Ativo",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "sigla": {
+            "title": "Sigla",
+            "type": "string"
+          },
+          "unidade_id": {
+            "title": "Unidade Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "unidade_id",
+          "nome",
+          "sigla",
+          "ativo"
+        ],
+        "title": "SetorResponse",
+        "type": "object"
+      },
       "SetupAdministrador": {
         "properties": {
           "email": {
@@ -2245,6 +2447,17 @@
       },
       "TransferirUnidadeRequest": {
         "properties": {
+          "setor_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Setor Id"
+          },
           "unidade_id": {
             "title": "Unidade Id",
             "type": "string"
@@ -2334,6 +2547,28 @@
       },
       "UsuarioResponse": {
         "properties": {
+          "cargo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cargo"
+          },
+          "chefia_direta": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chefia Direta"
+          },
           "email": {
             "title": "Email",
             "type": "string"
@@ -2354,9 +2589,31 @@
             "title": "Pode Auditar",
             "type": "boolean"
           },
+          "setor_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Setor Id"
+          },
           "status": {
             "title": "Status",
             "type": "string"
+          },
+          "telefone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Telefone"
           },
           "unidade_id": {
             "anyOf": [
@@ -3465,6 +3722,20 @@
           }
         },
         "summary": "Resetar",
+        "tags": [
+          "dev"
+        ]
+      }
+    },
+    "/internal/dev/reset-rate-limit": {
+      "post": {
+        "operationId": "resetar_rate_limit_internal_dev_reset_rate_limit_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Resetar Rate Limit",
         "tags": [
           "dev"
         ]
@@ -5118,6 +5389,194 @@
         ]
       }
     },
+    "/setores/{setor_id}": {
+      "patch": {
+        "operationId": "editar_setor_setores__setor_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "setor_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Setor Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditarSetorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetorResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Editar Setor",
+        "tags": [
+          "unidades"
+        ]
+      }
+    },
+    "/setores/{setor_id}/desativar": {
+      "post": {
+        "description": "Nunca exclui — só desativa (D3), e apenas se nenhum Servidor ativo\nestiver vinculado.",
+        "operationId": "desativar_setor_setores__setor_id__desativar_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "setor_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Setor Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetorResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Desativar Setor",
+        "tags": [
+          "unidades"
+        ]
+      }
+    },
+    "/setores/{setor_id}/reativar": {
+      "post": {
+        "operationId": "reativar_setor_setores__setor_id__reativar_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "setor_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Setor Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetorResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reativar Setor",
+        "tags": [
+          "unidades"
+        ]
+      }
+    },
     "/setup": {
       "post": {
         "operationId": "inicializar_sistema_setup_post",
@@ -5779,7 +6238,7 @@
     },
     "/unidades/{unidade_id}/reativar": {
       "post": {
-        "description": "US 8.1 — reativa (idempotente); não repovoa `Usuario.unidade_id` dos\nservidores desvinculados na desativação (revínculo permanece manual).",
+        "description": "US 8.1 — reativa (idempotente); não repovoa `Usuario.unidade_id` dos\nservidores desvinculados na desativação (revínculo permanece manual) e\n**não** reativa os setores desativados em cascata: a reativação de cada\nsetor é ação administrativa explícita (D3).",
         "operationId": "reativar_unidade_unidades__unidade_id__reativar_post",
         "parameters": [
           {
@@ -5837,9 +6296,150 @@
         ]
       }
     },
+    "/unidades/{unidade_id}/setores": {
+      "get": {
+        "description": "Setores da unidade. Restrito ao Administrador junto com as demais rotas\nde setor (task 2.4) — o único consumidor hoje é a administração; se a tela\nde tramitação precisar da cascata para outros perfis, o alargamento entra\nno change que a introduzir, com justificativa própria.",
+        "operationId": "listar_setores_unidades__unidade_id__setores_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "unidade_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Unidade Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "apenas_ativos",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Apenas Ativos",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SetorResponse"
+                  },
+                  "title": "Response Listar Setores Unidades  Unidade Id  Setores Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Listar Setores",
+        "tags": [
+          "unidades"
+        ]
+      },
+      "post": {
+        "operationId": "cadastrar_setor_unidades__unidade_id__setores_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "unidade_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Unidade Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CadastrarSetorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetorResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Cadastrar Setor",
+        "tags": [
+          "unidades"
+        ]
+      }
+    },
     "/usuarios": {
       "get": {
-        "description": "Administrador lista todos; Gestor só lista usuários das unidades que gerencia.",
+        "description": "Administrador lista todos; Gestor só lista usuários das unidades que gerencia.\n\n`nome` filtra por fragmento, insensível a maiúsculas/minúsculas, no backend\n(D5) — o filtro restringe o conjunto exibido, nunca amplia o escopo de\nautorização já aplicado acima.",
         "operationId": "listar_usuarios_usuarios_get",
         "parameters": [
           {
@@ -5860,6 +6460,22 @@
               "default": 20,
               "title": "Page Size",
               "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "nome",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Nome"
             }
           },
           {
@@ -6015,7 +6631,7 @@
         ]
       },
       "patch": {
-        "description": "US 1.5 — auto-serviço restrito ao próprio nome (task 2.2); e-mail e\nperfil permanecem sob gestão exclusiva do Administrador.",
+        "description": "US 1.5 — auto-serviço do próprio nome (task 2.2) e dos dados funcionais\n(setor, telefone, cargo, chefia direta); e-mail, perfil e unidade permanecem\nsob gestão exclusiva do Administrador. O setor continua validado contra a\nunidade do próprio usuário (D2).",
         "operationId": "atualizar_meu_perfil_usuarios_me_perfil_patch",
         "parameters": [
           {

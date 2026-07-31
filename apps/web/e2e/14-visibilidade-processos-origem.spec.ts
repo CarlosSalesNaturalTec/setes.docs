@@ -1,9 +1,12 @@
 import { expect, test } from "@playwright/test";
 
 import { ADMIN_ROOT } from "./fixtures";
+import { cadastrarSetor, cadastrarUsuario as cadastrarUsuarioAdmin } from "./helpers/admin";
 import { login, logout } from "./helpers/auth";
 import { obterUltimoLink } from "./helpers/dev-inbox";
 
+// Servidor exige setor da própria unidade (change setores-e-cadastro-usuario, D2).
+const SETOR_PADRAO = { nome: "Gabinete", sigla: "GAB" };
 const UNIDADE_ORIGEM = { nome: "Coordenação Vis Origem", sigla: "CVORI" };
 const UNIDADE_DESTINO = { nome: "Assessoria Vis Destino", sigla: "AVDES" };
 const TIPO_PROCESSO = { nome: "Protocolo Visibilidade Origem" };
@@ -24,14 +27,13 @@ async function cadastrarUsuario(
   usuario: { nome: string; email: string; senha: string },
   unidadeNome: string,
 ): Promise<void> {
-  await page.goto("/admin/usuarios");
-  await page.getByLabel("Nome", { exact: true }).fill(usuario.nome);
-  await page.getByLabel("E-mail").fill(usuario.email);
-  await page.getByLabel("Unidade", { exact: true }).selectOption({ label: unidadeNome });
-  await page.getByRole("button", { name: "Cadastrar usuário" }).click();
-  await expect(
-    page.getByText(`Usuário cadastrado. Um e-mail de primeiro acesso foi enviado para ${usuario.email}.`),
-  ).toBeVisible();
+  await cadastrarSetor(page, unidadeNome, SETOR_PADRAO);
+  await cadastrarUsuarioAdmin(page, {
+    nome: usuario.nome,
+    email: usuario.email,
+    unidadeNome,
+    setor: SETOR_PADRAO,
+  });
 
   const link = await obterUltimoLink(usuario.email);
   await page.goto(link);

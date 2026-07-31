@@ -3,7 +3,7 @@ obrigatório, toca dado pessoal: nome, e-mail, vínculo organizacional)."""
 
 from __future__ import annotations
 
-from app.db.models import PerfilUsuario, StatusUsuario, Unidade, UnidadeGestor, Usuario
+from app.db.models import PerfilUsuario, Setor, StatusUsuario, Unidade, UnidadeGestor, Usuario
 from app.security.senha import hash_senha
 
 SENHA = "SenhaForte1"
@@ -16,7 +16,15 @@ def _unidade(db, nome="Unidade A", ativo=True) -> Unidade:
     return unidade
 
 
-def _usuario(db, *, perfil, unidade_id=None, email="u@example.com") -> Usuario:
+def _setor(db, unidade, *, nome="Gabinete", sigla="GAB") -> Setor:
+    """Servidor exige setor da própria unidade (change setores-e-cadastro-usuario, D2)."""
+    setor = Setor(unidade_id=unidade.id, nome=nome, sigla=sigla, ativo=True)
+    db.add(setor)
+    db.commit()
+    return setor
+
+
+def _usuario(db, *, perfil, unidade_id=None, email="u@example.com", setor_id=None) -> Usuario:
     usuario = Usuario(
         nome="Fulano",
         email=email,
@@ -24,6 +32,7 @@ def _usuario(db, *, perfil, unidade_id=None, email="u@example.com") -> Usuario:
         perfil=perfil,
         status=StatusUsuario.ATIVO,
         unidade_id=unidade_id,
+        setor_id=setor_id,
     )
     db.add(usuario)
     db.commit()
@@ -50,12 +59,19 @@ def test_admin_cadastra_servidor_com_sucesso(client, db, monkeypatch):
         lambda message, *, event_id, config: chamadas.append(event_id) or True,
     )
     unidade = _unidade(db)
+    setor = _setor(db, unidade)
     _usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin@example.com")
     token = _login(client, "admin@example.com")
 
     resp = client.post(
         "/usuarios",
-        json={"nome": "Novo Servidor", "email": "novo@example.com", "perfil": "servidor", "unidade_id": str(unidade.id)},
+        json={
+            "nome": "Novo Servidor",
+            "email": "novo@example.com",
+            "perfil": "servidor",
+            "unidade_id": str(unidade.id),
+            "setor_id": str(setor.id),
+        },
         headers=_auth(token),
     )
 
@@ -135,6 +151,7 @@ def test_cadastro_com_unidade_inexistente_ou_inativa_e_rejeitado(client, db):
 def test_gestor_cadastra_servidor_na_unidade_gerenciada(client, db, monkeypatch):
     monkeypatch.setattr("app.routers.usuarios.enqueue_email_seguro", lambda *a, **k: True)
     unidade = _unidade(db, "COFIN")
+    setor = _setor(db, unidade)
     gestor = _usuario(db, perfil=PerfilUsuario.GESTOR, email="gestor@example.com")
     db.add(UnidadeGestor(gestor_id=gestor.id, unidade_id=unidade.id))
     db.commit()
@@ -142,7 +159,13 @@ def test_gestor_cadastra_servidor_na_unidade_gerenciada(client, db, monkeypatch)
 
     resp = client.post(
         "/usuarios",
-        json={"nome": "Servidor Novo", "email": "srv@example.com", "perfil": "servidor", "unidade_id": str(unidade.id)},
+        json={
+            "nome": "Servidor Novo",
+            "email": "srv@example.com",
+            "perfil": "servidor",
+            "unidade_id": str(unidade.id),
+            "setor_id": str(setor.id),
+        },
         headers=_auth(token),
     )
 
@@ -190,17 +213,28 @@ def test_gestor_nao_pode_atribuir_perfil_privilegiado(client, db):
 def test_transferencia_de_servidor_substitui_vinculo(client, db):
     cofin = _unidade(db, "COFIN")
     ajur = _unidade(db, "AJUR")
+    setor_cofin = _setor(db, cofin)
+    setor_ajur = _setor(db, ajur, nome="Consultivo", sigla="CONS")
     _usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin@example.com")
-    servidor = _usuario(db, perfil=PerfilUsuario.SERVIDOR, unidade_id=cofin.id, email="joao@example.com")
+    servidor = _usuario(
+        db,
+        perfil=PerfilUsuario.SERVIDOR,
+        unidade_id=cofin.id,
+        setor_id=setor_cofin.id,
+        email="joao@example.com",
+    )
     token = _login(client, "admin@example.com")
 
     resp = client.patch(
-        f"/usuarios/{servidor.id}/unidade", json={"unidade_id": str(ajur.id)}, headers=_auth(token)
+        f"/usuarios/{servidor.id}/unidade",
+        json={"unidade_id": str(ajur.id), "setor_id": str(setor_ajur.id)},
+        headers=_auth(token),
     )
 
     assert resp.status_code == 200
     db.refresh(servidor)
     assert servidor.unidade_id == ajur.id  # vínculo antigo removido, nunca há dois simultâneos
+    assert servidor.setor_id == setor_ajur.id
 
 
 # --- 7.4 — PUT /usuarios/{id}/unidades-geridas -----------------------------

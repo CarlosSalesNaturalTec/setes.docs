@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 
 import { useAuth } from "@/components/auth-provider";
+import { CadastroUsuarioForm } from "@/components/cadastro-usuario-form";
 import { IconButton } from "@/components/icon-button";
 import { IconBuildings, IconKey, IconShield, IconTransfer, IconUserMinus } from "@/components/icons";
+import { Modal } from "@/components/modal";
 import { ProtectedShell } from "@/components/protected-shell";
 import { ApiError, api, type Schemas } from "@/lib/api";
 
@@ -12,124 +14,13 @@ type Unidade = Schemas["UnidadeResponse"];
 type Usuario = Schemas["UsuarioResponse"];
 type Perfil = Schemas["CadastroUsuarioRequest"]["perfil"];
 
+// Filtro por nome é aplicado no backend (D5); o debounce evita uma requisição
+// por tecla digitada.
+const DEBOUNCE_FILTRO_MS = 300;
+
 function nomeUnidade(unidades: Unidade[], unidadeId: string | null): string {
   if (!unidadeId) return "—";
   return unidades.find((u) => u.id === unidadeId)?.nome ?? unidadeId;
-}
-
-function CadastroUsuarioForm({
-  unidades,
-  perfilAtual,
-  onCriado,
-}: {
-  unidades: Unidade[];
-  perfilAtual: Perfil;
-  onCriado: () => void;
-}) {
-  const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
-  const [perfil, setPerfil] = useState<Perfil>("servidor");
-  const [unidadeId, setUnidadeId] = useState("");
-  const [erro, setErro] = useState<string | null>(null);
-  const [mensagem, setMensagem] = useState<string | null>(null);
-  const [enviando, setEnviando] = useState(false);
-
-  // Gestor só pode cadastrar Servidor (US 1.2 Cen.3) — nem oferece a opção.
-  const perfisPermitidos: Perfil[] = perfilAtual === "administrador" ? ["servidor", "gestor", "administrador"] : ["servidor"];
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setErro(null);
-    setMensagem(null);
-    setEnviando(true);
-    try {
-      await api.cadastrarUsuario({ nome, email, perfil, unidade_id: unidadeId || null });
-      setMensagem(`Usuário cadastrado. Um e-mail de primeiro acesso foi enviado para ${email}.`);
-      setNome("");
-      setEmail("");
-      setPerfil("servidor");
-      setUnidadeId("");
-      onCriado();
-    } catch (err) {
-      setErro(err instanceof ApiError ? err.detail : "Não foi possível cadastrar o usuário.");
-    } finally {
-      setEnviando(false);
-    }
-  }
-
-  return (
-    <form onSubmit={onSubmit} className="flex flex-wrap items-end gap-3 rounded-card border border-navy-50 bg-superficie-card p-4 shadow-card">
-      <div>
-        <label htmlFor="nome" className="block text-sm">
-          Nome
-        </label>
-        <input
-          id="nome"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-          required
-          className="mt-1 rounded border px-3 py-2 text-sm"
-        />
-      </div>
-      <div>
-        <label htmlFor="email" className="block text-sm">
-          E-mail
-        </label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="mt-1 rounded border px-3 py-2 text-sm"
-        />
-      </div>
-      <div>
-        <label htmlFor="perfil" className="block text-sm">
-          Perfil
-        </label>
-        <select
-          id="perfil"
-          value={perfil}
-          onChange={(e) => setPerfil(e.target.value as Perfil)}
-          className="mt-1 rounded border px-3 py-2 text-sm"
-        >
-          {perfisPermitidos.map((p) => (
-            <option key={p} value={p}>
-              {p}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label htmlFor="unidade" className="block text-sm">
-          Unidade
-        </label>
-        <select
-          id="unidade"
-          value={unidadeId}
-          onChange={(e) => setUnidadeId(e.target.value)}
-          className="mt-1 rounded border px-3 py-2 text-sm"
-        >
-          <option value="">(nenhuma)</option>
-          {unidades.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.nome}
-            </option>
-          ))}
-        </select>
-      </div>
-      <button
-        type="submit"
-        disabled={enviando}
-        className="rounded-card bg-navy-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-      >
-        {enviando ? "Salvando…" : "Cadastrar usuário"}
-      </button>
-      {erro && <p className="w-full text-sm text-red-600">{erro}</p>}
-      {mensagem && <p className="w-full text-sm text-green-700">{mensagem}</p>}
-    </form>
-  );
 }
 
 function AcaoTransferirUnidade({
@@ -143,12 +34,36 @@ function AcaoTransferirUnidade({
 }) {
   const [aberto, setAberto] = useState(false);
   const [unidadeId, setUnidadeId] = useState(usuario.unidade_id ?? "");
+  const [setorId, setSetorId] = useState("");
+  const [setores, setSetores] = useState<Schemas["SetorResponse"][]>([]);
   const [erro, setErro] = useState<string | null>(null);
+
+  // A transferência exige um setor da nova unidade (D2) — a cascata carrega
+  // apenas os setores ativos da unidade escolhida.
+  useEffect(() => {
+    setSetorId("");
+    if (!aberto || !unidadeId) {
+      setSetores([]);
+      return;
+    }
+    let cancelado = false;
+    void (async () => {
+      try {
+        const lista = await api.listarSetores(unidadeId, true);
+        if (!cancelado) setSetores(lista);
+      } catch {
+        if (!cancelado) setSetores([]);
+      }
+    })();
+    return () => {
+      cancelado = true;
+    };
+  }, [aberto, unidadeId]);
 
   async function confirmar() {
     setErro(null);
     try {
-      await api.transferirUnidade(usuario.id, { unidade_id: unidadeId });
+      await api.transferirUnidade(usuario.id, { unidade_id: unidadeId, setor_id: setorId || null });
       setAberto(false);
       onAlterado();
     } catch (err) {
@@ -165,21 +80,37 @@ function AcaoTransferirUnidade({
   }
 
   return (
-    <div className="text-sm">
+    <div className="space-y-1 text-sm">
       <select value={unidadeId} onChange={(e) => setUnidadeId(e.target.value)} className="rounded border px-2 py-1">
-        <option value="">Selecione…</option>
+        <option value="">Selecione a unidade…</option>
         {unidades.map((u) => (
           <option key={u.id} value={u.id}>
             {u.nome}
           </option>
         ))}
       </select>
-      <button onClick={confirmar} className="ml-2 text-navy-600">
-        Confirmar
-      </button>
-      <button onClick={() => setAberto(false)} className="ml-2 text-gray-500">
-        Cancelar
-      </button>
+      <select
+        value={setorId}
+        onChange={(e) => setSetorId(e.target.value)}
+        disabled={!unidadeId}
+        aria-label="Setor de destino"
+        className="rounded border px-2 py-1 disabled:bg-gray-100"
+      >
+        <option value="">Selecione o setor…</option>
+        {setores.map((s) => (
+          <option key={s.id} value={s.id}>
+            {s.nome} ({s.sigla})
+          </option>
+        ))}
+      </select>
+      <div>
+        <button onClick={confirmar} className="text-navy-600">
+          Confirmar
+        </button>
+        <button onClick={() => setAberto(false)} className="ml-2 text-gray-500">
+          Cancelar
+        </button>
+      </div>
       {erro && <p className="text-red-600">{erro}</p>}
     </div>
   );
@@ -355,10 +286,17 @@ function AdminUsuariosConteudo() {
   const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(true);
+  const [filtroNome, setFiltroNome] = useState("");
+  const [filtroAplicado, setFiltroAplicado] = useState("");
+  const [modalAberto, setModalAberto] = useState(false);
+  const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
 
-  async function carregar() {
+  async function carregar(nome = filtroAplicado) {
     try {
-      const [listaUsuarios, listaUnidades] = await Promise.all([api.listarUsuarios(), api.listarUnidades()]);
+      const [listaUsuarios, listaUnidades] = await Promise.all([
+        api.listarUsuarios(1, nome),
+        api.listarUnidades(),
+      ]);
       setUsuarios(listaUsuarios.items);
       setUnidades(listaUnidades);
     } catch (err) {
@@ -368,9 +306,17 @@ function AdminUsuariosConteudo() {
     }
   }
 
+  // Debounce de 300 ms sobre o que foi digitado (D5) — a busca em si roda no
+  // backend, então a lista filtra sem recarregar a página.
   useEffect(() => {
-    void carregar();
-  }, []);
+    const id = setTimeout(() => setFiltroAplicado(filtroNome), DEBOUNCE_FILTRO_MS);
+    return () => clearTimeout(id);
+  }, [filtroNome]);
+
+  useEffect(() => {
+    void carregar(filtroAplicado);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtroAplicado]);
 
   if (!usuarioAtual) return null;
   const souAdministrador = usuarioAtual.perfil === "administrador";
@@ -382,9 +328,49 @@ function AdminUsuariosConteudo() {
     <div>
       <h1 className="text-2xl font-semibold">Usuários</h1>
 
-      <div className="mt-4">
-        <CadastroUsuarioForm unidades={unidadesAtivas} perfilAtual={usuarioAtual.perfil as Perfil} onCriado={carregar} />
+      {/* O espaço antes ocupado pelo formulário inline recebe o filtro (D5/D6). */}
+      <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <label htmlFor="filtro-nome" className="block text-sm">
+            Filtrar por nome
+          </label>
+          <input
+            id="filtro-nome"
+            value={filtroNome}
+            onChange={(e) => setFiltroNome(e.target.value)}
+            placeholder="Digite parte do nome…"
+            className="mt-1 w-64 rounded border px-3 py-2 text-sm"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setMensagemSucesso(null);
+            setModalAberto(true);
+          }}
+          className="rounded-card bg-navy-900 px-4 py-2 text-sm font-medium text-white"
+        >
+          Novo usuário
+        </button>
       </div>
+
+      <Modal titulo="Novo usuário" aberto={modalAberto} onFechar={() => setModalAberto(false)}>
+        <CadastroUsuarioForm
+          unidades={unidadesAtivas}
+          perfilAtual={usuarioAtual.perfil as Perfil}
+          onCriado={(email) => {
+            // O modal fecha ao salvar, então a confirmação é exibida aqui —
+            // dentro do formulário ela seria desmontada junto com o modal.
+            setModalAberto(false);
+            setMensagemSucesso(
+              `Usuário cadastrado. Um e-mail de primeiro acesso foi enviado para ${email}.`,
+            );
+            void carregar();
+          }}
+        />
+      </Modal>
+
+      {mensagemSucesso && <p className="mt-4 text-sm text-green-700">{mensagemSucesso}</p>}
 
       {erro && <p className="mt-4 text-sm text-red-600">{erro}</p>}
       {carregando && <p className="mt-4 text-sm text-gray-500">Carregando…</p>}
@@ -407,7 +393,16 @@ function AdminUsuariosConteudo() {
               <td className="px-3 py-2">{u.email}</td>
               <td className="px-3 py-2 capitalize">{u.perfil}</td>
               <td className="px-3 py-2 capitalize">{u.status.replaceAll("_", " ")}</td>
-              <td className="px-3 py-2">{nomeUnidade(unidades, u.unidade_id)}</td>
+              <td className="px-3 py-2">
+                {nomeUnidade(unidades, u.unidade_id)}
+                {/* Servidores anteriores ao Setor ficam sem vínculo: a tela
+                    sinaliza para regularização (design.md Risks). */}
+                {u.perfil === "servidor" && !u.setor_id && (
+                  <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
+                    sem setor
+                  </span>
+                )}
+              </td>
               <td className="px-3 py-2">
                 <div className="flex flex-wrap items-center gap-1">
                   {souAdministrador && u.perfil === "servidor" && (

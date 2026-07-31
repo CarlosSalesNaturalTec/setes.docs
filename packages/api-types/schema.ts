@@ -348,6 +348,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/internal/dev/reset-rate-limit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resetar Rate Limit */
+        post: operations["resetar_rate_limit_internal_dev_reset_rate_limit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/internal/tasks/email": {
         parameters: {
             query?: never;
@@ -810,6 +827,61 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/setores/{setor_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Editar Setor */
+        patch: operations["editar_setor_setores__setor_id__patch"];
+        trace?: never;
+    };
+    "/setores/{setor_id}/desativar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Desativar Setor
+         * @description Nunca exclui — só desativa (D3), e apenas se nenhum Servidor ativo
+         *     estiver vinculado.
+         */
+        post: operations["desativar_setor_setores__setor_id__desativar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/setores/{setor_id}/reativar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reativar Setor */
+        post: operations["reativar_setor_setores__setor_id__reativar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/setup": {
         parameters: {
             query?: never;
@@ -1010,9 +1082,35 @@ export interface paths {
         /**
          * Reativar Unidade
          * @description US 8.1 — reativa (idempotente); não repovoa `Usuario.unidade_id` dos
-         *     servidores desvinculados na desativação (revínculo permanece manual).
+         *     servidores desvinculados na desativação (revínculo permanece manual) e
+         *     **não** reativa os setores desativados em cascata: a reativação de cada
+         *     setor é ação administrativa explícita (D3).
          */
         post: operations["reativar_unidade_unidades__unidade_id__reativar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/unidades/{unidade_id}/setores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Setores
+         * @description Setores da unidade. Restrito ao Administrador junto com as demais rotas
+         *     de setor (task 2.4) — o único consumidor hoje é a administração; se a tela
+         *     de tramitação precisar da cascata para outros perfis, o alargamento entra
+         *     no change que a introduzir, com justificativa própria.
+         */
+        get: operations["listar_setores_unidades__unidade_id__setores_get"];
+        put?: never;
+        /** Cadastrar Setor */
+        post: operations["cadastrar_setor_unidades__unidade_id__setores_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1029,6 +1127,10 @@ export interface paths {
         /**
          * Listar Usuarios
          * @description Administrador lista todos; Gestor só lista usuários das unidades que gerencia.
+         *
+         *     `nome` filtra por fragmento, insensível a maiúsculas/minúsculas, no backend
+         *     (D5) — o filtro restringe o conjunto exibido, nunca amplia o escopo de
+         *     autorização já aplicado acima.
          */
         get: operations["listar_usuarios_usuarios_get"];
         put?: never;
@@ -1065,8 +1167,10 @@ export interface paths {
         head?: never;
         /**
          * Atualizar Meu Perfil
-         * @description US 1.5 — auto-serviço restrito ao próprio nome (task 2.2); e-mail e
-         *     perfil permanecem sob gestão exclusiva do Administrador.
+         * @description US 1.5 — auto-serviço do próprio nome (task 2.2) e dos dados funcionais
+         *     (setor, telefone, cargo, chefia direta); e-mail, perfil e unidade permanecem
+         *     sob gestão exclusiva do Administrador. O setor continua validado contra a
+         *     unidade do próprio usuário (D2).
          */
         patch: operations["atualizar_meu_perfil_usuarios_me_perfil_patch"];
         trace?: never;
@@ -1175,11 +1279,22 @@ export interface components {
         };
         /**
          * AtualizarMeuPerfilRequest
-         * @description US 1.5 — auto-serviço restrito ao próprio nome (task 2.1).
+         * @description US 1.5 — auto-serviço do próprio nome (task 2.1) e dos dados funcionais
+         *     de contato. `setor_id` é aceito porque Setor não é fronteira de permissão
+         *     (design.md Non-Goals) e continua validado contra a unidade do usuário (D2);
+         *     e-mail, perfil e unidade seguem sob gestão exclusiva do Administrador.
          */
         AtualizarMeuPerfilRequest: {
+            /** Cargo */
+            cargo?: string | null;
+            /** Chefia Direta */
+            chefia_direta?: string | null;
             /** Nome */
             nome: string;
+            /** Setor Id */
+            setor_id?: string | null;
+            /** Telefone */
+            telefone?: string | null;
         };
         /** AtualizarRoteiroRequest */
         AtualizarRoteiroRequest: {
@@ -1239,6 +1354,13 @@ export interface components {
              */
             tipo: string;
         };
+        /** CadastrarSetorRequest */
+        CadastrarSetorRequest: {
+            /** Nome */
+            nome: string;
+            /** Sigla */
+            sigla: string;
+        };
         /** CadastroUnidadeRequest */
         CadastroUnidadeRequest: {
             /** Gestor Responsavel Id */
@@ -1250,6 +1372,10 @@ export interface components {
         };
         /** CadastroUsuarioRequest */
         CadastroUsuarioRequest: {
+            /** Cargo */
+            cargo?: string | null;
+            /** Chefia Direta */
+            chefia_direta?: string | null;
             /** Email */
             email: string;
             /** Nome */
@@ -1259,6 +1385,10 @@ export interface components {
              * @enum {string}
              */
             perfil: "servidor" | "gestor" | "administrador";
+            /** Setor Id */
+            setor_id?: string | null;
+            /** Telefone */
+            telefone?: string | null;
             /** Unidade Id */
             unidade_id?: string | null;
         };
@@ -1450,6 +1580,13 @@ export interface components {
         DocumentosRemovidosListResponse: {
             /** Items */
             items?: components["schemas"]["DocumentoRemovidoResponse"][];
+        };
+        /** EditarSetorRequest */
+        EditarSetorRequest: {
+            /** Nome */
+            nome?: string | null;
+            /** Sigla */
+            sigla?: string | null;
         };
         /** EditarUnidadeRequest */
         EditarUnidadeRequest: {
@@ -1687,6 +1824,10 @@ export interface components {
             processos?: {
                 [key: string]: unknown;
             }[];
+            /** Setor Nome */
+            setor_nome?: string | null;
+            /** Unidade Nome */
+            unidade_nome?: string | null;
             usuario: components["schemas"]["UsuarioResponse"];
         };
         /** MovimentacaoPublicaResponse */
@@ -1957,6 +2098,22 @@ export interface components {
             /** Vigente */
             vigente: boolean;
         };
+        /**
+         * SetorResponse
+         * @description Setor — segundo nível da estrutura organizacional (D1).
+         */
+        SetorResponse: {
+            /** Ativo */
+            ativo: boolean;
+            /** Id */
+            id: string;
+            /** Nome */
+            nome: string;
+            /** Sigla */
+            sigla: string;
+            /** Unidade Id */
+            unidade_id: string;
+        };
         /** SetupAdministrador */
         SetupAdministrador: {
             /**
@@ -2078,6 +2235,8 @@ export interface components {
         };
         /** TransferirUnidadeRequest */
         TransferirUnidadeRequest: {
+            /** Setor Id */
+            setor_id?: string | null;
             /** Unidade Id */
             unidade_id: string;
         };
@@ -2108,6 +2267,10 @@ export interface components {
         };
         /** UsuarioResponse */
         UsuarioResponse: {
+            /** Cargo */
+            cargo?: string | null;
+            /** Chefia Direta */
+            chefia_direta?: string | null;
             /** Email */
             email: string;
             /** Id */
@@ -2118,8 +2281,12 @@ export interface components {
             perfil: string;
             /** Pode Auditar */
             pode_auditar: boolean;
+            /** Setor Id */
+            setor_id?: string | null;
             /** Status */
             status: string;
+            /** Telefone */
+            telefone?: string | null;
             /** Unidade Id */
             unidade_id: string | null;
         };
@@ -2712,6 +2879,24 @@ export interface operations {
         };
     };
     resetar_internal_dev_reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    resetar_rate_limit_internal_dev_reset_rate_limit_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -3577,6 +3762,109 @@ export interface operations {
             };
         };
     };
+    editar_setor_setores__setor_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                setor_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditarSetorRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    desativar_setor_setores__setor_id__desativar_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                setor_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reativar_setor_setores__setor_id__reativar_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                setor_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     inicializar_sistema_setup_post: {
         parameters: {
             query?: never;
@@ -4005,11 +4293,84 @@ export interface operations {
             };
         };
     };
+    listar_setores_unidades__unidade_id__setores_get: {
+        parameters: {
+            query?: {
+                apenas_ativos?: boolean;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                unidade_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetorResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cadastrar_setor_unidades__unidade_id__setores_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                unidade_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CadastrarSetorRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listar_usuarios_usuarios_get: {
         parameters: {
             query?: {
                 page?: number;
                 page_size?: number;
+                nome?: string | null;
             };
             header?: {
                 authorization?: string | null;

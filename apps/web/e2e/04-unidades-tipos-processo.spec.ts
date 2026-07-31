@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { ADMIN_ROOT } from "./fixtures";
+import { cadastrarUsuario } from "./helpers/admin";
 import { login } from "./helpers/auth";
 import { obterUltimoLink } from "./helpers/dev-inbox";
 
@@ -33,14 +34,8 @@ test("Administrador cadastra unidade/tipo de processo; Gestor recebe acesso nega
   await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
 
   // Administrador cadastra uma Gestora e ativa a conta (para o teste de acesso negado abaixo).
-  await page.goto("/admin/usuarios");
-  await page.getByLabel("Nome", { exact: true }).fill(GESTORA.nome);
-  await page.getByLabel("E-mail").fill(GESTORA.email);
-  await page.getByLabel("Perfil").selectOption("gestor");
-  await page.getByRole("button", { name: "Cadastrar usuário" }).click();
-  await expect(
-    page.getByText(`Usuário cadastrado. Um e-mail de primeiro acesso foi enviado para ${GESTORA.email}.`),
-  ).toBeVisible();
+  // Gestor não exige setor (D2) — a obrigatoriedade é exclusiva do Servidor.
+  await cadastrarUsuario(page, { nome: GESTORA.nome, email: GESTORA.email, perfil: "gestor" });
 
   const link = await obterUltimoLink(GESTORA.email);
   await page.goto(link);

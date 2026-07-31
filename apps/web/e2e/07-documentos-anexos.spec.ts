@@ -3,12 +3,15 @@ import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 
 import { ADMIN_ROOT } from "./fixtures";
+import { cadastrarSetor, cadastrarUsuario } from "./helpers/admin";
 import { login } from "./helpers/auth";
 import { obterUltimoLink } from "./helpers/dev-inbox";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PARECER_PDF = path.join(__dirname, "fixtures", "parecer.pdf");
 
+// Servidor exige setor da própria unidade (change setores-e-cadastro-usuario, D2).
+const SETOR_PADRAO = { nome: "Gabinete", sigla: "GAB" };
 const UNIDADE_DOCUMENTOS = { nome: "Setor de Documentos", sigla: "SEDOC" };
 const TIPO_PROCESSO = { nome: "Protocolo com Anexo" };
 const SERVIDOR_DOCUMENTOS = {
@@ -41,16 +44,13 @@ test("Servidor anexa, visualiza inline, baixa e remove um documento; remoção �
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
   await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
 
-  await page.goto("/admin/usuarios");
-  await page.getByLabel("Nome", { exact: true }).fill(SERVIDOR_DOCUMENTOS.nome);
-  await page.getByLabel("E-mail").fill(SERVIDOR_DOCUMENTOS.email);
-  await page.getByLabel("Unidade", { exact: true }).selectOption({ label: UNIDADE_DOCUMENTOS.nome });
-  await page.getByRole("button", { name: "Cadastrar usuário" }).click();
-  await expect(
-    page.getByText(
-      `Usuário cadastrado. Um e-mail de primeiro acesso foi enviado para ${SERVIDOR_DOCUMENTOS.email}.`,
-    ),
-  ).toBeVisible();
+  await cadastrarSetor(page, UNIDADE_DOCUMENTOS.nome, SETOR_PADRAO);
+  await cadastrarUsuario(page, {
+    nome: SERVIDOR_DOCUMENTOS.nome,
+    email: SERVIDOR_DOCUMENTOS.email,
+    unidadeNome: UNIDADE_DOCUMENTOS.nome,
+    setor: SETOR_PADRAO,
+  });
 
   const link = await obterUltimoLink(SERVIDOR_DOCUMENTOS.email);
   await page.goto(link);

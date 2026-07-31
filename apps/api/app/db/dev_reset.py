@@ -26,6 +26,7 @@ TABELAS_NEGOCIO = (
     "tipo_processo",
     "unidade_gestor",
     "usuario",
+    "setor",
     "unidade",
     "sistema_config",
 )

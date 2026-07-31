@@ -91,3 +91,28 @@ def test_reset_trunca_tabelas_e_reseeda_sistema_config(db):
 
     assert db.execute(text("SELECT count(*) FROM unidade")).scalar() == 0
     assert db.execute(text("SELECT inicializado FROM sistema_config WHERE id = 1")).scalar() is False
+
+
+def test_reset_rate_limit_retorna_404_quando_desabilitado(client):
+    """Sem a flag, o contador de rate limit (D6) não é zerável de fora."""
+    resp = client.post("/internal/dev/reset-rate-limit")
+    assert resp.status_code == 404
+
+
+def test_reset_rate_limit_libera_novas_tentativas_de_login(db):
+    """Com a flag, o contador zera e o 11º login volta a ser processado."""
+    settings = Settings(DEV_RATE_LIMIT_RESET=True)
+    main.app.dependency_overrides[get_settings] = lambda: settings
+    try:
+        with TestClient(main.app) as c:
+            credenciais = {"email": "inexistente@example.com", "senha": "SenhaQualquer1"}
+            # O limite é 10/min/IP: a 11ª tentativa é barrada com 429.
+            for _ in range(10):
+                assert c.post("/auth/login", json=credenciais).status_code == 401
+            assert c.post("/auth/login", json=credenciais).status_code == 429
+
+            assert c.post("/internal/dev/reset-rate-limit").status_code == 204
+
+            assert c.post("/auth/login", json=credenciais).status_code == 401
+    finally:
+        main.app.dependency_overrides.clear()

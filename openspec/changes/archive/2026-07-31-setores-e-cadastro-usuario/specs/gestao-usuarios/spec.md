@@ -49,7 +49,7 @@ O sistema SHALL registrar, no cadastro de usuário, os campos **telefone**, **ca
 ## MODIFIED Requirements
 
 ### Requirement: Cadastro de novo usuário pelo Administrador
-O sistema SHALL permitir ao Administrador cadastrar novos usuários informando nome, e-mail, perfil, unidade, **setor** (obrigatório para Servidor) e, opcionalmente, telefone, cargo e chefia direta. O cadastro SHALL ser apresentado em **modal**, acionado por um botão "Novo usuário" — não mais como formulário permanentemente renderizado no índice da tela. O índice de usuários SHALL exibir, no espaço antes ocupado pelo formulário, um **campo de filtro por nome**. Ver PRD US 8.1.
+O sistema SHALL permitir ao Administrador cadastrar novos usuários informando nome, e-mail, perfil, unidade, **setor** (obrigatório para Servidor) e, opcionalmente, telefone, cargo e chefia direta. O cadastro SHALL ser apresentado em **modal**, acionado por um botão "Novo usuário" — não mais como formulário permanentemente renderizado no índice da tela. O índice de usuários SHALL exibir, no espaço antes ocupado pelo formulário, um **campo de filtro por nome**. Ver PRD US 1.1 (cadastro de usuário pelo Administrador).
 
 #### Scenario: Cadastro por modal
 - **DADO** que estou autenticado como Administrador na tela de administração de usuários
@@ -67,7 +67,7 @@ O sistema SHALL permitir ao Administrador cadastrar novos usuários informando n
 - **ENTÃO** o campo de setor é limpo e passa a listar apenas os setores **ativos** da AJUR
 
 ### Requirement: Listagem de usuários pelo Administrador
-O sistema SHALL listar os usuários cadastrados ao Administrador e SHALL oferecer **filtro por nome** com busca parcial e insensível a maiúsculas/minúsculas, aplicado no **backend**. O filtro NÃO SHALL alterar o escopo de autorização — apenas restringe o conjunto exibido dentro do que o Administrador já pode ver. Ver PRD US 8.2.
+O sistema SHALL listar os usuários cadastrados ao Administrador e SHALL oferecer **filtro por nome** com busca parcial e insensível a maiúsculas/minúsculas, aplicado no **backend**. O filtro NÃO SHALL alterar o escopo de autorização — apenas restringe o conjunto exibido dentro do que o Administrador já pode ver. Ver PRD US 1.1 Cen.9.
 
 #### Scenario: Filtro por fragmento de nome
 - **DADO** que existem os usuários "Maria Silva", "Mariana Costa" e "João Souza"
