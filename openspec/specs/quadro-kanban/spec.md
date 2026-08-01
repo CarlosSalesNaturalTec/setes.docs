@@ -2,80 +2,85 @@
 
 ## Purpose
 
-Visualização Kanban por unidade (Servidor) e consolidada por unidades geridas (Gestor), com ordenação por prazo e filtro (US 2.3, 2.8).
+Quadro de processos pessoal (Servidor) e consolidado por unidades geridas (Gestor), com ordenação por prazo, filtros de busca (tipo/assunto/data) e exibição de arquivados (US 1.4, 2.3, 2.7, 2.8).
 
 ## Requirements
 
-### Requirement: Quadro Kanban da unidade (Servidor)
-O sistema SHALL exibir ao Servidor um quadro Kanban **de visualização** (não manipulável por drag-and-drop) com as colunas "Aberto", "Em Tramitação", "Concluído" e "Arquivado", contendo os processos **atualmente na sua unidade** e também os processos **cuja unidade de origem é a sua unidade** e que já tramitaram para outras unidades — estes em modo **somente leitura**, com card **acinzentado** (fundo cinza e opacidade reduzida), clicável para o detalhe. Processos **sigilosos** que estejam em outra unidade NÃO SHALL aparecer no acompanhamento por origem; o sigiloso na própria unidade atual continua exibido com o indicador 🔒, como hoje. Cada card SHALL exibir número, **tipo de processo**, assunto, **unidade atual por extenso** (nome completo, não sigla), **data de criação** ("Criado em dd/mm/aaaa hh:mm"), prazo e dias restantes, ordenados por prazo, e SHALL expor os atributos `sigiloso`, `somente_leitura` e `devolvido`. Ver PRD US 2.3, US 2.6 (Cen.3) e US 1.4 (revisada por este change).
+### Requirement: Quadro pessoal de processos (Servidor)
+O sistema SHALL exibir ao Servidor um quadro de visualização (não manipulável por drag-and-drop) com as colunas "Aberto", "Em Tramitação", "Concluído" e "Arquivado", contendo **exclusivamente os processos que lhe dizem respeito** — aqueles em que ele é o **responsável atual**, os que ele **criou** e aqueles pelos quais ele **já passou** (foi detentor em algum evento do histórico de tramitação). O quadro NÃO SHALL mais exibir os processos da unidade inteira.
 
-#### Scenario: Exibição do Kanban por colunas de status
-- **DADO** que estou autenticado como Servidor da unidade COFIN
+Um usuário que apenas **agiu** sobre o processo sem tê-lo detido — como um Gestor que reatribuiu — NÃO SHALL passar a vê-lo no quadro pessoal por esse motivo. Processos **sigilosos** que estejam fora da unidade atual do usuário NÃO SHALL aparecer, ainda que ele os tenha detido no passado. Cada card SHALL exibir número, tipo de processo, assunto, unidade atual por extenso, **servidor atualmente responsável**, data de criação, prazo e dias restantes, e SHALL expor os atributos `sigiloso`, `acao_requerida`, `somente_leitura` e `devolvido`. Ver PRD US 1.4 e US 2.3 (revisadas por este change).
+
+#### Scenario: Quadro contém processos criados, detidos e em acompanhamento
+- **DADO** que criei o processo P1, sou o responsável atual de P2, e já detive P3 antes de enviá-lo adiante
 - **QUANDO** acesso a tela de Processos
-- **ENTÃO** visualizo as colunas "Aberto", "Em Tramitação", "Concluído" e "Arquivado" com os cards dos processos da COFIN, cada card com número, tipo de processo, assunto, unidade atual por extenso, data de criação, prazo e dias restantes; os cards NÃO são arrastáveis — as transições ocorrem apenas por ações explícitas (PRD US 2.3 Cen.1)
+- **ENTÃO** P1, P2 e P3 aparecem no quadro, cada um na coluna correspondente ao seu status
 
-#### Scenario: Ordenação dos cards por prazo com destaque de vencidos
-- **DADO** que minha unidade possui múltiplos processos em uma mesma coluna
-- **QUANDO** visualizo o Kanban
-- **ENTÃO** os cards são ordenados por prazo (mais próximo do vencimento primeiro), e processos vencidos aparecem no topo com destaque visual: dias vencidos em vermelho com ícone de prazo, texto em negrito e barra vermelha de 4px na borda esquerda do card (PRD US 2.3 Cen.4)
-
-#### Scenario: Novo processo despachado aparece após atualização
-- **DADO** que um processo foi despachado para minha unidade por outra unidade
-- **QUANDO** eu aciono o botão "Atualizar" do Kanban ou navego para outra tela e retorno
-- **ENTÃO** o novo processo aparece na coluna "Aberto" da minha unidade (PRD US 2.3 Cen.2). **Nota de escopo**: o incremento do indicador de notificações citado no PRD US 2.3 Cen.2 depende de notificações internas (Épico 5) e não faz parte deste change.
-
-#### Scenario: Kanban vazio
-- **DADO** que estou autenticado como Servidor de uma unidade sem processos
+#### Scenario: Processo da própria unidade nunca tocado não aparece
+- **DADO** que sou Servidor da unidade COFIN e um colega da COFIN criou e tramita um processo que eu nunca detive nem criei
 - **QUANDO** acesso a tela de Processos
-- **ENTÃO** visualizo as colunas vazias com a mensagem "Nenhum processo encontrado nesta unidade" (PRD US 2.3 Cen.3)
+- **ENTÃO** esse processo NÃO aparece no meu quadro — o recorte é pessoal, não mais por unidade
 
-#### Scenario: Card de processo sigiloso com indicador
-- **DADO** que a minha unidade possui um processo marcado como sigiloso
-- **QUANDO** visualizo o Kanban da unidade
-- **ENTÃO** o card do processo sigiloso aparece normalmente na sua coluna de status, com o indicador visual de "Sigiloso" (ícone de cadeado 🔒); cards de processos não sigilosos não exibem esse indicador (PRD US 2.6 Cen.3)
+#### Scenario: Visão estreita não estreita a autorização
+- **DADO** que um processo da minha unidade não aparece no meu quadro porque nunca o toquei
+- **QUANDO** acesso o detalhe desse processo por URL direta ou pela busca interna
+- **ENTÃO** o acesso é **permitido** — a autorização continua sendo por unidade; apenas a composição do quadro foi estreitada
 
-#### Scenario: Processo despachado permanece visível como acompanhamento da origem
-- **DADO** que estou autenticado como Servidor da unidade COFIN e um processo criado na COFIN foi despachado para a AJUR
-- **QUANDO** visualizo o Kanban ou a Lista da tela de Processos
-- **ENTÃO** o processo aparece na coluna/linha correspondente ao seu status (ex.: "Em Tramitação") com o card acinzentado, `somente_leitura` verdadeiro e a unidade atual "Assessoria Jurídica" por extenso; o card permanece clicável e abre o detalhe em modo leitura
+#### Scenario: Gestor que apenas reatribuiu não carrega o processo no quadro pessoal
+- **DADO** que sou Gestor e reatribuí um processo do Servidor B para o Servidor C, sem nunca tê-lo detido
+- **QUANDO** acesso meu quadro
+- **ENTÃO** o processo aparece pelo meu escopo de **unidades geridas**, e não por participação pessoal — não sou tratado como detentor
 
-#### Scenario: Card somente leitura não expõe ações
-- **DADO** que um processo com origem na minha unidade está atualmente em outra unidade
-- **QUANDO** abro o seu detalhe a partir do card acinzentado
-- **ENTÃO** os controles "Despachar", "Devolver", alternar sigilo e anexar/remover documentos NÃO são exibidos, e qualquer tentativa direta dessas ações é rejeitada pelo backend com registro em log de segurança
+#### Scenario: Sigiloso em outra unidade some do quadro de ex-detentor — acesso negado
+- **DADO** que detive um processo, enviei-o para a AJUR e lá ele foi marcado como sigiloso
+- **QUANDO** acesso meu quadro ou tento abrir o detalhe por URL direta
+- **ENTÃO** o card NÃO aparece e o acesso direto é rejeitado com "Acesso restrito — solicite autorização ao Administrador", registrando a tentativa em log de segurança
 
-#### Scenario: Processo sigiloso em outra unidade não aparece no acompanhamento — acesso negado
-- **DADO** que um processo com origem na COFIN foi despachado para a AJUR e lá foi marcado como sigiloso
-- **QUANDO** o Servidor da COFIN visualiza o Kanban/Lista ou tenta acessar o detalhe por URL direta
-- **ENTÃO** o card NÃO aparece no acompanhamento por origem e o acesso direto é rejeitado com "Acesso restrito — solicite autorização ao Administrador", registrando a tentativa em log de segurança (PRD US 2.6)
-
-### Requirement: Quadro Kanban consolidado (Gestor)
-O sistema SHALL exibir ao Gestor um quadro Kanban consolidado com os processos de **todas as unidades que ele gerencia** — incluindo, em modo **somente leitura** (card acinzentado), os processos cuja **unidade de origem** é uma das geridas e que estejam atualmente em unidade não gerida, exceto sigilosos — com número, tipo de processo, assunto, **nome da unidade atual por extenso**, **data de criação**, prazo e dias restantes em cada card, e a possibilidade de filtrar por unidade, sem exibir processos de unidades que ele não gerencia nem originados nelas. Ver PRD US 2.8 e US 8.6b.
-
-#### Scenario: Kanban multi-unidade
-- **DADO** que estou autenticado como Gestor das unidades COFIN, AJUR e DIRAD
+#### Scenario: Quadro pessoal vazio
+- **DADO** que sou um Servidor recém-cadastrado, sem processos criados nem recebidos
 - **QUANDO** acesso a tela de Processos
-- **ENTÃO** visualizo um Kanban consolidado com colunas "Aberto", "Em Tramitação", "Concluído" e "Arquivado" contendo os cards das três unidades, cada card exibindo número, tipo de processo, assunto, unidade atual por extenso, data de criação, prazo e dias restantes (PRD US 2.8 Cen.1)
+- **ENTÃO** visualizo as colunas vazias com mensagem informando que não há processos relacionados a mim
 
-#### Scenario: Filtro por unidade no Kanban do Gestor
-- **DADO** que estou visualizando o Kanban consolidado com processos de três unidades
-- **QUANDO** seleciono uma unidade específica no filtro
-- **ENTÃO** o Kanban passa a exibir apenas os processos da unidade selecionada (PRD US 2.8 Cen.2)
+### Requirement: Distinção entre ação requerida e acompanhamento
+O sistema SHALL distinguir, no quadro e na lista, os processos que **exigem ação do usuário** — aqueles em que ele é o **responsável atual** (atributo `acao_requerida`) — dos processos que ele apenas **acompanha**, por tê-los criado ou detido, mas que estão sob responsabilidade de outro servidor. Cards com ação requerida SHALL receber destaque visual sólido; cards de acompanhamento SHALL ser apresentados de forma discreta e SHALL exibir o **nome do servidor** que detém o processo. Os atributos `acao_requerida`, `somente_leitura` e `devolvido` são independentes entre si e podem coexistir no mesmo card.
 
-#### Scenario: Kanban consolidado vazio
-- **DADO** que estou autenticado como Gestor de unidades sem processos
+#### Scenario: Processo sob minha responsabilidade é destacado
+- **DADO** que sou o servidor responsável atual por um processo
+- **QUANDO** visualizo o quadro
+- **ENTÃO** o card aparece com destaque sólido e `acao_requerida` verdadeiro, sinalizando que a próxima ação é minha
+
+#### Scenario: Processo enviado adiante vira acompanhamento
+- **DADO** que criei um processo e o enviei para a Servidora "Maria Silva"
+- **QUANDO** visualizo o quadro
+- **ENTÃO** o card continua presente, porém com apresentação discreta, `acao_requerida` falso, e exibindo "Maria Silva" como responsável atual
+
+#### Scenario: Processo devolvido a mim volta a exigir ação
+- **DADO** que enviei um processo e ele foi devolvido para mim
+- **QUANDO** o quadro é recarregado
+- **ENTÃO** o card volta a `acao_requerida` verdadeiro, com destaque sólido, exibindo também o destaque de devolução
+
+#### Scenario: Gestor vê a maior parte do quadro como acompanhamento
+- **DADO** que sou Gestor de unidades com muitos processos, nenhum atribuído pessoalmente a mim
+- **QUANDO** visualizo o quadro consolidado
+- **ENTÃO** todos os cards aparecem como acompanhamento, exibindo o servidor responsável de cada um; apenas processos atribuídos pessoalmente a mim teriam `acao_requerida` verdadeiro
+
+### Requirement: Quadro consolidado (Gestor)
+O sistema SHALL exibir ao Gestor um quadro consolidado com os processos de **todas as unidades que ele gerencia** — mantendo o escopo por unidade, **sem** o estreitamento pessoal aplicado ao Servidor — incluindo, em modo somente leitura, os processos cuja unidade de origem é uma das geridas e que estejam atualmente em unidade não gerida, exceto sigilosos. A regra vale igualmente para processos **arquivados**. Cada card SHALL exibir número, tipo de processo, assunto, unidade atual por extenso, servidor responsável, data de criação, prazo e dias restantes, com possibilidade de filtrar por unidade. Ver PRD US 2.8 e US 8.6b.
+
+#### Scenario: Gestor mantém a visão por unidades geridas
+- **DADO** que sou Gestor das unidades COFIN, AJUR e DIRAD
 - **QUANDO** acesso a tela de Processos
-- **ENTÃO** visualizo as colunas vazias com a mensagem "Nenhum processo encontrado nas unidades gerenciadas" (PRD US 2.8 Cen.3)
+- **ENTÃO** visualizo os processos das três unidades, independentemente de os ter criado ou detido — o estreitamento pessoal não se aplica ao meu perfil
 
-#### Scenario: Gestor acompanha processo originado em unidade gerida
-- **DADO** que estou autenticado como Gestor da COFIN e um processo criado na COFIN foi despachado para a DIRAD (unidade que não gerencio)
-- **QUANDO** visualizo o Kanban consolidado
-- **ENTÃO** o card do processo aparece acinzentado (`somente_leitura`), exibindo a DIRAD como unidade atual por extenso
+#### Scenario: Gestor visualiza arquivados das unidades geridas
+- **DADO** que sou Gestor e marco "Exibir Arquivados"
+- **QUANDO** o quadro é recarregado
+- **ENTÃO** os processos arquivados das unidades que gerencio passam a ser exibidos, com o mesmo escopo por unidade
 
 #### Scenario: Gestor não visualiza processos de unidade que não gerencia — acesso negado
-- **DADO** que estou autenticado como Gestor das unidades COFIN e AJUR
-- **QUANDO** o Kanban consolidado é montado ou tento filtrar/acessar processos da unidade DIRAD (que não gerencio e que não é origem de processos das minhas unidades)
-- **ENTÃO** o sistema não inclui nem retorna processos originados e localizados fora do meu escopo; uma tentativa de acesso direto é rejeitada com "Acesso negado — você não tem permissão para esta unidade" e registrada em log de segurança (PRD US 1.4 Cen.2 adaptado ao Gestor)
+- **DADO** que sou Gestor das unidades COFIN e AJUR
+- **QUANDO** o quadro é montado ou tento filtrar processos da unidade DIRAD, que não gerencio e que não é origem de processos das minhas unidades
+- **ENTÃO** o sistema não inclui nem retorna esses processos; uma tentativa de acesso direto é rejeitada com "Acesso negado — você não tem permissão para esta unidade" e registrada em log de segurança
 
 ### Requirement: Destaque de processo devolvido
 O sistema SHALL destacar, no Kanban e na Lista, os processos cujo **último evento do histórico de tramitação é uma devolução** e que estão **atualmente na unidade do usuário** (atributo `devolvido` do card): badge "↩ Devolvido" e borda esquerda âmbar de 4px no card/linha. O destaque SHALL cessar automaticamente quando um novo evento de tramitação for registrado (ex.: novo despacho) — derivação exclusiva do histórico imutável, sem estado adicional. Quando o processo devolvido também estiver vencido, a borda vermelha de vencido SHALL prevalecer, mantendo o badge "↩ Devolvido". Processos devolvidos à unidade são acionáveis normalmente (não são somente leitura). Ver PRD US 2.2b.
@@ -95,23 +100,64 @@ O sistema SHALL destacar, no Kanban e na Lista, os processos cujo **último even
 - **QUANDO** visualizo meu Kanban
 - **ENTÃO** o card aparece como acompanhamento somente leitura, sem o destaque "↩ Devolvido" — o destaque pertence à unidade que recebeu a devolução
 
-### Requirement: Filtro de exibição de concluídos e arquivados
-O sistema SHALL exibir no topo da tela de Processos um checkbox "Exibir concluídos e arquivados", **desmarcado por padrão**, válido para **todos os perfis** (Servidor, Gestor, Administrador) e nos dois modos de visualização (Kanban e Lista). Desmarcado, os processos com status "Concluído" e "Arquivado" NÃO SHALL ser retornados nem exibidos (colunas/linhas correspondentes vazias ou ocultas) e o contador do cabeçalho SHALL refletir apenas o total visível; marcado, os processos finalizados voltam a compor o quadro. A preferência SHALL ser persistida no navegador (localStorage) e reaplicada nas visitas seguintes. O filtro NÃO SHALL ampliar nem reduzir o escopo de autorização — apenas oculta/exibe status finais dentro do escopo já autorizado.
+### Requirement: Filtro de exibição de arquivados
+O sistema SHALL exibir no topo da tela de Processos um checkbox **"Exibir Arquivados"**, **desmarcado por padrão**, válido para todos os perfis e nos dois modos de visualização (Kanban e Lista). Processos com status **"Concluído" SHALL ser sempre exibidos**; processos "Arquivado" SHALL ser omitidos enquanto o checkbox estiver desmarcado. O contador do cabeçalho SHALL refletir apenas o conjunto visível. A preferência SHALL ser persistida no navegador. O filtro NÃO SHALL ampliar nem reduzir o escopo de autorização — apenas oculta ou exibe processos arquivados dentro do escopo já autorizado.
 
-#### Scenario: Padrão oculta concluídos e arquivados
+#### Scenario: Padrão oculta apenas arquivados
 - **DADO** que meu escopo possui processos em todos os status e nunca alterei o checkbox
 - **QUANDO** acesso a tela de Processos
-- **ENTÃO** o checkbox "Exibir concluídos e arquivados" aparece desmarcado, apenas os processos "Aberto" e "Em Tramitação" são exibidos e o contador reflete somente eles
+- **ENTÃO** o checkbox "Exibir Arquivados" aparece desmarcado, os processos "Aberto", "Em Tramitação" e **"Concluído"** são exibidos, os "Arquivado" são omitidos, e o contador reflete apenas os visíveis
 
-#### Scenario: Marcar o checkbox exibe os finalizados
+#### Scenario: Marcar o checkbox exibe os arquivados
 - **DADO** que estou na tela de Processos com o checkbox desmarcado
-- **QUANDO** marco "Exibir concluídos e arquivados"
-- **ENTÃO** os processos "Concluído" e "Arquivado" do meu escopo passam a ser exibidos nas suas colunas/linhas, o contador é atualizado e a preferência é lembrada na próxima visita à tela
+- **QUANDO** marco "Exibir Arquivados"
+- **ENTÃO** os processos arquivados do meu escopo passam a ser exibidos na sua coluna, o contador é atualizado e a preferência é lembrada na próxima visita
 
-#### Scenario: Checkbox não amplia o escopo de autorização — acesso negado
-- **DADO** que estou autenticado como Servidor da COFIN
-- **QUANDO** marco "Exibir concluídos e arquivados"
-- **ENTÃO** vejo apenas processos concluídos/arquivados do meu escopo (unidade atual ou origem COFIN, sem sigilosos fora da unidade); processos de outras unidades continuam inacessíveis e tentativas diretas seguem rejeitadas com registro em log de segurança
+#### Scenario: Checkbox não amplia o escopo — acesso negado
+- **DADO** que sou Servidor e meu quadro é pessoal
+- **QUANDO** marco "Exibir Arquivados"
+- **ENTÃO** vejo apenas os arquivados que criei, detive ou pelos quais passei; processos arquivados de colegas que nunca toquei continuam ausentes do quadro, e tentativas de acesso fora do escopo de unidade seguem rejeitadas com registro em log de segurança
+
+### Requirement: Filtros de busca no quadro de processos
+O sistema SHALL oferecer, no quadro de processos, filtros por **tipo de processo**, por **assunto** (busca de texto **parcial**, insensível a maiúsculas/minúsculas) e por **data** (período de criação, com data inicial e final). Os filtros SHALL ser combináveis entre si e com o checkbox "Exibir Arquivados", e SHALL ser aplicados **após** o recorte de escopo — nunca ampliando o conjunto de processos que o usuário pode ver.
+
+#### Scenario: Filtro por tipo de processo
+- **DADO** que meu quadro contém processos de tipos variados
+- **QUANDO** seleciono o tipo "Requerimento" no filtro
+- **ENTÃO** o quadro passa a exibir apenas os processos desse tipo, mantendo a distribuição por colunas de status
+
+#### Scenario: Filtro por assunto com texto parcial
+- **DADO** que meu quadro contém um processo com assunto "Solicitação de diária para capacitação"
+- **QUANDO** digito "diária" no filtro de assunto
+- **ENTÃO** esse processo é exibido, junto de outros cujo assunto contenha o mesmo fragmento, sem exigir correspondência exata
+
+#### Scenario: Filtro por período de criação
+- **DADO** que meu quadro contém processos criados ao longo de vários meses
+- **QUANDO** informo um período de data inicial e final
+- **ENTÃO** apenas os processos criados dentro do período são exibidos, incluindo integralmente os criados no dia final
+
+#### Scenario: Filtros combinados
+- **DADO** que apliquei simultaneamente tipo "Requerimento", assunto "diária" e um período de datas, com "Exibir Arquivados" marcado
+- **QUANDO** o quadro é montado
+- **ENTÃO** apenas os processos que satisfazem **todas** as condições são exibidos, arquivados incluídos
+
+#### Scenario: Filtro não amplia o escopo — acesso negado
+- **DADO** que sou Servidor com quadro pessoal
+- **QUANDO** aplico qualquer combinação de filtros
+- **ENTÃO** nenhum processo fora do meu conjunto pessoal é retornado, e uma requisição direta com filtros apontando para processos alheios não os revela
+
+### Requirement: Busca interna mantém o escopo por unidade
+O sistema SHALL manter a **busca interna** de processos com escopo por **unidade** (unidade atual ∪ unidade de origem, sem sigilosos fora da unidade atual), **sem** aplicar o estreitamento pessoal do quadro. A divergência entre o escopo do quadro e o escopo da busca é deliberada: o quadro é a área de trabalho pessoal do servidor, enquanto a busca é investigativa e serve para localizar processos da unidade sob tratamento de colegas. Como a autorização permanece por unidade, a busca não revela nada que o usuário não pudesse abrir por acesso direto. Ver PRD US 2.7.
+
+#### Scenario: Busca localiza processo de colega da mesma unidade
+- **DADO** que sou Servidor da COFIN e um colega da COFIN trata um processo que eu nunca toquei
+- **QUANDO** busco esse processo por número ou assunto
+- **ENTÃO** o processo é encontrado e posso abri-lo, ainda que ele não conste do meu quadro pessoal
+
+#### Scenario: Busca não alcança outra unidade — acesso negado
+- **DADO** que sou Servidor da COFIN
+- **QUANDO** busco um processo que está e sempre esteve na unidade DIRAD
+- **ENTÃO** a busca não o retorna, e uma tentativa de acesso direto é rejeitada com registro em log de segurança
 
 ### Requirement: Alternância entre visualização Kanban e Lista
 O sistema SHALL oferecer na tela de Processos um controle de alternância entre dois modos de visualização dos mesmos processos: **Kanban** (colunas por status) e **Lista** (linhas empilhadas). O modo Lista SHALL exibir cada processo como uma linha contendo número, tipo de processo, assunto, unidade atual por extenso, data de criação e o indicador de sigilo 🔒 quando aplicável, com a *pill* de status alinhada à direita. Ambos os modos SHALL respeitar exatamente o mesmo escopo de visibilidade por unidade/perfil do Kanban — a Lista NÃO SHALL ampliar o conjunto de processos visíveis. O modo padrão ao abrir a tela SHALL ser o Kanban.
