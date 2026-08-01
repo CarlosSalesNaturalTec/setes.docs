@@ -8,6 +8,7 @@ import { ApiError, api, type Schemas } from "@/lib/api";
 import { GraficoDistribuicao } from "./grafico-distribuicao";
 
 type Kpis = Schemas["DashboardKpisResponse"];
+type Contagens = Schemas["ContagensPorStatusResponse"];
 type Distribuicoes = Schemas["DistribuicoesResponse"];
 type Unidade = Schemas["UnidadeResponse"];
 type ProcessoAtivoItem = Schemas["ProcessoAtivoItem"];
@@ -21,6 +22,7 @@ type DrillDown =
 
 function DashboardConteudo() {
   const [kpis, setKpis] = useState<Kpis | null>(null);
+  const [contagens, setContagens] = useState<Contagens | null>(null);
   const [distribuicoes, setDistribuicoes] = useState<Distribuicoes | null>(null);
   const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [filtroUnidade, setFiltroUnidade] = useState("");
@@ -49,6 +51,21 @@ function DashboardConteudo() {
   useEffect(() => {
     void carregar();
   }, [carregar]);
+
+  const carregarContagens = useCallback(async () => {
+    try {
+      const resp = await api.obterDashboardContagens(
+        filtroUnidade ? { unidade_id: filtroUnidade } : undefined,
+      );
+      setContagens(resp);
+    } catch {
+      setContagens(null);
+    }
+  }, [filtroUnidade]);
+
+  useEffect(() => {
+    void carregarContagens();
+  }, [carregarContagens]);
 
   const carregarDistribuicoes = useCallback(async () => {
     try {
@@ -120,6 +137,31 @@ function DashboardConteudo() {
           ))}
         </select>
       </div>
+
+      {contagens && (
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
+          <div data-testid="contagem-total" className="rounded-card border border-navy-50 bg-superficie-card p-3 shadow-card">
+            <div className="text-xs text-gray-500">Total</div>
+            <div className="mt-1 text-xl font-semibold">{contagens.total}</div>
+          </div>
+          <div data-testid="contagem-abertos" className="rounded-card border border-navy-50 bg-superficie-card p-3 shadow-card">
+            <div className="text-xs text-gray-500">Abertos</div>
+            <div className="mt-1 text-xl font-semibold">{contagens.abertos}</div>
+          </div>
+          <div data-testid="contagem-em-tramitacao" className="rounded-card border border-navy-50 bg-superficie-card p-3 shadow-card">
+            <div className="text-xs text-gray-500">Em Tramitação</div>
+            <div className="mt-1 text-xl font-semibold">{contagens.em_tramitacao}</div>
+          </div>
+          <div data-testid="contagem-concluidos" className="rounded-card border border-navy-50 bg-superficie-card p-3 shadow-card">
+            <div className="text-xs text-gray-500">Concluídos</div>
+            <div className="mt-1 text-xl font-semibold">{contagens.concluidos}</div>
+          </div>
+          <div data-testid="contagem-arquivados" className="rounded-card border border-navy-50 bg-superficie-card p-3 shadow-card">
+            <div className="text-xs text-gray-500">Arquivados</div>
+            <div className="mt-1 text-xl font-semibold">{contagens.arquivados}</div>
+          </div>
+        </div>
+      )}
 
       {erro && <p className="mt-4 text-sm text-red-600">{erro}</p>}
       {carregando && <p className="mt-4 text-sm text-gray-500">Carregando…</p>}

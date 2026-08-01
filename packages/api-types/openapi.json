@@ -322,8 +322,12 @@
         "type": "object"
       },
       "CardProcessoResponse": {
-        "description": "Card enxuto do Kanban/busca (US 2.3, 2.7, 2.8).\n\n`somente_leitura` e `devolvido` são **contextuais ao usuário da\nrequisição** (change visibilidade-processos-origem, design D2/D3): não são\npropriedades intrínsecas do processo, variam conforme quem pediu o card.",
+        "description": "Card enxuto do Kanban/busca (US 2.3, 2.7, 2.8).\n\n`somente_leitura`, `devolvido` e `acao_requerida` são **contextuais ao\nusuário da requisição** (change visibilidade-processos-origem, design\nD2/D3; change kanban-por-servidor, design D2): não são propriedades\nintrínsecas do processo, variam conforme quem pediu o card.\n`servidor_atual_nome` também é exibido no card (design D2/D5 do change\nkanban-por-servidor) para identificar quem detém o processo quando ele\nestá em modo de acompanhamento.",
         "properties": {
+          "acao_requerida": {
+            "title": "Acao Requerida",
+            "type": "boolean"
+          },
           "assunto": {
             "title": "Assunto",
             "type": "string"
@@ -352,6 +356,10 @@
           "prazo_em": {
             "format": "date",
             "title": "Prazo Em",
+            "type": "string"
+          },
+          "servidor_atual_nome": {
+            "title": "Servidor Atual Nome",
             "type": "string"
           },
           "sigiloso": {
@@ -391,13 +399,15 @@
           "unidade_atual_id",
           "tipo_processo_nome",
           "unidade_atual_nome",
+          "servidor_atual_nome",
           "criado_em",
           "prazo_em",
           "dias_restantes",
           "vencido",
           "sigiloso",
           "somente_leitura",
-          "devolvido"
+          "devolvido",
+          "acao_requerida"
         ],
         "title": "CardProcessoResponse",
         "type": "object"
@@ -422,6 +432,40 @@
           "nao_lidas"
         ],
         "title": "ContadorNotificacoesResponse",
+        "type": "object"
+      },
+      "ContagensPorStatusResponse": {
+        "description": "Cards de contagem por status do dashboard (change kanban-por-servidor,\ndesign D8). `total` é a soma das quatro parcelas — calculado a partir de\numa única consulta `GROUP BY status`, nunca de consultas separadas.",
+        "properties": {
+          "abertos": {
+            "title": "Abertos",
+            "type": "integer"
+          },
+          "arquivados": {
+            "title": "Arquivados",
+            "type": "integer"
+          },
+          "concluidos": {
+            "title": "Concluidos",
+            "type": "integer"
+          },
+          "em_tramitacao": {
+            "title": "Em Tramitacao",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total",
+          "abertos",
+          "em_tramitacao",
+          "concluidos",
+          "arquivados"
+        ],
+        "title": "ContagensPorStatusResponse",
         "type": "object"
       },
       "CriarProcessoRequest": {
@@ -3455,6 +3499,73 @@
         ]
       }
     },
+    "/dashboard/contagens": {
+      "get": {
+        "description": "Cards de contagem por status do dashboard (design D8, change\nkanban-por-servidor) — Total, Abertos, Em Tramitação, Concluídos e\nArquivados, no escopo de unidades geridas (ou de uma unidade filtrada).",
+        "operationId": "obter_contagens_por_status_dashboard_contagens_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "unidade_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Unidade Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContagensPorStatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Obter Contagens Por Status",
+        "tags": [
+          "dashboard"
+        ]
+      }
+    },
     "/dashboard/distribuicoes": {
       "get": {
         "description": "US 6.2 — distribuição de processos ativos por unidade, por tipo e por usuário.",
@@ -3741,6 +3852,20 @@
         "summary": "Health",
         "tags": [
           "infra"
+        ]
+      }
+    },
+    "/internal/dev/arquivar-vencidos": {
+      "post": {
+        "operationId": "forcar_arquivamento_internal_dev_arquivar_vencidos_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Forcar Arquivamento",
+        "tags": [
+          "dev"
         ]
       }
     },
@@ -4293,7 +4418,7 @@
     },
     "/processos": {
       "get": {
-        "description": "US 2.3/2.8 — Kanban da unidade (Servidor) ou consolidado (Gestor).\n\nEscopo ampliado por unidade de origem, somente leitura (design D1/D2 do\nchange visibilidade-processos-origem); `incluir_finalizados` (D4) omite\nConcluído/Arquivado por padrão.",
+        "description": "US 2.3/2.8 — Kanban pessoal do Servidor ou consolidado do Gestor.\n\nEscopo pessoal para o Servidor, por unidade (atual ∪ origem) para Gestor e\nAdministrador (change kanban-por-servidor, design D1). `incluir_arquivados`\n(D4) omite apenas Arquivado por padrão — Concluído é sempre exibido.\nFiltros de tipo/assunto/data (D5) combináveis, aplicados após o escopo.",
         "operationId": "listar_kanban_processos_get",
         "parameters": [
           {
@@ -4315,12 +4440,79 @@
           },
           {
             "in": "query",
-            "name": "incluir_finalizados",
+            "name": "incluir_arquivados",
             "required": false,
             "schema": {
               "default": false,
-              "title": "Incluir Finalizados",
+              "title": "Incluir Arquivados",
               "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tipo_processo_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tipo Processo Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "assunto",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Assunto"
+            }
+          },
+          {
+            "in": "query",
+            "name": "data_inicial",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Data Inicial"
+            }
+          },
+          {
+            "in": "query",
+            "name": "data_final",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Data Final"
             }
           },
           {

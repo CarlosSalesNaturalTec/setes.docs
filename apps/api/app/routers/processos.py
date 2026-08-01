@@ -184,21 +184,30 @@ def listar_kanban(
     usuario: Annotated[Usuario, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
     filtro_unidade: uuid.UUID | None = Query(default=None),
-    incluir_finalizados: bool = Query(default=False),
+    incluir_arquivados: bool = Query(default=False),
+    tipo_processo_id: uuid.UUID | None = Query(default=None),
+    assunto: str | None = Query(default=None),
+    data_inicial: date | None = Query(default=None),
+    data_final: date | None = Query(default=None),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=50, ge=1, le=200),
 ) -> KanbanResponse:
-    """US 2.3/2.8 — Kanban da unidade (Servidor) ou consolidado (Gestor).
+    """US 2.3/2.8 — Kanban pessoal do Servidor ou consolidado do Gestor.
 
-    Escopo ampliado por unidade de origem, somente leitura (design D1/D2 do
-    change visibilidade-processos-origem); `incluir_finalizados` (D4) omite
-    Concluído/Arquivado por padrão.
+    Escopo pessoal para o Servidor, por unidade (atual ∪ origem) para Gestor e
+    Administrador (change kanban-por-servidor, design D1). `incluir_arquivados`
+    (D4) omite apenas Arquivado por padrão — Concluído é sempre exibido.
+    Filtros de tipo/assunto/data (D5) combináveis, aplicados após o escopo.
     """
     itens, total = processo_consulta.listar_kanban(
         db,
         usuario=usuario,
         filtro_unidade=filtro_unidade,
-        incluir_finalizados=incluir_finalizados,
+        incluir_arquivados=incluir_arquivados,
+        tipo_processo_id=tipo_processo_id,
+        assunto=assunto,
+        data_inicial=data_inicial,
+        data_final=data_final,
         page=page,
         page_size=page_size,
     )
@@ -210,6 +219,7 @@ def listar_kanban(
             hoje=hoje,
             somente_leitura=atributos[p.id][0],
             devolvido=atributos[p.id][1],
+            acao_requerida=atributos[p.id][2],
         )
         for p in itens
     ]
@@ -251,6 +261,7 @@ def buscar_processos(
             hoje=hoje,
             somente_leitura=atributos[p.id][0],
             devolvido=atributos[p.id][1],
+            acao_requerida=atributos[p.id][2],
         )
         for p in itens
     ]

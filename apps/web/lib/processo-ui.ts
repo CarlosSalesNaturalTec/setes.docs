@@ -6,10 +6,13 @@ import type { Schemas } from "@/lib/api";
 
 export type StatusProcesso = "aberto" | "em_tramitacao" | "concluido" | "arquivado";
 
-// Change visibilidade-processos-origem (design D4) — preferência do checkbox
-// "Exibir concluídos e arquivados", desmarcado por padrão, persistida por
-// navegador (não por usuário), mesmo padrão da chave do modo Kanban/Lista.
-export const CHAVE_EXIBIR_FINALIZADOS = "setes:processos:exibir-finalizados";
+// Change kanban-por-servidor (design D4) — preferência do checkbox "Exibir
+// Arquivados", desmarcado por padrão, persistida por navegador (não por
+// usuário), mesmo padrão da chave do modo Kanban/Lista. Substitui a antiga
+// "Exibir concluídos e arquivados": Concluído passou a ser sempre exibido,
+// então a chave é nova — uma preferência salva com a semântica anterior nunca
+// é reinterpretada com a nova.
+export const CHAVE_EXIBIR_ARQUIVADOS = "setes:processos:exibir-arquivados";
 
 // Mapeamento status→cor centralizado (D3): alimenta tanto o cabeçalho de
 // coluna do Kanban quanto a pill de status da Lista, a partir dos tokens

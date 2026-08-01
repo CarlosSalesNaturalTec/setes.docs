@@ -99,9 +99,13 @@ class ProcessoResponse(BaseModel):
 class CardProcessoResponse(BaseModel):
     """Card enxuto do Kanban/busca (US 2.3, 2.7, 2.8).
 
-    `somente_leitura` e `devolvido` são **contextuais ao usuário da
-    requisição** (change visibilidade-processos-origem, design D2/D3): não são
-    propriedades intrínsecas do processo, variam conforme quem pediu o card.
+    `somente_leitura`, `devolvido` e `acao_requerida` são **contextuais ao
+    usuário da requisição** (change visibilidade-processos-origem, design
+    D2/D3; change kanban-por-servidor, design D2): não são propriedades
+    intrínsecas do processo, variam conforme quem pediu o card.
+    `servidor_atual_nome` também é exibido no card (design D2/D5 do change
+    kanban-por-servidor) para identificar quem detém o processo quando ele
+    está em modo de acompanhamento.
     """
 
     id: str
@@ -111,6 +115,7 @@ class CardProcessoResponse(BaseModel):
     unidade_atual_id: str
     tipo_processo_nome: str
     unidade_atual_nome: str
+    servidor_atual_nome: str
     criado_em: datetime
     prazo_em: date
     dias_restantes: int
@@ -118,10 +123,17 @@ class CardProcessoResponse(BaseModel):
     sigiloso: bool
     somente_leitura: bool
     devolvido: bool
+    acao_requerida: bool
 
     @classmethod
     def de(
-        cls, processo, *, hoje: date, somente_leitura: bool = False, devolvido: bool = False
+        cls,
+        processo,
+        *,
+        hoje: date,
+        somente_leitura: bool = False,
+        devolvido: bool = False,
+        acao_requerida: bool = False,
     ) -> "CardProcessoResponse":
         dias = (processo.prazo_em - hoje).days
         return cls(
@@ -132,6 +144,7 @@ class CardProcessoResponse(BaseModel):
             unidade_atual_id=str(processo.unidade_atual_id),
             tipo_processo_nome=processo.tipo_processo.nome,
             unidade_atual_nome=processo.unidade_atual.nome,
+            servidor_atual_nome=processo.servidor_atual.nome,
             criado_em=processo.criado_em,
             prazo_em=processo.prazo_em,
             dias_restantes=dias,
@@ -139,6 +152,7 @@ class CardProcessoResponse(BaseModel):
             sigiloso=processo.sigiloso,
             somente_leitura=somente_leitura,
             devolvido=devolvido,
+            acao_requerida=acao_requerida,
         )
 
 

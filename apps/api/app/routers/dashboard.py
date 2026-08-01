@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from app.db.models import PerfilUsuario, Usuario
 from app.db.session import get_db
 from app.schemas.dashboard import (
+    ContagensPorStatusResponse,
     DashboardKpisResponse,
     DistribuicaoItem,
     DistribuicoesResponse,
@@ -89,6 +90,20 @@ def obter_kpis(
         ],
         prazos_em_risco=[PrazoRiscoItem.de(p, hoje=hoje) for p in em_risco],
     )
+
+
+@router.get("/contagens", response_model=ContagensPorStatusResponse)
+def obter_contagens_por_status(
+    request: Request,
+    gestor: Annotated[Usuario, Depends(_require_gestor)],
+    db: Annotated[Session, Depends(get_db)],
+    unidade_id: uuid.UUID | None = Query(default=None),
+) -> ContagensPorStatusResponse:
+    """Cards de contagem por status do dashboard (design D8, change
+    kanban-por-servidor) — Total, Abertos, Em Tramitação, Concluídos e
+    Arquivados, no escopo de unidades geridas (ou de uma unidade filtrada)."""
+    unidades = _resolver_escopo_ou_negar(db, gestor=gestor, unidade_id=unidade_id, request=request)
+    return ContagensPorStatusResponse(**dashboard_service.contagens_por_status(db, unidades))
 
 
 @router.get("/processos-ativos", response_model=ProcessosAtivosResponse)

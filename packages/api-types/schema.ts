@@ -217,6 +217,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/dashboard/contagens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Obter Contagens Por Status
+         * @description Cards de contagem por status do dashboard (design D8, change
+         *     kanban-por-servidor) — Total, Abertos, Em Tramitação, Concluídos e
+         *     Arquivados, no escopo de unidades geridas (ou de uma unidade filtrada).
+         */
+        get: operations["obter_contagens_por_status_dashboard_contagens_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/dashboard/distribuicoes": {
         parameters: {
             query?: never;
@@ -308,6 +330,23 @@ export interface paths {
         get: operations["health_health_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/internal/dev/arquivar-vencidos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Forcar Arquivamento */
+        post: operations["forcar_arquivamento_internal_dev_arquivar_vencidos_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -538,11 +577,12 @@ export interface paths {
         };
         /**
          * Listar Kanban
-         * @description US 2.3/2.8 — Kanban da unidade (Servidor) ou consolidado (Gestor).
+         * @description US 2.3/2.8 — Kanban pessoal do Servidor ou consolidado do Gestor.
          *
-         *     Escopo ampliado por unidade de origem, somente leitura (design D1/D2 do
-         *     change visibilidade-processos-origem); `incluir_finalizados` (D4) omite
-         *     Concluído/Arquivado por padrão.
+         *     Escopo pessoal para o Servidor, por unidade (atual ∪ origem) para Gestor e
+         *     Administrador (change kanban-por-servidor, design D1). `incluir_arquivados`
+         *     (D4) omite apenas Arquivado por padrão — Concluído é sempre exibido.
+         *     Filtros de tipo/assunto/data (D5) combináveis, aplicados após o escopo.
          */
         get: operations["listar_kanban_processos_get"];
         put?: never;
@@ -1432,11 +1472,17 @@ export interface components {
          * CardProcessoResponse
          * @description Card enxuto do Kanban/busca (US 2.3, 2.7, 2.8).
          *
-         *     `somente_leitura` e `devolvido` são **contextuais ao usuário da
-         *     requisição** (change visibilidade-processos-origem, design D2/D3): não são
-         *     propriedades intrínsecas do processo, variam conforme quem pediu o card.
+         *     `somente_leitura`, `devolvido` e `acao_requerida` são **contextuais ao
+         *     usuário da requisição** (change visibilidade-processos-origem, design
+         *     D2/D3; change kanban-por-servidor, design D2): não são propriedades
+         *     intrínsecas do processo, variam conforme quem pediu o card.
+         *     `servidor_atual_nome` também é exibido no card (design D2/D5 do change
+         *     kanban-por-servidor) para identificar quem detém o processo quando ele
+         *     está em modo de acompanhamento.
          */
         CardProcessoResponse: {
+            /** Acao Requerida */
+            acao_requerida: boolean;
             /** Assunto */
             assunto: string;
             /**
@@ -1457,6 +1503,8 @@ export interface components {
              * Format: date
              */
             prazo_em: string;
+            /** Servidor Atual Nome */
+            servidor_atual_nome: string;
             /** Sigiloso */
             sigiloso: boolean;
             /** Somente Leitura */
@@ -1485,6 +1533,24 @@ export interface components {
              * @example 3
              */
             nao_lidas: number;
+        };
+        /**
+         * ContagensPorStatusResponse
+         * @description Cards de contagem por status do dashboard (change kanban-por-servidor,
+         *     design D8). `total` é a soma das quatro parcelas — calculado a partir de
+         *     uma única consulta `GROUP BY status`, nunca de consultas separadas.
+         */
+        ContagensPorStatusResponse: {
+            /** Abertos */
+            abertos: number;
+            /** Arquivados */
+            arquivados: number;
+            /** Concluidos */
+            concluidos: number;
+            /** Em Tramitacao */
+            em_tramitacao: number;
+            /** Total */
+            total: number;
         };
         /** CriarProcessoRequest */
         CriarProcessoRequest: {
@@ -2766,6 +2832,39 @@ export interface operations {
             };
         };
     };
+    obter_contagens_por_status_dashboard_contagens_get: {
+        parameters: {
+            query?: {
+                unidade_id?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContagensPorStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     obter_distribuicoes_dashboard_distribuicoes_get: {
         parameters: {
             query?: {
@@ -2915,6 +3014,24 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HealthResponse"];
                 };
+            };
+        };
+    };
+    forcar_arquivamento_internal_dev_arquivar_vencidos_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -3253,7 +3370,11 @@ export interface operations {
         parameters: {
             query?: {
                 filtro_unidade?: string | null;
-                incluir_finalizados?: boolean;
+                incluir_arquivados?: boolean;
+                tipo_processo_id?: string | null;
+                assunto?: string | null;
+                data_inicial?: string | null;
+                data_final?: string | null;
                 page?: number;
                 page_size?: number;
             };
