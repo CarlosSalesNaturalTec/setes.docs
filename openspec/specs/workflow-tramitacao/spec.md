@@ -2,84 +2,162 @@
 
 ## Purpose
 
-Máquina de estados do processo (Aberto → Em Tramitação → Concluído → Arquivado) e as ações que a movem — despacho e devolução — com histórico imutável de eventos (US 2.2, 2.2b, 2.4).
+Máquina de estados do processo (Aberto → Em Tramitação → Concluído → Arquivado) e as ações explícitas que a movem — Envio, Devolução, Reatribuição e Conclusão — com destino sempre escolhido pelo servidor (nunca por roteiro) e histórico imutável de eventos (US 2.2, 2.2b, 2.4).
 
 ## Requirements
 
 ### Requirement: Máquina de estados do processo
-O sistema SHALL modelar o status do processo como uma máquina de estados explícita — `Aberto → Em Tramitação → Concluído → Arquivado` — cujas transições ocorrem **exclusivamente por ação explícita** (Despachar, Concluir) ou pela rotina automática de arquivamento, nunca por campo de texto livre nem por manipulação direta (drag-and-drop) no Kanban. A transição `Concluído → Arquivado` é realizada **apenas** pela rotina automática de arquivamento (capability `arquivamento-automatico`), nunca por ação de usuário. Ver PRD RF 10, US 2.3 e US 2.5.
+O sistema SHALL modelar o status do processo como máquina de estados explícita com os estados "Aberto", "Em Tramitação", "Concluído" e "Arquivado", nunca como campo de texto livre. As transições permitidas SHALL ser exatamente: `Aberto → Em Tramitação` (Envio), `Aberto → Concluído` e `Em Tramitação → Concluído` (ação explícita de conclusão), `Em Tramitação → Em Tramitação` (Envio ou Devolução) e `Concluído → Arquivado` (exclusivamente pela rotina automática de arquivamento, nunca por ação de usuário). Qualquer transição fora dessa tabela SHALL ser rejeitada. A **Reatribuição** é um evento **ortogonal ao status**: registra no histórico o status corrente como resultante e NÃO SHALL provocar transição alguma. Ver PRD Épico 2.
 
-#### Scenario: Transições válidas por ação explícita
-- **DADO** um processo com status "Aberto"
-- **QUANDO** o Servidor aciona "Despachar" para a próxima unidade do roteiro
-- **ENTÃO** o status transita para "Em Tramitação"; despachos subsequentes o mantêm em "Em Tramitação" até a última unidade, quando a ação de conclusão o transita para "Concluído"
+#### Scenario: Transição inválida é rejeitada
+- **DADO** que um processo está no status "Arquivado"
+- **QUANDO** qualquer ação tenta movimentá-lo para outro status
+- **ENTÃO** o sistema rejeita a operação por transição inválida e o status permanece "Arquivado"
 
-#### Scenario: Transição Concluído → Arquivado apenas pela rotina automática
-- **DADO** um processo com status "Concluído" cujo prazo de arquivamento já expirou
-- **QUANDO** a rotina automática de arquivamento é executada
-- **ENTÃO** o status transita para "Arquivado" e um evento imutável de arquivamento é registrado no histórico; essa transição não é acionável por nenhuma ação de usuário
+#### Scenario: Reatribuição não altera o status
+- **DADO** que um processo está no status "Aberto", ainda atribuído ao seu criador
+- **QUANDO** ele é reatribuído para outro servidor da mesma unidade
+- **ENTÃO** o processo permanece no status "Aberto", o evento de reatribuição é gravado no histórico com o status corrente como resultante, e nenhuma validação de transição de estado é acionada
+
+#### Scenario: Arquivamento continua exclusivo da rotina automática
+- **DADO** que um processo está "Concluído"
+- **QUANDO** um usuário de qualquer perfil tenta arquivá-lo por ação direta
+- **ENTÃO** a operação é rejeitada — apenas a rotina automática de arquivamento realiza a transição `Concluído → Arquivado`
 
 #### Scenario: Transição de status inexistente por caminho não explícito — rejeitada
 - **DADO** um processo em qualquer status
-- **QUANDO** há tentativa de alterar o status por um meio que não seja uma ação explícita prevista (Despachar/Concluir) ou a rotina automática de arquivamento
+- **QUANDO** há tentativa de alterar o status por um meio que não seja uma ação explícita prevista (Envio, Devolução, Conclusão) ou a rotina automática de arquivamento
 - **ENTÃO** o sistema rejeita a alteração, pois o status é uma máquina de estados e não um campo editável livremente
 
-### Requirement: Despacho para a próxima unidade do roteiro
-O sistema SHALL permitir que o Servidor da unidade atual despache o processo para a próxima unidade do roteiro-snapshot, alterando o status para "Em Tramitação" e registrando o evento no histórico imutável; na última unidade do roteiro, a ação SHALL solicitar confirmação de conclusão e, se confirmada, alterar o status para "Concluído". Ver PRD US 2.2.
+### Requirement: Envio de processo com destino explícito
+O sistema SHALL permitir ao servidor responsável **enviar** o processo escolhendo explicitamente a **unidade**, o **setor** e o **servidor** de destino, acompanhados de uma **mensagem**. O setor escolhido SHALL pertencer à unidade escolhida, e o servidor SHALL pertencer ao setor escolhido e estar **ativo**. O servidor de destino SHALL ser diferente do servidor atualmente responsável — não é permitido enviar um processo para si mesmo. O envio SHALL transicionar o processo para "Em Tramitação", transferir a responsabilidade ao servidor de destino e gravar o evento correspondente no histórico imutável. O prazo do processo NÃO SHALL ser alterado pelo envio.
 
-#### Scenario: Despacho para a próxima unidade do roteiro
-- **DADO** que um processo do tipo "Licitação" está na unidade COFIN com status "Aberto" e seu roteiro define COFIN → AJUR → DIRAD
-- **QUANDO** eu, Servidor da COFIN, aciono "Despachar"
-- **ENTÃO** o sistema move o processo para a unidade AJUR, altera o status para "Em Tramitação" e registra data/hora e responsável no histórico (PRD US 2.2 Cen.1)
+#### Scenario: Envio com destino válido
+- **DADO** que sou o servidor responsável por um processo "Aberto" na unidade COFIN
+- **QUANDO** envio o processo para o setor "Análise" da unidade AJUR, servidor "Maria Silva", com a mensagem "Segue para parecer jurídico"
+- **ENTÃO** o processo passa a "Em Tramitação", Maria Silva passa a ser a responsável, a unidade e o setor atuais passam a ser AJUR/Análise, o evento é gravado no histórico com a mensagem, e o prazo permanece inalterado
 
-#### Scenario: Processo na última unidade do roteiro
-- **DADO** que um processo está na última unidade prevista no roteiro
-- **QUANDO** o Servidor aciona "Despachar"
-- **ENTÃO** o sistema exibe "Este é o destino final do roteiro. Deseja concluir o processo?" e, ao confirmar, altera o status para "Concluído" (PRD US 2.2 Cen.2)
+#### Scenario: Envio para si mesmo é rejeitado
+- **DADO** que sou o servidor responsável por um processo
+- **QUANDO** tento enviá-lo escolhendo a mim mesmo como servidor de destino
+- **ENTÃO** o sistema rejeita a operação informando que o destino deve ser um servidor diferente do responsável atual, e nada é alterado
 
-#### Scenario: Cancelamento da conclusão na última unidade
-- **DADO** que um processo está na última unidade do roteiro
-- **QUANDO** o Servidor aciona "Despachar" e, na confirmação, clica em "Cancelar"
-- **ENTÃO** o processo permanece na unidade atual com o mesmo status, sem alteração no histórico (PRD US 2.2 Cen.3)
+#### Scenario: Setor fora da unidade escolhida é rejeitado
+- **DADO** que estou preenchendo o destino de um envio com a unidade AJUR
+- **QUANDO** informo um setor que pertence à unidade COFIN
+- **ENTÃO** o sistema rejeita a operação como dado inconsistente e nenhum evento é gravado
 
-#### Scenario: Roteiro com unidade única
-- **DADO** um processo de tipo cujo roteiro tem apenas uma unidade, criado nessa mesma unidade (status "Aberto")
-- **QUANDO** o Servidor aciona "Despachar"
-- **ENTÃO** o sistema exibe "Esta é a unidade de origem e destino final do roteiro. Deseja concluir o processo?" e, ao confirmar, altera o status para "Concluído" (PRD US 2.2 Cen.4)
+#### Scenario: Servidor inativo não é destino válido
+- **DADO** que o servidor "Carlos" do setor de destino está inativo
+- **QUANDO** monto o destino do envio
+- **ENTÃO** Carlos não aparece na lista de servidores selecionáveis, e uma tentativa direta de enviá-lo o processo é rejeitada
 
-#### Scenario: Servidor de outra unidade tenta despachar — acesso negado
-- **DADO** que um processo está na unidade AJUR e estou autenticado como Servidor da unidade COFIN
-- **QUANDO** tento despachar esse processo
-- **ENTÃO** o sistema rejeita a operação exibindo "Acesso negado — você não tem permissão para esta unidade" e registra a tentativa em log de segurança (PRD US 1.4 Cen.2)
+#### Scenario: Envio por quem não é o responsável atual — acesso negado
+- **DADO** que um processo está sob responsabilidade do Servidor B e eu sou o Servidor D da mesma unidade
+- **QUANDO** tento enviar esse processo
+- **ENTÃO** o sistema rejeita a operação com acesso negado, nada é alterado, e a tentativa é registrada em log de segurança
 
-### Requirement: Devolução para a unidade anterior
-O sistema SHALL permitir que o Servidor da unidade atual devolva o processo para a unidade imediatamente anterior do roteiro, mediante motivo predefinido obrigatório e justificativa opcional, registrando a devolução no histórico imutável; a devolução SHALL ser bloqueada quando o processo estiver na primeira unidade do roteiro. Ver PRD US 2.2b.
+### Requirement: Devolução ao remetente anterior
+O sistema SHALL permitir ao servidor responsável **devolver** o processo, retornando-o ao **remetente anterior** — o servidor que lhe encaminhou o processo, resolvido automaticamente a partir do último evento de envio ou reatribuição do histórico. O destino NÃO SHALL ser escolhido pelo usuário nem aceito da requisição. A devolução SHALL exigir **motivo** e **justificativa**, transicionar o processo para "Em Tramitação" e gravar o evento no histórico. Quando não existir remetente anterior — processo ainda com seu criador, nunca tramitado — a devolução SHALL ser bloqueada. A devolução é a ação apropriada quando a **unidade** de destino estava errada. O prazo NÃO SHALL ser alterado. Ver PRD US 2.2b.
 
-#### Scenario: Devolução para a unidade anterior
-- **DADO** que um processo está na minha unidade e veio da unidade COFIN
-- **QUANDO** aciono "Devolver", seleciono um motivo predefinido ("Documentação insuficiente", "Correção de dados" ou "Diligência complementar") e, opcionalmente, adiciono justificativa
-- **ENTÃO** o processo retorna para a unidade COFIN com status "Em Tramitação" e a devolução é registrada no histórico com data/hora, responsável, motivo e justificativa (PRD US 2.2b Cen.1)
+#### Scenario: Devolução retorna ao remetente correto
+- **DADO** que o Servidor A me enviou um processo e eu sou o responsável atual
+- **QUANDO** devolvo o processo informando motivo "Documentação insuficiente" e uma justificativa
+- **ENTÃO** o processo retorna ao Servidor A, à unidade e ao setor dele, o evento de devolução é gravado com motivo e justificativa, e o prazo permanece inalterado
 
-#### Scenario: Tentativa de devolução na primeira unidade do roteiro
-- **DADO** que um processo está na primeira unidade do roteiro
-- **QUANDO** o Servidor tenta acionar "Devolver"
-- **ENTÃO** o sistema exibe "Não é possível devolver um processo que está na unidade de origem do roteiro" e a ação não é concluída (PRD US 2.2b Cen.2)
+#### Scenario: Destino da devolução não é informado pelo usuário
+- **DADO** que estou na tela de devolução de um processo
+- **QUANDO** visualizo os campos disponíveis
+- **ENTÃO** o destino é apresentado apenas como leitura ("devolver para <servidor>"), sem campo editável; uma requisição que tente informar destino tem o valor ignorado ou rejeitado
 
-#### Scenario: Devolução sem seleção de motivo
+#### Scenario: Devolução sem remetente anterior é bloqueada
+- **DADO** que criei um processo e ele nunca foi enviado a ninguém — ainda estou como responsável
+- **QUANDO** tento devolvê-lo
+- **ENTÃO** o sistema bloqueia a operação informando que não há remetente anterior para o qual devolver, e nada é alterado
+
+#### Scenario: Devolução sem motivo é rejeitada
 - **DADO** que estou devolvendo um processo
-- **QUANDO** tento confirmar a devolução sem selecionar um motivo
-- **ENTÃO** o sistema exibe "Selecione um motivo para a devolução" e não conclui a ação (PRD US 2.2b Cen.3)
+- **QUANDO** submeto sem selecionar um motivo
+- **ENTÃO** o sistema rejeita a operação com "Selecione um motivo para a devolução" e nenhum evento é gravado
+
+### Requirement: Reatribuição de processo por atribuição indevida
+O sistema SHALL permitir **reatribuir** um processo quando um servidor foi designado indevidamente. A reatribuição SHALL permanecer na **mesma unidade** em que o processo se encontra — a unidade de destino é fixa e não editável — podendo trocar de **setor** dentro dela, e SHALL obrigatoriamente designar um **servidor diferente** do responsável atual. A reatribuição SHALL exigir **justificativa**, NÃO SHALL alterar o status do processo e NÃO SHALL alterar o prazo. Quando a **unidade** estiver errada, a ação correta é a Devolução, não a Reatribuição.
+
+Podem reatribuir: o **servidor responsável atual**, o **remetente da última tramitação** (quem cometeu o erro de destino) e o **Gestor da unidade atual**. Qualquer outro usuário SHALL receber acesso negado com registro em log de segurança. A verificação de papel SHALL ser aplicada **após** a autorização por unidade já existente, nunca em substituição a ela.
+
+#### Scenario: Servidor que recebeu indevidamente reatribui
+- **DADO** que recebi um processo por engano e o servidor correto é "João Souza", do setor Protocolo da mesma unidade
+- **QUANDO** reatribuo o processo para João Souza informando a justificativa
+- **ENTÃO** João Souza passa a ser o responsável, o setor atual passa a Protocolo, a unidade permanece a mesma, o status e o prazo permanecem inalterados, e o evento de reatribuição é gravado no histórico com a justificativa
+
+#### Scenario: Remetente que errou o destino corrige
+- **DADO** que enviei um processo para o Servidor B por engano, quando o correto era o Servidor C da mesma unidade
+- **QUANDO** reatribuo o processo de B para C
+- **ENTÃO** a operação é aceita — sou o remetente da última tramitação — e C passa a ser o responsável
+
+#### Scenario: Gestor da unidade reatribui
+- **DADO** que sou Gestor da unidade em que o processo se encontra e identifico uma atribuição indevida
+- **QUANDO** reatribuo o processo para o servidor correto
+- **ENTÃO** a operação é aceita, o evento registra a mim como responsável e os servidores de origem e destino como detentores — eu não figuro como detentor
+
+#### Scenario: Reatribuição para outra unidade é rejeitada
+- **DADO** que estou reatribuindo um processo que se encontra na unidade COFIN
+- **QUANDO** tento designar um servidor da unidade AJUR
+- **ENTÃO** o sistema rejeita a operação informando que a reatribuição não muda de unidade e que devolução é a ação apropriada nesse caso; nada é alterado
+
+#### Scenario: Reatribuição para o mesmo servidor é rejeitada
+- **DADO** que sou o responsável atual por um processo
+- **QUANDO** tento reatribuí-lo para mim mesmo
+- **ENTÃO** o sistema rejeita a operação informando que o destino deve ser um servidor diferente do responsável atual
+
+#### Scenario: Reatribuição sem justificativa é rejeitada
+- **DADO** que estou reatribuindo um processo
+- **QUANDO** submeto sem preencher a justificativa
+- **ENTÃO** o sistema rejeita a operação informando que a justificativa é obrigatória, e nenhum evento é gravado
+
+#### Scenario: Reatribuição por servidor sem papel autorizado — acesso negado
+- **DADO** que sou Servidor da mesma unidade do processo, mas não sou o responsável atual, nem o remetente da última tramitação, nem Gestor da unidade
+- **QUANDO** tento reatribuir o processo
+- **ENTÃO** o sistema rejeita a operação com acesso negado, nada é alterado, e a tentativa é registrada em log de segurança
+
+#### Scenario: Reatribuição em processo concluído ou arquivado é bloqueada
+- **DADO** que um processo está "Concluído" ou "Arquivado"
+- **QUANDO** tento reatribuí-lo
+- **ENTÃO** o sistema bloqueia a operação — a reatribuição só se aplica a processos em andamento
+
+### Requirement: Conclusão como ação explícita
+O sistema SHALL oferecer a **conclusão** do processo como ação própria, acionada por botão dedicado com confirmação, independente de qualquer ação de envio. A conclusão SHALL transicionar o processo de "Aberto" ou "Em Tramitação" para "Concluído", registrar o instante de conclusão, congelar o prazo de arquivamento a partir do parâmetro vigente em configuração do sistema e gravar o evento no histórico. Podem concluir o **servidor responsável atual** e o **Gestor da unidade atual**; qualquer outro usuário SHALL receber acesso negado com registro em log de segurança.
+
+#### Scenario: Conclusão a partir de Em Tramitação
+- **DADO** que sou o servidor responsável por um processo "Em Tramitação"
+- **QUANDO** aciono "Concluir" e confirmo
+- **ENTÃO** o processo passa a "Concluído", o instante de conclusão é registrado, o prazo de arquivamento é congelado e o evento de conclusão é gravado no histórico
+
+#### Scenario: Conclusão a partir de Aberto
+- **DADO** que criei um processo, ainda sou o responsável e ele nunca foi enviado
+- **QUANDO** aciono "Concluir" e confirmo
+- **ENTÃO** o processo passa diretamente de "Aberto" a "Concluído" — não é necessário enviá-lo a ninguém antes
+
+#### Scenario: Cancelar a confirmação não altera nada
+- **DADO** que acionei "Concluir" e a confirmação foi exibida
+- **QUANDO** cancelo
+- **ENTÃO** o processo permanece no status anterior e nenhum evento é gravado
+
+#### Scenario: Conclusão por quem não é responsável nem gestor — acesso negado
+- **DADO** que sou Servidor da mesma unidade mas não sou o responsável atual pelo processo
+- **QUANDO** tento concluí-lo
+- **ENTÃO** o sistema rejeita a operação com acesso negado, o status permanece inalterado, e a tentativa é registrada em log de segurança
 
 ### Requirement: Histórico de tramitação imutável
-O sistema SHALL registrar cada movimentação do processo (criação, despacho, devolução, conclusão, arquivamento automático, marcação de sigilo, remoção de sigilo, remoção de documento, restauração de documento) como um **evento imutável** (INSERT, nunca UPDATE ou DELETE), guardando unidade de origem, unidade de destino, responsável, data/hora e status resultante, e SHALL exibi-los como uma linha do tempo. Os eventos `marcar_sigilo` e `remover_sigilo` registram o responsável humano que agiu, têm unidade de origem/destino nulas (o sigilo não move o processo) e `status_resultante` igual ao status atual do processo (o sigilo não altera o status). Os eventos `remover_documento` e `restaurar_documento` registram o responsável humano que agiu sobre o anexo (o Administrador, no caso da restauração), têm unidade de origem/destino nulas (não movem o processo) e `status_resultante` igual ao status atual do processo (não alteram o status). Ver PRD US 2.4, US 2.6, US 3.1, US 8.7 e RF 25 (histórico imutável — invariante do projeto).
+O sistema SHALL registrar cada movimentação do processo (criação, envio, devolução, reatribuição, conclusão, arquivamento automático, marcação de sigilo, remoção de sigilo, remoção de documento, restauração de documento) como um **evento imutável** (INSERT, nunca UPDATE ou DELETE), e NÃO SHALL expor rota ou método de alteração ou exclusão de evento. Cada evento de tramitação SHALL registrar o tipo de ação, unidade, **setor** e **servidor** de origem e de destino, o responsável pela ação, o status resultante, a **mensagem** ou justificativa e o instante de criação. O evento SHALL distinguir **quem agiu** (responsável) de **quem deteve** o processo (servidor de origem e de destino) — quando um Gestor reatribui um processo que nunca esteve sob sua responsabilidade, ele figura como responsável mas não como detentor. Os eventos `marcar_sigilo` e `remover_sigilo` registram o responsável humano que agiu, têm unidade/setor/servidor de origem e destino nulos (o sigilo não move o processo) e `status_resultante` igual ao status atual do processo (o sigilo não altera o status). Os eventos `remover_documento` e `restaurar_documento` registram o responsável humano que agiu sobre o anexo (o Administrador, no caso da restauração), têm unidade/setor/servidor de origem e destino nulos (não movem o processo) e `status_resultante` igual ao status atual do processo (não alteram o status). Ver PRD US 2.4, US 2.6, US 3.1, US 8.7 e RF 25 (histórico imutável — invariante do projeto).
 
-#### Scenario: Visualização do histórico
-- **DADO** que um processo já passou por três unidades (COFIN → AJUR → DIRAD)
-- **QUANDO** acesso a tela de detalhes do processo e clico em "Histórico"
-- **ENTÃO** visualizo uma linha do tempo com cada movimentação, contendo unidade de origem, unidade de destino, responsável, data/hora e status naquele momento (PRD US 2.4 Cen.1)
+#### Scenario: Linha do tempo completa de um processo
+- **DADO** que um processo foi criado, enviado, devolvido, reenviado, reatribuído e concluído
+- **QUANDO** consulto seu histórico
+- **ENTÃO** vejo os eventos em ordem cronológica, cada um com tipo de ação, servidor de origem e destino, setor, unidade, responsável, mensagem ou justificativa e data/hora
 
 #### Scenario: Histórico de processo recém-criado sem movimentações
-- **DADO** que um processo foi criado mas ainda não foi despachado
+- **DADO** que um processo foi criado mas ainda não foi enviado
 - **QUANDO** acesso os detalhes do processo e clico em "Histórico"
 - **ENTÃO** visualizo "Nenhuma movimentação registrada" e a data de criação como informação complementar (PRD US 2.4 Cen.2)
 
@@ -88,62 +166,40 @@ O sistema SHALL registrar cada movimentação do processo (criação, despacho, 
 - **QUANDO** qualquer fluxo do sistema processa uma nova movimentação do mesmo processo
 - **ENTÃO** um novo evento é inserido, e o evento anterior permanece inalterado — nenhum evento de histórico é atualizado ou removido (RF 25; invariante de histórico imutável)
 
+#### Scenario: Histórico não é alterável
+- **DADO** que existem eventos registrados no histórico de um processo
+- **QUANDO** procuro uma forma de editar ou excluir qualquer evento, pela interface ou pela API
+- **ENTÃO** não existe nenhuma rota, botão ou método que permita alterar ou remover um evento já gravado
+
+#### Scenario: Gestor que reatribui é responsável, não detentor
+- **DADO** que o Gestor da unidade COFIN reatribui um processo do Servidor B para o Servidor C, sem nunca tê-lo detido
+- **QUANDO** consulto o evento de reatribuição
+- **ENTÃO** o responsável é o Gestor, o servidor de origem é B e o servidor de destino é C — o Gestor não aparece como detentor em nenhum momento da cadeia
+
 #### Scenario: Marcação e remoção de sigilo geram eventos imutáveis
 - **DADO** um processo cujo sigilo é marcado e depois removido por usuários autorizados
 - **QUANDO** acesso o histórico do processo
-- **ENTÃO** visualizo um evento `marcar_sigilo` e um evento `remover_sigilo`, cada um com responsável e data/hora, sem unidade de origem/destino e com o status do processo naquele momento; ambos são imutáveis e não alteram o status do processo (PRD US 2.6 Cen.1/2)
+- **ENTÃO** visualizo um evento `marcar_sigilo` e um evento `remover_sigilo`, cada um com responsável e data/hora, sem unidade/setor/servidor de origem e destino e com o status do processo naquele momento; ambos são imutáveis e não alteram o status do processo (PRD US 2.6 Cen.1/2)
 
 #### Scenario: Remoção de documento gera evento imutável
 - **DADO** que um documento é removido (soft-delete) de um processo por um usuário autorizado
 - **QUANDO** acesso o histórico do processo
-- **ENTÃO** visualizo um evento `remover_documento` com responsável e data/hora, sem unidade de origem/destino e com o status atual do processo; o evento é imutável e não altera o status do processo (PRD US 3.1 Cen.3)
+- **ENTÃO** visualizo um evento `remover_documento` com responsável e data/hora, sem unidade/setor/servidor de origem e destino e com o status atual do processo; o evento é imutável e não altera o status do processo (PRD US 3.1 Cen.3)
 
 #### Scenario: Restauração de documento gera evento imutável
 - **DADO** que um documento removido é restaurado por um Administrador dentro do período de retenção
 - **QUANDO** acesso o histórico do processo
-- **ENTÃO** visualizo um evento `restaurar_documento` com o Administrador responsável e data/hora, sem unidade de origem/destino e com o status atual do processo; o evento é imutável e não altera o status do processo (PRD US 8.7 Cen.1)
+- **ENTÃO** visualizo um evento `restaurar_documento` com o Administrador responsável e data/hora, sem unidade/setor/servidor de origem e destino e com o status atual do processo; o evento é imutável e não altera o status do processo (PRD US 8.7 Cen.1)
 
-### Requirement: Feedback ao Servidor após despacho ou devolução bem-sucedidos
+### Requirement: Feedback ao Servidor após ação de tramitação bem-sucedida
+O sistema SHALL exibir mensagem de confirmação após cada ação de tramitação concluída com sucesso, identificando a ação e o destino: no Envio, o servidor e a unidade de destino; na Devolução, o servidor para quem o processo retornou; na Reatribuição, o novo servidor responsável e a informação de que o **prazo foi mantido**; na Conclusão, a confirmação do encerramento. Ver PRD US 2.2.
 
-Após um despacho (US 2.2) ou devolução (US 2.2b) concluído com sucesso, o cliente SHALL comunicar o resultado ao Servidor a partir da **resposta da própria ação** (a `ProcessoResponse` retornada), sem re-buscar o processo com uma leitura subsequente. O cliente SHALL inferir se o processo saiu do escopo da unidade comparando o `unidade_atual_id` que estava em tela (antes da ação) com o `unidade_atual_id` retornado pela resposta:
+#### Scenario: Confirmação após envio
+- **DADO** que enviei um processo para o Servidor "Maria Silva" da unidade AJUR
+- **QUANDO** a operação é concluída com sucesso
+- **ENTÃO** vejo mensagem confirmando o envio, nomeando Maria Silva e a AJUR, e o processo deixa de estar sob minha responsabilidade
 
-- Se o `unidade_atual_id` **mudou**, o processo saiu do escopo do Servidor de
-  origem — o cliente SHALL exibir uma confirmação de **sucesso** nomeando a
-  unidade de destino e navegar para o Kanban (`/processos`), e NÃO SHALL disparar
-  uma releitura do detalhe do processo (que retornaria 403 por o processo já não
-  pertencer ao escopo da unidade).
-- Se o `unidade_atual_id` **não mudou** (ex.: conclusão na própria unidade, com
-  status resultante "Concluído", ou roteiro de unidade única), o cliente SHALL
-  permanecer na tela de detalhes, atualizando o processo exibido com a resposta e
-  recarregando o histórico.
-
-Em nenhuma hipótese uma ação de despacho ou devolução concluída com sucesso SHALL
-ser apresentada ao Servidor como erro de acesso ("Acesso negado — você não tem
-permissão para visualizar este processo"). Esta é uma correção de feedback no
-cliente; a autorização por unidade do backend (negar leitura de processo fora do
-escopo, PRD US 1.4 Cen.2) permanece inalterada.
-
-#### Scenario: Despacho para a próxima unidade — sucesso, sem falso erro de acesso
-- **DADO** que sou Servidor da unidade COFIN e o processo 2026/000007 está na COFIN, com o roteiro COFIN → AJUR → DIRAD
-- **QUANDO** aciono "Despachar" e a ação é concluída (o processo passa a `unidade_atual_id` = AJUR, status "Em Tramitação")
-- **ENTÃO** o cliente exibe uma confirmação de sucesso informando que o processo foi despachado para a unidade AJUR e me leva ao Kanban, sem exibir "Acesso negado — você não tem permissão para visualizar este processo" e sem re-buscar o detalhe do processo
-
-#### Scenario: Devolução para a unidade anterior — sucesso, sem falso erro de acesso
-- **DADO** que sou Servidor da unidade AJUR, o processo está na AJUR e veio da COFIN
-- **QUANDO** aciono "Devolver", seleciono um motivo e confirmo, e a ação é concluída (o processo volta para `unidade_atual_id` = COFIN, status "Em Tramitação")
-- **ENTÃO** o cliente exibe uma confirmação de sucesso informando que o processo foi devolvido para a unidade COFIN e me leva ao Kanban, sem exibir mensagem de acesso negado e sem re-buscar o detalhe do processo
-
-#### Scenario: Conclusão na própria unidade — permanece na tela de detalhes
-- **DADO** que sou Servidor da unidade atual e o processo está na última unidade do roteiro
-- **QUANDO** aciono "Despachar", confirmo a conclusão e a ação é concluída (o processo permanece com o mesmo `unidade_atual_id` e passa a status "Concluído")
-- **ENTÃO** o cliente permanece na tela de detalhes do processo, atualiza o status exibido para "Concluído" e recarrega o histórico, sem navegar para o Kanban e sem erro de acesso
-
-#### Scenario: Cancelamento da conclusão — nenhuma navegação nem mensagem de sucesso
-- **DADO** que o processo está na última unidade do roteiro e o backend respondeu pedindo confirmação de conclusão
-- **QUANDO** clico em "Cancelar" no modal de confirmação
-- **ENTÃO** o processo permanece na tela de detalhes com o mesmo status, sem navegação para o Kanban, sem confirmação de sucesso e sem alteração no histórico (PRD US 2.2 Cen.3)
-
-#### Scenario: Falha real do despacho — erro exibido, sem navegação
-- **DADO** que sou Servidor da unidade atual e aciono "Despachar"
-- **QUANDO** o backend rejeita a ação com um erro real (ex.: 403 de autorização por unidade, ou outra falha da própria chamada de despacho)
-- **ENTÃO** o cliente exibe a mensagem de erro correspondente e permanece na tela de detalhes, sem navegar para o Kanban e sem confirmação de sucesso
+#### Scenario: Confirmação após reatribuição informa prazo mantido
+- **DADO** que reatribuí um processo para o Servidor "João Souza" do setor Protocolo
+- **QUANDO** a operação é concluída com sucesso
+- **ENTÃO** vejo mensagem confirmando a reatribuição para João Souza e informando explicitamente que o prazo do processo foi mantido
