@@ -43,11 +43,12 @@ async function cadastrarEAtivar(
   await expect(page).toHaveURL(/\/perfil$/);
 }
 
-// Task 7.1 — E2E obrigatório do sino (US 5.1). Despacho de A para B gera
-// notificação interna para os servidores de B: o contador incrementa, o
-// painel mostra número/assunto/unidade de origem, e marcar como lida
-// decrementa o contador e persiste após reload.
-test("Despacho entre unidades incrementa o sino do destinatário; marcar como lida persiste após reload", async ({
+// Task 7.1 — E2E obrigatório do sino (US 5.1). Envio de A para B (change
+// tramitacao-manual: destino explícito) gera notificação interna para o
+// servidor de destino: o contador incrementa, o painel mostra número/
+// assunto/unidade de origem, e marcar como lida decrementa o contador e
+// persiste após reload.
+test("Envio entre unidades incrementa o sino do destinatário; marcar como lida persiste após reload", async ({
   page,
 }) => {
   await login(page, ADMIN_ROOT.email, ADMIN_ROOT.senha);
@@ -65,10 +66,6 @@ test("Despacho entre unidades incrementa o sino do destinatário; marcar como li
 
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_PROCESSO.nome);
-  await page.getByLabel("Adicionar unidade ao roteiro").selectOption({ label: UNIDADE_ORIGEM.nome });
-  await page.getByRole("button", { name: "Adicionar etapa" }).click();
-  await page.getByLabel("Adicionar unidade ao roteiro").selectOption({ label: UNIDADE_DESTINO.nome });
-  await page.getByRole("button", { name: "Adicionar etapa" }).click();
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
   await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
 
@@ -87,15 +84,22 @@ test("Despacho entre unidades incrementa o sino do destinatário; marcar como li
   await page.getByRole("button", { name: "Criar processo" }).click();
   await expect(page).toHaveURL(/\/processos\/[0-9a-f-]+$/);
 
-  // O despacho move o processo para a unidade destino — o próprio Servidor
+  // O envio move o processo para a unidade destino — o próprio Servidor
   // Origem perde acesso de visualização imediatamente depois (visibilidade
   // por unidade, D6), então a confirmação é pela resposta HTTP, não pela UI
-  // pós-despacho.
-  const respostaDespacho = page.waitForResponse(
-    (resp) => resp.url().includes("/despachar") && resp.request().method() === "POST",
+  // pós-envio.
+  const respostaEnvio = page.waitForResponse(
+    (resp) => resp.url().includes("/enviar") && resp.request().method() === "POST",
   );
-  await page.getByRole("button", { name: "Despachar" }).click();
-  expect((await respostaDespacho).ok()).toBeTruthy();
+  await page.getByRole("button", { name: "Tramitar" }).click();
+  const modalTramitacao = page.getByRole("dialog", { name: "Tramitar processo" });
+  await modalTramitacao.getByLabel("Unidade de destino").selectOption({ label: UNIDADE_DESTINO.nome });
+  await modalTramitacao.getByLabel("Setor de destino").selectOption({ label: SETOR_PADRAO.nome });
+  await modalTramitacao
+    .getByLabel("Servidor de destino")
+    .selectOption({ label: SERVIDOR_DESTINO.nome });
+  await modalTramitacao.getByRole("button", { name: "Enviar" }).click();
+  expect((await respostaEnvio).ok()).toBeTruthy();
   await logout(page);
 
   // Servidor da unidade destino vê o sino incrementar.

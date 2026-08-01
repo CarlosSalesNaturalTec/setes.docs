@@ -29,6 +29,7 @@ const NOTIFICACAO_BASE = {
   unidade_nome: "AJUR",
   unidade_origem_id: "u2",
   unidade_origem_nome: "COFIN",
+  justificativa: null,
   prazo_referencia: null,
   lida_em: null,
   criado_em: "2026-07-16T10:00:00Z",
@@ -110,5 +111,33 @@ describe("NotificacoesSino", () => {
     await waitFor(() =>
       expect(screen.queryByTestId("notificacoes-contador")).not.toBeInTheDocument(),
     );
+  });
+
+  it("exibe rótulo e justificativa das notificações de reatribuição (change tramitacao-manual, D8)", async () => {
+    vi.mocked(api.contarNotificacoes).mockResolvedValue({ nao_lidas: 2 });
+    vi.mocked(api.listarNotificacoes).mockResolvedValue({
+      items: [
+        {
+          ...NOTIFICACAO_BASE,
+          id: "n3",
+          tipo: "reatribuido_para_voce",
+          justificativa: "Setor errado",
+        },
+        {
+          ...NOTIFICACAO_BASE,
+          id: "n4",
+          tipo: "destino_corrigido",
+          justificativa: "Reatribuído para João Souza.",
+        },
+      ],
+      mensagem_vazio: null,
+    });
+    render(<NotificacoesSino />);
+    await userEvent.click(screen.getByLabelText("Notificações"));
+
+    expect(await screen.findByText("Reatribuído para você")).toBeInTheDocument();
+    expect(screen.getByText("Setor errado")).toBeInTheDocument();
+    expect(screen.getByText("Destino da tramitação corrigido")).toBeInTheDocument();
+    expect(screen.getByText("Reatribuído para João Souza.")).toBeInTheDocument();
   });
 });

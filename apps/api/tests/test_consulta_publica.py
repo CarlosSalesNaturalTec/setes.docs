@@ -12,10 +12,11 @@ from datetime import date
 from tests.helpers_processo import (
     CNPJ_VALIDO,
     auth,
+    enviar_para,
     login,
-    tipo_com_roteiro,
+    servidor_com_setor,
+    tipo_processo,
     unidade,
-    usuario,
 )
 
 MSG_NAO_ENCONTRADO = "Nenhum processo encontrado com o número informado"
@@ -39,8 +40,8 @@ def _criar_processo(client, token, tipo, *, assunto="Assunto de teste", interess
 
 def test_consulta_por_numero_de_processo_nao_sigiloso(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    usuario(db, unidade_id=cofin.id, email="serv1@ex.com")
+    tipo = tipo_processo(db)
+    servidor_com_setor(db, cofin, email="serv1@ex.com")
     token = login(client, "serv1@ex.com")
     proc = _criar_processo(client, token, tipo, assunto="Solicitação de teste")
 
@@ -64,8 +65,8 @@ def test_numero_inexistente_retorna_404_com_mensagem_padrao(client, db):
 
 def test_cpf_cnpj_do_interessado_nao_e_exposto(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    usuario(db, unidade_id=cofin.id, email="serv2@ex.com")
+    tipo = tipo_processo(db)
+    servidor_com_setor(db, cofin, email="serv2@ex.com")
     token = login(client, "serv2@ex.com")
     proc = _criar_processo(
         client,
@@ -87,8 +88,8 @@ def test_cpf_cnpj_do_interessado_nao_e_exposto(client, db):
 
 def test_processo_sigiloso_pelo_numero_exato_e_indistinguivel_de_inexistente(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    usuario(db, unidade_id=cofin.id, email="serv3@ex.com")
+    tipo = tipo_processo(db)
+    servidor_com_setor(db, cofin, email="serv3@ex.com")
     token = login(client, "serv3@ex.com")
     proc = _criar_processo(client, token, tipo)
 
@@ -104,8 +105,8 @@ def test_processo_sigiloso_pelo_numero_exato_e_indistinguivel_de_inexistente(cli
 
 def test_pesquisa_por_assunto_exclui_processo_sigiloso(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    usuario(db, unidade_id=cofin.id, email="serv4@ex.com")
+    tipo = tipo_processo(db)
+    servidor_com_setor(db, cofin, email="serv4@ex.com")
     token = login(client, "serv4@ex.com")
     termo = "TermoUnicoSigilo"
     proc = _criar_processo(client, token, tipo, assunto=f"Processo {termo}")
@@ -120,13 +121,15 @@ def test_pesquisa_por_assunto_exclui_processo_sigiloso(client, db):
 
 def test_historico_simplificado_nao_expoe_responsavel_nem_eventos_de_sigilo(client, db):
     cofin, ajur = unidade(db, "COFIN"), unidade(db, "AJUR")
-    tipo = tipo_com_roteiro(db, cofin, ajur)
-    usuario(db, unidade_id=cofin.id, email="serv5@ex.com")
+    tipo = tipo_processo(db)
+    servidor_com_setor(db, cofin, email="serv5@ex.com")
     token = login(client, "serv5@ex.com")
     proc = _criar_processo(client, token, tipo)
 
-    # Gera um evento de despacho e outro de marcação de sigilo (interno).
-    resp = client.post(f"/processos/{proc['id']}/despachar", json={}, headers=auth(token))
+    # Gera um evento de envio e outro de marcação de sigilo (interno).
+    resp, _dest, _s = enviar_para(
+        client, db, processo_id=proc["id"], token_origem=token, unidade_destino=ajur
+    )
     assert resp.status_code == 200, resp.text
     client.post(f"/processos/{proc['id']}/sigilo", headers=auth(token))
     client.delete(f"/processos/{proc['id']}/sigilo", headers=auth(token))
@@ -145,9 +148,9 @@ def test_historico_simplificado_nao_expoe_responsavel_nem_eventos_de_sigilo(clie
 
 def test_pesquisa_combinada_por_tipo_e_periodo_pagina_20_por_pagina(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    outro_tipo = tipo_com_roteiro(db, cofin, nome="Outro")
-    usuario(db, unidade_id=cofin.id, email="serv6@ex.com")
+    tipo = tipo_processo(db)
+    outro_tipo = tipo_processo(db, nome="Outro")
+    servidor_com_setor(db, cofin, email="serv6@ex.com")
     token = login(client, "serv6@ex.com")
 
     for i in range(21):

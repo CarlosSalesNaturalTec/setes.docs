@@ -143,7 +143,7 @@ processos visíveis.
   eles (abrir o detalhe mostra o aviso "Acompanhamento em modo leitura").
 - Um card com o selo **"↩ Devolvido"** e borda âmbar indica que o processo
   acabou de ser devolvido à sua unidade e está pronto para uma nova ação; o
-  destaque some assim que você despachar novamente.
+  destaque some assim que você enviar novamente.
 - O checkbox **"Exibir concluídos e arquivados"**, no topo da tela, começa
   **desmarcado** — os processos finalizados ficam ocultos até você marcá-lo.
   A preferência é lembrada da próxima vez que você acessar a tela.
@@ -153,38 +153,79 @@ processos visíveis.
 Para dar início a uma tramitação formal:
 
 1. Escolha **"Novo processo"**.
-2. Preencha os dados: assunto, tipo de processo, data, prazo, unidade de origem
-   e os interessados.
-3. Confirme. O sistema gera o **número do processo** e ele passa a aparecer no
-   seu quadro.
+2. Preencha os dados: assunto, tipo de processo, prazo e os interessados.
+3. Confirme. O sistema gera o **número do processo**, e ele nasce **atribuído
+   a você** — aparece imediatamente no seu quadro, como responsável, mesmo
+   antes de qualquer tramitação.
 
-O **tipo de processo** escolhido já define o **roteiro** — ou seja, o caminho de
-unidades por onde o processo vai passar.
+Para criar um processo você precisa estar vinculado a um **setor** da sua
+unidade; se seu cadastro não tiver setor, peça ao Administrador para
+completá-lo antes de tentar criar um processo.
 
-### Despachar para a próxima unidade
+### Tramitar um processo: Enviar, Devolver ou Reatribuir
 
-Quando sua parte terminar, **despache** o processo para dar sequência:
+Não existe mais um "caminho predefinido" por tipo de processo — você escolhe
+explicitamente **para quem** o processo vai a cada tramitação, pelo botão
+**"Tramitar"**, que abre um único formulário com três tipos de ação:
 
-1. Abra o processo e escolha **"Despachar"**.
-2. O sistema indica a **próxima unidade conforme o roteiro** do tipo de
-   processo.
-3. Confirme. O processo sai do seu quadro e chega à próxima unidade, que é
-   notificada.
+**Enviar** — para mandar o processo adiante, a quem deve tratá-lo:
 
-O caminho é **predefinido e sequencial** — você não precisa adivinhar para onde
-enviar.
+1. Abra o processo, clique em **"Tramitar"** e deixe selecionado o tipo de
+   ação **"Envio"**.
+2. Escolha a **unidade**, depois o **setor** dessa unidade e, por fim, o
+   **servidor** — os campos aparecem em cascata, um depois do outro.
+3. Escreva uma **mensagem** explicando o que precisa ser feito e confirme. O
+   processo sai do seu quadro e chega ao servidor escolhido, que é notificado.
 
-### Devolver para a unidade anterior
+Você não pode enviar um processo para si mesmo — o destino tem que ser outro
+servidor.
 
-Se algo precisa de correção ou diligência antes de seguir adiante, use
-**"Devolver"** para mandar o processo de volta à **unidade anterior**,
-registrando o motivo. É o caminho correto quando o processo veio incompleto.
+**Devolver** — para mandar o processo de volta a quem te enviou, quando algo
+precisa de correção antes de seguir adiante:
+
+1. Abra o processo, clique em **"Tramitar"** e mude o tipo de ação para
+   **"Devolução"**.
+2. O destino **não é escolhido por você** — o sistema já sabe para quem
+   devolver (quem enviou o processo a você da última vez).
+3. Selecione um **motivo** (Documentação insuficiente, Correção de dados ou
+   Diligência complementar) e, se quiser, uma justificativa, e confirme.
+
+Se o processo nunca foi enviado a ninguém (ainda está com quem o criou), não
+há devolução possível — o sistema avisa que não há remetente anterior.
+
+**Reatribuir** — para corrigir quando o processo chegou à unidade certa, mas
+com a **pessoa errada**:
+
+1. Abra o processo, clique em **"Tramitar"** e mude o tipo de ação para
+   **"Reatribuir"**.
+2. A **unidade fica travada** (não muda) — você só escolhe o **setor** e o
+   **servidor** corretos dentro da mesma unidade.
+3. Escreva a **justificativa** (obrigatória) e confirme.
+
+A reatribuição **não altera o status do processo nem o prazo** — é só uma
+correção de responsável. Podem reatribuir: quem está com o processo agora,
+quem o enviou por engano da última vez, ou o Gestor da unidade. Se você
+enviou o processo para a pessoa errada e ela reatribuir para a pessoa certa,
+você recebe um aviso de que o destino foi corrigido.
+
+> **Quando usar qual:** unidade errada → **Devolver**; setor ou pessoa errados
+> dentro da unidade certa → **Reatribuir**; processo pronto para seguir →
+> **Enviar**.
+
+### Concluir um processo
+
+Quando o tratamento do processo estiver encerrado, use o botão **"Concluir"**
+— disponível a qualquer momento, sem precisar enviar o processo a mais
+ninguém antes. Após confirmar, o processo passa para "Concluído" e o prazo de
+arquivamento é contado a partir desse instante. Podem concluir: quem está com
+o processo agora, ou o Gestor da unidade.
 
 ### Acompanhar o histórico de tramitação
 
-Cada processo tem um **histórico completo e imutável**: por quais unidades
-passou, quando, quem atuou e **quanto tempo ficou em cada uma**. Esse histórico
-serve para entender toda a trajetória do processo.
+Cada processo tem um **histórico completo e imutável**: por quais unidades,
+setores e servidores passou, quando, quem atuou em cada ação (Envio,
+Devolução, Reatribuição, Conclusão) e a mensagem ou justificativa de cada
+uma. Esse histórico serve para entender toda a trajetória do processo.
 
 ### Buscar e filtrar processos
 
@@ -203,8 +244,8 @@ fora da sua unidade.
 - **Consultar / baixar:** abra ou baixe os documentos já anexados para analisar
   o conteúdo.
 - **Remover:** um documento pode ser removido **apenas enquanto o processo
-  ainda está com a sua unidade e não foi despachado** (processo recém-criado ou
-  recém-devolvido). Depois do despacho, a remoção é bloqueada. A remoção pede
+  ainda está com a sua unidade e não foi enviado** (processo recém-criado ou
+  recém-devolvido). Depois do envio, a remoção é bloqueada. A remoção pede
   confirmação, fica registrada no histórico do processo (com autor e data/hora)
   e o arquivo é preservado por **30 dias** — nesse período, o Administrador
   consegue restaurá-lo se a remoção tiver sido um engano.
@@ -295,9 +336,10 @@ Para não depender da equipe central a cada nova pessoa na sua equipe, você pod
 - Você **não pode** atribuir os perfis Gestor ou Administrador — isso é
   exclusivo do Administrador.
 
-> **Nota:** o Gestor **acompanha** os processos das suas unidades, mas as ações
-> de tramitação (criar, despachar, devolver e marcar sigilo) são executadas
-> pelos **Servidores** de cada unidade.
+> **Nota:** o Gestor **acompanha** os processos das suas unidades. Criar,
+> enviar, devolver e marcar sigilo são ações exclusivas dos **Servidores** de
+> cada unidade; **Reatribuir** e **Concluir** também podem ser feitas pelo
+> Gestor da unidade, além do servidor responsável.
 
 ---
 
@@ -331,8 +373,8 @@ marcados na listagem, para você regularizar o cadastro.
 ### Cadastrar unidades administrativas
 
 **Cadastre e gerencie as unidades** (as coordenadorias e diretorias do órgão)
-para refletir a estrutura organizacional. As unidades são a base do controle de
-acesso e do roteiro dos processos.
+para refletir a estrutura organizacional. As unidades são a base do controle
+de acesso e do destino das tramitações.
 
 ### Cadastrar setores de uma unidade
 
@@ -350,15 +392,18 @@ para abrir a lista dela e cadastrar, editar, desativar ou reativar setores.
   serão afetados antes de confirmar. Ao reativar a unidade, os setores
   **permanecem inativos**: cada um precisa ser reativado individualmente.
 
-> **Atenção:** o setor organiza as pessoas e orienta o roteamento, mas **não
-> altera quem enxerga o quê** — o controle de acesso continua sendo por unidade.
+> **Atenção:** o setor organiza as pessoas e é escolhido a cada tramitação, mas
+> **não altera quem enxerga o quê** — o controle de acesso continua sendo por
+> unidade.
 
-### Cadastrar tipos de processo e desenhar roteiros
+### Cadastrar tipos de processo
 
-Para cada **tipo de processo**, você define o **roteiro de tramitação** — a
-sequência de unidades por onde processos daquele tipo devem passar. É esse
-roteiro que orienta os Servidores ao despachar, garantindo que cada processo
-siga o caminho correto. No sistema, os roteiros são **lineares e sequenciais**.
+Cadastre os **tipos de processo** (ex.: "Licitação", "Requerimento") usados na
+criação de processos e nos filtros do Kanban e do dashboard. Diferente do
+modelo anterior, o tipo de processo **não define mais um caminho fixo de
+tramitação** — cada envio, devolução ou reatribuição tem seu destino escolhido
+explicitamente pelo Servidor no momento da ação. Na tela de cada tipo, você
+também configura o **prazo de anonimização LGPD** (em anos).
 
 ### Conceder permissão de Auditoria
 
@@ -388,10 +433,10 @@ concluídos (padrão: 30 dias).
 
 O Administrador tem acesso à tela de **Processos de todas as unidades**, em
 modo **somente leitura**: você visualiza o quadro (Kanban ou Lista) e o detalhe
-de qualquer processo, mas **não vê botões de ação** — criar processo,
-despachar, devolver e marcar sigilo são ações exclusivas do **Servidor** da
-unidade onde o processo está. Use essa visão para acompanhar o andamento geral
-sem interferir.
+de qualquer processo, mas **não vê botões de ação** — criar processo, tramitar
+(Enviar/Devolver/Reatribuir), concluir e marcar sigilo são ações exclusivas de
+Servidor e Gestor da unidade onde o processo está. Use essa visão para
+acompanhar o andamento geral sem interferir.
 
 ### Restaurar documentos removidos
 
@@ -471,14 +516,15 @@ protocolo — é por ele que a solicitação é identificada.
 
 | Termo | O que significa |
 |-------|-----------------|
-| **Processo** | O documento/assunto administrativo que tramita no sistema, com número, tipo, prazo e interessados. |
-| **Unidade** | Coordenadoria ou diretoria do órgão (ex.: uma coordenadoria financeira). Base do acesso e do roteiro. |
-| **Setor** | Subdivisão de uma unidade (ex.: o gabinete da coordenadoria financeira). Organiza as pessoas e orienta o roteamento; **não** altera quem enxerga o quê — isso continua sendo por unidade. |
-| **Tipo de processo** | Categoria do processo que define qual roteiro ele seguirá. |
-| **Roteiro** | O caminho predefinido de unidades por onde um tipo de processo passa, na ordem. |
-| **Tramitação** | O andamento do processo de uma unidade para outra ao longo do roteiro. |
-| **Despachar** | Enviar o processo para a **próxima** unidade do roteiro. |
-| **Devolver** | Mandar o processo de volta para a unidade **anterior**, para correção ou diligência. |
+| **Processo** | O documento/assunto administrativo que tramita no sistema, com número, tipo, prazo e interessados. Nasce atribuído ao servidor que o criou. |
+| **Unidade** | Coordenadoria ou diretoria do órgão (ex.: uma coordenadoria financeira). Base do controle de acesso. |
+| **Setor** | Subdivisão de uma unidade (ex.: o gabinete da coordenadoria financeira). Organiza as pessoas e é escolhido a cada tramitação; **não** altera quem enxerga o quê — isso continua sendo por unidade. |
+| **Tipo de processo** | Categoria do processo, usada em filtros do Kanban/dashboard e no prazo de anonimização LGPD — não define mais um caminho de tramitação. |
+| **Tramitação** | O conjunto de ações (Envio, Devolução, Reatribuição, Conclusão) que movem um processo entre servidores, setores e unidades. |
+| **Enviar** | Encaminhar o processo a um servidor de destino escolhido explicitamente (unidade, setor, servidor), com mensagem. |
+| **Devolver** | Mandar o processo de volta a quem o enviou por último (resolvido automaticamente pelo sistema), com motivo e justificativa. |
+| **Reatribuir** | Corrigir a pessoa responsável dentro da **mesma unidade**, quando a atribuição foi indevida; não altera status nem prazo. |
+| **Concluir** | Encerrar o tratamento do processo, ação própria disponível a qualquer momento para quem está com ele ou para o Gestor da unidade. |
 | **Quadro Kanban** | Painel visual que organiza os processos em colunas por situação (Aberto, Em Tramitação, Concluído, Arquivado). |
 | **Situação do processo** | Estágio atual: Aberto, Em Tramitação, Concluído ou Arquivado. |
 | **Arquivamento automático** | O sistema arquiva sozinho processos concluídos após o prazo configurado (padrão: 30 dias). |

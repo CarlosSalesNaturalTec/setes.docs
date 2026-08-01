@@ -597,7 +597,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/processos/{processo_id}/despachar": {
+    "/processos/{processo_id}/concluir": {
         parameters: {
             query?: never;
             header?: never;
@@ -607,10 +607,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Despachar Processo
-         * @description US 2.2 — despacho para a próxima unidade; na última, conclusão confirmada.
+         * Concluir Processo
+         * @description US 2.5 — conclusão como ação própria, independente de qualquer envio.
          */
-        post: operations["despachar_processo_processos__processo_id__despachar_post"];
+        post: operations["concluir_processo_processos__processo_id__concluir_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -628,7 +628,7 @@ export interface paths {
         put?: never;
         /**
          * Devolver Processo
-         * @description US 2.2b — devolução para a unidade anterior, com motivo obrigatório.
+         * @description US 2.2b — devolução ao remetente anterior, resolvido automaticamente (D3).
          */
         post: operations["devolver_processo_processos__processo_id__devolver_post"];
         delete?: never;
@@ -723,6 +723,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/processos/{processo_id}/enviar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enviar Processo
+         * @description US 2.2 — envio com destino explícito (unidade, setor, servidor).
+         */
+        post: operations["enviar_processo_processos__processo_id__enviar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/processos/{processo_id}/historico": {
         parameters: {
             query?: never;
@@ -737,6 +757,26 @@ export interface paths {
         get: operations["historico_processo_processos__processo_id__historico_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/processos/{processo_id}/reatribuir": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reatribuir Processo
+         * @description Reatribuição por atribuição indevida — mesma unidade, ortogonal ao status (D2, D4).
+         */
+        post: operations["reatribuir_processo_processos__processo_id__reatribuir_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -950,11 +990,9 @@ export interface paths {
         };
         /**
          * Listar Tipos Processo
-         * @description Catálogo de tipos de processo com o roteiro vigente de cada um.
-         *
-         *     Leitura aberta a qualquer usuário autenticado (Servidor precisa listar o
-         *     catálogo para criar processo — US 2.1); cadastro/edição de roteiro
-         *     permanecem admin-only (US 8.2, `_require_admin` abaixo).
+         * @description Catálogo de tipos de processo — leitura aberta a qualquer usuário
+         *     autenticado (Servidor precisa listar o catálogo para criar processo —
+         *     US 2.1); cadastro/edição permanecem admin-only (`_require_admin` abaixo).
          */
         get: operations["listar_tipos_processo_tipos_processo_get"];
         put?: never;
@@ -985,28 +1023,6 @@ export interface paths {
          *     não retroativo (aplica-se só à avaliação seguinte da rotina/atendimento).
          */
         patch: operations["atualizar_tipo_processo_tipos_processo__tipo_processo_id__patch"];
-        trace?: never;
-    };
-    "/tipos-processo/{tipo_processo_id}/roteiro": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * Atualizar Roteiro
-         * @description US 8.2 Cen.2 — cria nova versão vigente; a anterior fica congelada
-         *     (`vigente=false`) e suas `roteiro_etapa` nunca são alteradas — processos já
-         *     criados sob ela mantêm o roteiro do momento de sua criação.
-         */
-        put: operations["atualizar_roteiro_tipos_processo__tipo_processo_id__roteiro_put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/unidades": {
@@ -1102,10 +1118,11 @@ export interface paths {
         };
         /**
          * Listar Setores
-         * @description Setores da unidade. Restrito ao Administrador junto com as demais rotas
-         *     de setor (task 2.4) — o único consumidor hoje é a administração; se a tela
-         *     de tramitação precisar da cascata para outros perfis, o alargamento entra
-         *     no change que a introduzir, com justificativa própria.
+         * @description Setores da unidade. Aberto a qualquer usuário autenticado (change
+         *     tramitacao-manual, design.md — fluxo de Reatribuição): a cascata
+         *     unidade→setor→servidor da tela de Tramitação precisa que o Servidor
+         *     resolva os setores da própria unidade, não só o Administrador. Cadastro/
+         *     edição/desativação de setor continuam admin-only (rotas abaixo).
          */
         get: operations["listar_setores_unidades__unidade_id__setores_get"];
         put?: never;
@@ -1139,6 +1156,30 @@ export interface paths {
          * @description PRD US 1.1 (Administrador) e US 1.2 (Gestor, restrito à própria unidade/perfil Servidor).
          */
         post: operations["cadastrar_usuario_usuarios_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/usuarios/ativos-por-setor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Servidores Ativos Por Setor
+         * @description Apoio à cascata unidade→setor→servidor da tela de Tramitação (change
+         *     tramitacao-manual, design.md — fluxo de Reatribuição). Aberto a qualquer
+         *     usuário autenticado — diferente de `GET /usuarios` (Admin/Gestor-only) —
+         *     mas devolve só id/nome de servidores **ativos**, nunca dados pessoais de
+         *     contato nem usuários inativos.
+         */
+        get: operations["listar_servidores_ativos_por_setor_usuarios_ativos_por_setor_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1296,11 +1337,6 @@ export interface components {
             /** Telefone */
             telefone?: string | null;
         };
-        /** AtualizarRoteiroRequest */
-        AtualizarRoteiroRequest: {
-            /** Unidade Ids */
-            unidade_ids?: string[];
-        };
         /** AtualizarSistemaConfigRequest */
         AtualizarSistemaConfigRequest: {
             /**
@@ -1436,6 +1472,12 @@ export interface components {
             /** Vencido */
             vencido: boolean;
         };
+        /**
+         * ConcluirRequest
+         * @description Conclusão (US 2.5/2.2): ação própria, sem payload — a confirmação é
+         *     tratada na interface antes do envio da requisição.
+         */
+        ConcluirRequest: Record<string, never>;
         /** ContadorNotificacoesResponse */
         ContadorNotificacoesResponse: {
             /**
@@ -1459,8 +1501,6 @@ export interface components {
         CriarTipoProcessoRequest: {
             /** Nome */
             nome: string;
-            /** Unidade Ids */
-            unidade_ids?: string[];
         };
         /**
          * DashboardKpisResponse
@@ -1478,14 +1518,6 @@ export interface components {
             /** Total Processos Parados */
             total_processos_parados: number;
         };
-        /** DespacharRequest */
-        DespacharRequest: {
-            /**
-             * Confirmar
-             * @default false
-             */
-            confirmar: boolean;
-        };
         /** DevEmailItem */
         DevEmailItem: {
             /** Body */
@@ -1497,7 +1529,12 @@ export interface components {
             /** To */
             to: string;
         };
-        /** DevolverRequest */
+        /**
+         * DevolverRequest
+         * @description O destino da Devolução é resolvido no serviço a partir do histórico
+         *     (D3) — nunca aceito do cliente. `motivo` é validado no serviço (US 2.2b
+         *     Cen.3 exige a mensagem exata "Selecione um motivo para a devolução").
+         */
         DevolverRequest: {
             /** Justificativa */
             justificativa?: string | null;
@@ -1614,12 +1651,19 @@ export interface components {
              */
             to: string;
         };
-        /** EtapaRoteiroResponse */
-        EtapaRoteiroResponse: {
-            /** Ordem */
-            ordem: number;
-            /** Unidade Id */
-            unidade_id: string;
+        /**
+         * EnviarRequest
+         * @description Destino explícito do Envio (D2) — unidade, setor e servidor, com mensagem.
+         */
+        EnviarRequest: {
+            /** Mensagem */
+            mensagem?: string | null;
+            /** Servidor Destino Id */
+            servidor_destino_id: string;
+            /** Setor Destino Id */
+            setor_destino_id: string;
+            /** Unidade Destino Id */
+            unidade_destino_id: string;
         };
         /** EventoHistoricoResponse */
         EventoHistoricoResponse: {
@@ -1632,10 +1676,20 @@ export interface components {
             id: string;
             /** Justificativa */
             justificativa: string | null;
+            /** Mensagem */
+            mensagem: string | null;
             /** Motivo */
             motivo: string | null;
             /** Responsavel Id */
             responsavel_id: string | null;
+            /** Servidor Destino Id */
+            servidor_destino_id: string | null;
+            /** Servidor Origem Id */
+            servidor_origem_id: string | null;
+            /** Setor Destino Id */
+            setor_destino_id: string | null;
+            /** Setor Origem Id */
+            setor_origem_id: string | null;
             /** Status Resultante */
             status_resultante: string;
             /** Tipo Evento */
@@ -1855,6 +1909,8 @@ export interface components {
             criado_em: string;
             /** Id */
             id: string;
+            /** Justificativa */
+            justificativa: string | null;
             /** Lida Em */
             lida_em: string | null;
             /** Numero Processo */
@@ -2012,8 +2068,6 @@ export interface components {
             interessados?: components["schemas"]["InteressadoResponse"][];
             /** Numero */
             numero: string;
-            /** Ordem Atual */
-            ordem_atual: number;
             /** Prazo Dias */
             prazo_dias: number;
             /**
@@ -2021,8 +2075,10 @@ export interface components {
              * Format: date
              */
             prazo_em: string;
-            /** Roteiro Id */
-            roteiro_id: string;
+            /** Servidor Atual Id */
+            servidor_atual_id: string;
+            /** Setor Atual Id */
+            setor_atual_id: string;
             /** Sigiloso */
             sigiloso: boolean;
             /** Status */
@@ -2057,6 +2113,19 @@ export interface components {
             /** Unidade Nome */
             unidade_nome: string;
         };
+        /**
+         * ReatribuirRequest
+         * @description Reatribuição (D2): permanece na unidade atual — não há campo de
+         *     unidade — podendo trocar de setor; servidor de destino obrigatório.
+         */
+        ReatribuirRequest: {
+            /** Justificativa */
+            justificativa?: string | null;
+            /** Servidor Destino Id */
+            servidor_destino_id: string;
+            /** Setor Destino Id */
+            setor_destino_id: string;
+        };
         /** RecuperarSenhaRequest */
         RecuperarSenhaRequest: {
             /**
@@ -2088,15 +2157,6 @@ export interface components {
             tempo_medio_tramitacao_dias: number | null;
             /** Total Processos */
             total_processos: number;
-        };
-        /** RoteiroResponse */
-        RoteiroResponse: {
-            /** Etapas */
-            etapas: components["schemas"]["EtapaRoteiroResponse"][];
-            /** Id */
-            id: string;
-            /** Vigente */
-            vigente: boolean;
         };
         /**
          * SetorResponse
@@ -2222,12 +2282,11 @@ export interface components {
             nome: string;
             /** Prazo Anonimizacao Anos */
             prazo_anonimizacao_anos: number;
-            roteiro: components["schemas"]["RoteiroResponse"];
         };
         /**
          * TipoProcessoUpdate
          * @description US 10.3 Cen.2/3 — só o prazo de anonimização é editável por esta rota
-         *     (nome/roteiro têm rotas próprias). Inteiro positivo (Cen.3).
+         *     (nome tem rota própria). Inteiro positivo (Cen.3).
          */
         TipoProcessoUpdate: {
             /** Prazo Anonimizacao Anos */
@@ -2306,6 +2365,18 @@ export interface components {
             status: string;
             /** Unidade Id */
             unidade_id?: string | null;
+        };
+        /**
+         * UsuarioResumoResponse
+         * @description Item mínimo para selects de destino de tramitação (change
+         *     tramitacao-manual) — só id/nome, nunca e-mail ou dados pessoais de
+         *     contato: qualquer servidor autenticado pode consultar, não só Admin/Gestor.
+         */
+        UsuarioResumoResponse: {
+            /** Id */
+            id: string;
+            /** Nome */
+            nome: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -3318,7 +3389,7 @@ export interface operations {
             };
         };
     };
-    despachar_processo_processos__processo_id__despachar_post: {
+    concluir_processo_processos__processo_id__concluir_post: {
         parameters: {
             query?: never;
             header?: {
@@ -3331,7 +3402,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["DespacharRequest"];
+                "application/json": components["schemas"]["ConcluirRequest"];
             };
         };
         responses: {
@@ -3564,6 +3635,43 @@ export interface operations {
             };
         };
     };
+    enviar_processo_processos__processo_id__enviar_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnviarRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     historico_processo_processos__processo_id__historico_get: {
         parameters: {
             query?: never;
@@ -3584,6 +3692,43 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HistoricoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reatribuir_processo_processos__processo_id__reatribuir_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReatribuirRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProcessoResponse"];
                 };
             };
             /** @description Validation Error */
@@ -4087,43 +4232,6 @@ export interface operations {
             };
         };
     };
-    atualizar_roteiro_tipos_processo__tipo_processo_id__roteiro_put: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path: {
-                tipo_processo_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AtualizarRoteiroRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RoteiroResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     listar_unidades_unidades_get: {
         parameters: {
             query?: never;
@@ -4422,6 +4530,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UsuarioResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_servidores_ativos_por_setor_usuarios_ativos_por_setor_get: {
+        parameters: {
+            query: {
+                setor_id: string;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsuarioResumoResponse"][];
                 };
             };
             /** @description Validation Error */

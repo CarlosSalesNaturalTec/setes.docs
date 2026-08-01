@@ -6,13 +6,13 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 from app.db.models import LogSeguranca, Notificacao, TipoEventoLog, TipoNotificacao
-from tests.helpers_processo import auth, login, tipo_com_roteiro, unidade, usuario
+from tests.helpers_processo import auth, login, servidor_com_setor, tipo_processo, unidade, usuario
 
 
 def _processo_qualquer(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id, email=f"criador-{uuid.uuid4().hex[:6]}@ex.com")
+    tipo = tipo_processo(db)
+    criador, _setor_criador = servidor_com_setor(db, cofin, email=f"criador-{uuid.uuid4().hex[:6]}@ex.com")
     token = login(client, criador.email)
     resp = client.post(
         "/processos",

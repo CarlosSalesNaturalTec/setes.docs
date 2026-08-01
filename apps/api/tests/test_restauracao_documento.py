@@ -23,7 +23,8 @@ from tests.helpers_processo import (
     auth,
     login,
     processo_concluido,
-    tipo_com_roteiro,
+    servidor_com_setor,
+    tipo_processo,
     unidade,
     usuario,
 )
@@ -37,8 +38,8 @@ def _storage(tmp_path):
 
 def _processo_aberto(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin, unidade(db, "AJUR"))
-    criador = usuario(db, unidade_id=cofin.id, email=f"criador-{cofin.id}@ex.com")
+    tipo = tipo_processo(db)
+    criador, _setor_criador = servidor_com_setor(db, cofin, email=f"criador-{cofin.id}@ex.com")
     token = login(client, criador.email)
     resp = client.post(
         "/processos",
@@ -156,8 +157,8 @@ def test_restaurar_re_resolve_nome_em_colisao(client, db, tmp_path):
 
 def test_restaurar_em_processo_arquivado_nao_altera_status(client, db, tmp_path):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id, email=f"arq-{cofin.id}@ex.com")
+    tipo = tipo_processo(db)
+    criador, _setor_criador = servidor_com_setor(db, cofin, email=f"arq-{cofin.id}@ex.com")
     admin = _admin(db, "-arq")
     storage = _storage(tmp_path)
 

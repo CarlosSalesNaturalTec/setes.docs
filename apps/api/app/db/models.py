@@ -82,7 +82,10 @@ class TipoEventoTramitacao(str, enum.Enum):
     """Eventos do histórico imutável (D4). A criação do processo NÃO é evento
     de tramitação — a autoria vive em `Processo.criado_por_id`/`criado_em`."""
 
-    DESPACHO = "despacho"
+    # Change tramitacao-manual (design.md D7) — `despacho` renomeado para
+    # `envio` (vocabulário da tela); `reatribuicao` é o terceiro tipo de ação.
+    ENVIO = "envio"
+    REATRIBUICAO = "reatribuicao"
     DEVOLUCAO = "devolucao"
     CONCLUSAO = "conclusao"
     # Change B1 (US 2.5) — evento de sistema, sem responsável humano (D3).
@@ -119,6 +122,9 @@ class TipoNotificacao(str, enum.Enum):
     NOVO_PROCESSO = "novo_processo"
     CONCLUIDO = "concluido"
     ALERTA_PRAZO = "alerta_prazo"
+    # Change tramitacao-manual (design.md D8) — fluxo de reatribuição.
+    REATRIBUIDO_PARA_VOCE = "reatribuido_para_voce"
+    DESTINO_CORRIGIDO = "destino_corrigido"
 
 
 class TipoSolicitacaoLgpd(str, enum.Enum):
@@ -266,39 +272,6 @@ class TipoProcesso(Base):
     prazo_anonimizacao_anos: Mapped[int] = mapped_column(Integer, nullable=False, default=5)
 
 
-class Roteiro(Base):
-    __tablename__ = "roteiro"
-
-    id: Mapped[uuid.UUID] = _uuid_pk()
-    tipo_processo_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("tipo_processo.id"), nullable=False
-    )
-    vigente: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-    criado_em: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
-
-    etapas: Mapped[list["RoteiroEtapa"]] = relationship(
-        "RoteiroEtapa", back_populates="roteiro", order_by="RoteiroEtapa.ordem"
-    )
-
-
-class RoteiroEtapa(Base):
-    __tablename__ = "roteiro_etapa"
-    __table_args__ = (UniqueConstraint("roteiro_id", "ordem", name="uq_roteiro_etapa_ordem"),)
-
-    id: Mapped[uuid.UUID] = _uuid_pk()
-    roteiro_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("roteiro.id"), nullable=False
-    )
-    unidade_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("unidade.id"), nullable=False
-    )
-    ordem: Mapped[int] = mapped_column(Integer, nullable=False)
-
-    roteiro: Mapped[Roteiro] = relationship("Roteiro", back_populates="etapas")
-
-
 class TokenAutenticacao(Base):
     __tablename__ = "token_autenticacao"
 
@@ -422,10 +395,6 @@ class Processo(Base):
     tipo_processo_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("tipo_processo.id"), nullable=False
     )
-    # Snapshot do roteiro vigente na criação (D2) — FK permanente, sem cópia de etapas.
-    roteiro_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("roteiro.id"), nullable=False
-    )
     status: Mapped[StatusProcesso] = mapped_column(
         _enum_col(StatusProcesso, "status_processo"),
         nullable=False,
@@ -437,8 +406,15 @@ class Processo(Base):
     unidade_origem_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("unidade.id"), nullable=False
     )
-    # Ordinal (roteiro_etapa.ordem) da etapa atual do snapshot (D3).
-    ordem_atual: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # Responsável corrente (D1, change tramitacao-manual) — nasce igual ao
+    # criador; atualizado a cada Envio/Devolução/Reatribuição. Nunca NULL: o
+    # processo sempre tem exatamente um responsável.
+    setor_atual_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("setor.id"), nullable=False
+    )
+    servidor_atual_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("usuario.id"), nullable=False
+    )
     prazo_dias: Mapped[int] = mapped_column(Integer, nullable=False)
     prazo_em: Mapped[date] = mapped_column(Date, nullable=False)
     criado_por_id: Mapped[uuid.UUID] = mapped_column(
@@ -510,9 +486,25 @@ class Tramitacao(Base):
     unidade_destino_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("unidade.id"), nullable=True
     )
+    # Setor/servidor de origem e destino (D1, D6, change tramitacao-manual) —
+    # nullable pelo mesmo motivo de unidade_origem/destino: eventos ortogonais
+    # ao status (sigilo, documento) não os preenchem. Distintos de
+    # `responsavel_id`: aqui é quem **deteve** o processo, não quem agiu (D6).
+    setor_origem_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("setor.id"), nullable=True
+    )
+    setor_destino_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("setor.id"), nullable=True
+    )
+    servidor_origem_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("usuario.id"), nullable=True
+    )
+    servidor_destino_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("usuario.id"), nullable=True
+    )
     # Nullable apenas para o evento de sistema `arquivamento_automatico` — CHECK
     # `ck_tramitacao_responsavel` (migration 0004, D3) preserva a obrigatoriedade
-    # para os demais eventos (despacho/devolução/conclusão).
+    # para os demais eventos (envio/devolução/reatribuição/conclusão).
     responsavel_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("usuario.id"), nullable=True
     )
@@ -523,6 +515,9 @@ class Tramitacao(Base):
         _enum_col(MotivoDevolucao, "motivo_devolucao"), nullable=True
     )
     justificativa: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Mensagem livre do Envio (change tramitacao-manual) — Devolução e
+    # Reatribuição usam `motivo`/`justificativa` acima, não este campo.
+    mensagem: Mapped[str | None] = mapped_column(Text, nullable=True)
     criado_em: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
@@ -599,6 +594,10 @@ class Notificacao(Base):
     )
     numero_processo: Mapped[str] = mapped_column(String(20), nullable=False)
     assunto: Mapped[str] = mapped_column(String(500), nullable=False)
+    # Change tramitacao-manual (D8) — justificativa da reatribuição, para
+    # REATRIBUIDO_PARA_VOCE; texto descritivo do novo destino, para
+    # DESTINO_CORRIGIDO. NULL para os demais tipos de notificação.
+    justificativa: Mapped[str | None] = mapped_column(Text, nullable=True)
     prazo_referencia: Mapped[date | None] = mapped_column(Date, nullable=True)
     lida_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     criado_em: Mapped[datetime] = mapped_column(

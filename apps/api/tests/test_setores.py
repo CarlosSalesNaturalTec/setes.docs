@@ -299,13 +299,17 @@ def test_setor_inexistente_retorna_404(client, db):
 # --- Acesso negado (obrigatório) --------------------------------------------
 
 
-def test_gestor_recebe_403_em_todas_as_rotas_de_setor(client, db):
+def test_gestor_recebe_403_nas_rotas_de_escrita_de_setor(client, db):
+    """Change tramitacao-manual (design.md — fluxo de Reatribuição): a
+    listagem (GET) passou a ser aberta a qualquer autenticado, para a
+    cascata unidade→setor→servidor da tela de Tramitação; só as rotas de
+    escrita continuam admin-only."""
     unidade = _unidade(db)
     setor = _setor(db, unidade)
     gestor = _usuario(db, perfil=PerfilUsuario.GESTOR, email="gestor@example.com")
     token = _login(client, "gestor@example.com")
 
-    assert client.get(f"/unidades/{unidade.id}/setores", headers=_auth(token)).status_code == 403
+    assert client.get(f"/unidades/{unidade.id}/setores", headers=_auth(token)).status_code == 200
     assert client.post(
         f"/unidades/{unidade.id}/setores", json={"nome": "X", "sigla": "X"}, headers=_auth(token)
     ).status_code == 403
@@ -316,11 +320,12 @@ def test_gestor_recebe_403_em_todas_as_rotas_de_setor(client, db):
     db.refresh(setor)
     assert setor.ativo is True and setor.nome == "Gabinete"  # nada foi alterado
     logs = _logs_acesso_negado(db)
-    assert len(logs) == 5
+    assert len(logs) == 4
     assert all(log.usuario_id == gestor.id for log in logs)
 
 
-def test_servidor_recebe_403_em_todas_as_rotas_de_setor(client, db):
+def test_servidor_recebe_403_nas_rotas_de_escrita_de_setor(client, db):
+    """Ver docstring de `test_gestor_recebe_403_nas_rotas_de_escrita_de_setor`."""
     unidade = _unidade(db)
     setor = _setor(db, unidade)
     servidor = _usuario(
@@ -332,7 +337,7 @@ def test_servidor_recebe_403_em_todas_as_rotas_de_setor(client, db):
     )
     token = _login(client, "srv@example.com")
 
-    assert client.get(f"/unidades/{unidade.id}/setores", headers=_auth(token)).status_code == 403
+    assert client.get(f"/unidades/{unidade.id}/setores", headers=_auth(token)).status_code == 200
     assert client.post(
         f"/unidades/{unidade.id}/setores", json={"nome": "X", "sigla": "X"}, headers=_auth(token)
     ).status_code == 403
@@ -343,5 +348,5 @@ def test_servidor_recebe_403_em_todas_as_rotas_de_setor(client, db):
     db.refresh(setor)
     assert setor.ativo is True and setor.nome == "Gabinete"
     logs = _logs_acesso_negado(db)
-    assert len(logs) == 5
+    assert len(logs) == 4
     assert all(log.usuario_id == servidor.id for log in logs)

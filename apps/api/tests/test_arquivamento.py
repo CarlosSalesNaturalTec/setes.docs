@@ -6,17 +6,17 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from app.db.models import PerfilUsuario, StatusProcesso, TipoEventoTramitacao, Tramitacao
+from app.db.models import StatusProcesso, TipoEventoTramitacao, Tramitacao
 from app.services.arquivamento import arquivar_vencidos
-from tests.helpers_processo import auth, login, processo_concluido, tipo_com_roteiro, unidade, usuario
+from tests.helpers_processo import auth, login, processo_concluido, servidor_com_setor, tipo_processo, unidade
 
 AGORA = datetime(2026, 7, 15, 3, 0, 0, tzinfo=timezone.utc)
 
 
 def _base(db):
     cofin = unidade(db, "COFIN")
-    criador = usuario(db, perfil=PerfilUsuario.SERVIDOR, unidade_id=cofin.id)
-    tipo = tipo_com_roteiro(db, cofin)
+    criador, _setor_criador = servidor_com_setor(db, cofin)
+    tipo = tipo_processo(db)
     return cofin, criador, tipo
 
 

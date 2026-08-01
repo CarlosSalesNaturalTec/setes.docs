@@ -42,7 +42,7 @@ describe("RelatorioAuditoriaPage", () => {
     listarUnidades.mockReset().mockResolvedValue([{ id: "un-1", nome: "COFIN", sigla: "COFIN", ativo: true }]);
     listarTiposProcesso
       .mockReset()
-      .mockResolvedValue([{ id: "tp-1", nome: "Licitação", ativo: true, roteiro: { etapas: [] } }]);
+      .mockResolvedValue([{ id: "tp-1", nome: "Licitação", ativo: true, prazo_anonimizacao_anos: 5 }]);
   });
 
   it("renderiza o relatório com dados (US 9.2 Cen.1)", async () => {

@@ -3,15 +3,15 @@ tramitação imutável). US 2.6 Cen.1/2 e idempotência (D4)."""
 
 from __future__ import annotations
 
-from app.db.models import PerfilUsuario, Processo, StatusProcesso, TipoEventoTramitacao, Tramitacao
+from app.db.models import Processo, StatusProcesso, TipoEventoTramitacao, Tramitacao
 from app.services import sigilo as sigilo_service
-from tests.helpers_processo import auth, login, tipo_com_roteiro, unidade, usuario
+from tests.helpers_processo import auth, enviar_para, login, servidor_com_setor, tipo_processo, unidade
 
 
 def _processo_em_tramitacao(client, db):
     cofin, ajur = unidade(db, "COFIN"), unidade(db, "AJUR")
-    tipo = tipo_com_roteiro(db, cofin, ajur)
-    criador = usuario(db, perfil=PerfilUsuario.SERVIDOR, unidade_id=cofin.id)
+    tipo = tipo_processo(db)
+    criador, _setor = servidor_com_setor(db, cofin)
     token = login(client, criador.email)
     resp = client.post(
         "/processos",
@@ -20,7 +20,7 @@ def _processo_em_tramitacao(client, db):
     )
     assert resp.status_code == 201, resp.text
     processo_id = resp.json()["id"]
-    client.post(f"/processos/{processo_id}/despachar", json={}, headers=auth(token))
+    enviar_para(client, db, processo_id=processo_id, token_origem=token, unidade_destino=ajur)
     processo = db.get(Processo, processo_id)
     db.refresh(processo)
     return processo, criador

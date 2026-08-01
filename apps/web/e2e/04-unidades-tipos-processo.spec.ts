@@ -13,7 +13,8 @@ const GESTORA = {
   senha: "SenhaGestora1",
 };
 
-// Task 12.4 — Administrador cadastra unidade e tipo de processo com roteiro;
+// Task 12.4 — Administrador cadastra unidade e tipo de processo (change
+// tramitacao-manual: sem roteiro — tipo de processo é só classificação);
 // Gestor tenta as mesmas ações (admin-only, D4) e recebe acesso negado.
 test("Administrador cadastra unidade/tipo de processo; Gestor recebe acesso negado nas mesmas ações", async ({
   page,
@@ -28,8 +29,6 @@ test("Administrador cadastra unidade/tipo de processo; Gestor recebe acesso nega
 
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_PROCESSO.nome);
-  await page.getByLabel("Adicionar unidade ao roteiro").selectOption({ label: NOVA_UNIDADE.nome });
-  await page.getByRole("button", { name: "Adicionar etapa" }).click();
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
   await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
 

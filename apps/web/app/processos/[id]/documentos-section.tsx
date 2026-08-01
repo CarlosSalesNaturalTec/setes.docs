@@ -24,7 +24,7 @@ export function podeRemoverDocumento(status: string, eventos: EventoHistorico[])
   if (status === "aberto") return true;
   if (status !== "em_tramitacao") return false;
   const movimentos = eventos.filter(
-    (e) => e.tipo_evento === "despacho" || e.tipo_evento === "devolucao",
+    (e) => e.tipo_evento === "envio" || e.tipo_evento === "devolucao",
   );
   if (movimentos.length === 0) return false;
   return movimentos[movimentos.length - 1].tipo_evento === "devolucao";

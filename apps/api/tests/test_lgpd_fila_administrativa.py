@@ -15,15 +15,15 @@ from app.db.models import (
     StatusSolicitacaoLgpd,
     TipoEventoLog,
 )
-from tests.helpers_processo import auth, login, processo_ativo, tipo_com_roteiro, unidade, usuario
+from tests.helpers_processo import auth, login, processo_ativo, servidor_com_setor, tipo_processo, unidade, usuario
 
 CPF_VALIDO = "52998224725"
 
 
 def _processo_com_interessado(db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id, email=f"criador-{cofin.id}@ex.com")
+    tipo = tipo_processo(db)
+    criador, _setor_criador = servidor_com_setor(db, cofin, email=f"criador-{cofin.id}@ex.com")
     processo = processo_ativo(db, unidade=cofin, criador=criador, tipo=tipo, prazo_em=date.today())
     interessado = ProcessoInteressado(processo_id=processo.id, nome="Fulano de Tal", documento=CPF_VALIDO)
     db.add(interessado)

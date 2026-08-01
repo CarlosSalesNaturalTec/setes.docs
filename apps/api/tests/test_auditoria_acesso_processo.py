@@ -5,15 +5,15 @@ toca `log_seguranca` e dado pessoal). Cobre D1/D2/D3 de
 from __future__ import annotations
 
 from app.db.models import LogSeguranca, TipoEventoLog
-from tests.helpers_processo import auth, login, tipo_com_roteiro, unidade, usuario
+from tests.helpers_processo import auth, login, servidor_com_setor, tipo_processo, unidade, usuario
 
 PDF = b"%PDF-1.4\n1 0 obj\n<< >>\nendobj\n%%EOF"
 
 
 def _processo_de_outra_unidade(client, db, *, sigiloso: bool = False):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    dono = usuario(db, unidade_id=cofin.id, email=f"dono-{cofin.id}@ex.com")
+    tipo = tipo_processo(db)
+    dono, _setor_dono = servidor_com_setor(db, cofin, email=f"dono-{cofin.id}@ex.com")
     token_dono = login(client, dono.email)
     proc_id = client.post(
         "/processos",
@@ -177,8 +177,8 @@ def test_auditor_nao_pode_remover_documento_em_outra_unidade(client, db):
 
 def test_leitura_na_propria_unidade_nao_gera_evento_de_auditoria(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    auditor = usuario(db, unidade_id=cofin.id, email=f"auditor4-{cofin.id}@ex.com")
+    tipo = tipo_processo(db)
+    auditor, _setor_auditor = servidor_com_setor(db, cofin, email=f"auditor4-{cofin.id}@ex.com")
     auditor.pode_auditar = True
     db.commit()
     token = login(client, auditor.email)

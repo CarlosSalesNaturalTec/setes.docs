@@ -83,6 +83,19 @@ class UnidadesGeridasRequest(BaseModel):
     unidade_ids: list[str] = Field(min_length=1)
 
 
+class UsuarioResumoResponse(BaseModel):
+    """Item mínimo para selects de destino de tramitação (change
+    tramitacao-manual) — só id/nome, nunca e-mail ou dados pessoais de
+    contato: qualquer servidor autenticado pode consultar, não só Admin/Gestor."""
+
+    id: str
+    nome: str
+
+    @classmethod
+    def de(cls, usuario) -> "UsuarioResumoResponse":
+        return cls(id=str(usuario.id), nome=usuario.nome)
+
+
 class ListaUsuariosResponse(BaseModel):
     items: list[UsuarioResponse]
     total: int

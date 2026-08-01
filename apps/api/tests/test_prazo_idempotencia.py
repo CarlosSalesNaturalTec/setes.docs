@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 from app.db.models import Notificacao, StatusProcesso, TipoNotificacao
 from app.services.notificacao import expurgar_notificacoes_lidas
 from app.services.prazo import verificar_prazos
-from tests.helpers_processo import processo_ativo, tipo_com_roteiro, unidade, usuario
+from tests.helpers_processo import processo_ativo, servidor_com_setor, tipo_processo, unidade, usuario
 
 AGORA = datetime(2026, 7, 16, 3, 0, 0, tzinfo=timezone.utc)
 HOJE = AGORA.date()
@@ -17,8 +17,8 @@ HOJE = AGORA.date()
 
 def _base(db):
     cofin = unidade(db, "COFIN")
-    criador = usuario(db, unidade_id=cofin.id)
-    tipo = tipo_com_roteiro(db, cofin)
+    criador, _setor_criador = servidor_com_setor(db, cofin)
+    tipo = tipo_processo(db)
     return cofin, criador, tipo
 
 

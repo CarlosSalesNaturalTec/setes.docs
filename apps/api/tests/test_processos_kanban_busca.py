@@ -12,9 +12,9 @@ from tests.helpers_processo import (
     auth,
     gestor_de,
     login,
-    tipo_com_roteiro,
+    servidor_com_setor,
+    tipo_processo,
     unidade,
-    usuario,
 )
 
 
@@ -45,13 +45,13 @@ def _contar_queries(fn):
 
 def test_servidor_so_ve_processos_da_propria_unidade(client, db):
     cofin, ajur = unidade(db, "COFIN"), unidade(db, "AJUR")
-    tipo = tipo_com_roteiro(db, cofin, ajur)
+    tipo = tipo_processo(db)
 
-    usuario(db, unidade_id=cofin.id, email="c@ex.com")
+    servidor_com_setor(db, cofin, email="c@ex.com")
     token_cofin = login(client, "c@ex.com")
     _cria_processo(client, token_cofin, tipo, "Processo COFIN")
 
-    usuario(db, unidade_id=ajur.id, email="a@ex.com")
+    servidor_com_setor(db, ajur, email="a@ex.com")
     token_ajur = login(client, "a@ex.com")
 
     resp = client.get("/processos", headers=auth(token_ajur))
@@ -62,7 +62,7 @@ def test_servidor_so_ve_processos_da_propria_unidade(client, db):
 
 def test_kanban_vazio_servidor(client, db):
     cofin = unidade(db, "COFIN")
-    usuario(db, unidade_id=cofin.id, email="v@ex.com")
+    servidor_com_setor(db, cofin, email="v@ex.com")
     token = login(client, "v@ex.com")
     resp = client.get("/processos", headers=auth(token))
     assert resp.json()["items"] == []
@@ -71,12 +71,12 @@ def test_kanban_vazio_servidor(client, db):
 
 def test_gestor_ve_consolidado_e_filtra_por_unidade(client, db):
     cofin, ajur, dirad = unidade(db, "COFIN"), unidade(db, "AJUR"), unidade(db, "DIRAD")
-    tipo_c = tipo_com_roteiro(db, cofin, nome="TC")
-    tipo_a = tipo_com_roteiro(db, ajur, nome="TA")
+    tipo_c = tipo_processo(db, nome="TC")
+    tipo_a = tipo_processo(db, nome="TA")
 
-    usuario(db, unidade_id=cofin.id, email="sc@ex.com")
+    servidor_com_setor(db, cofin, email="sc@ex.com")
     _cria_processo(client, login(client, "sc@ex.com"), tipo_c, "P COFIN")
-    usuario(db, unidade_id=ajur.id, email="sa@ex.com")
+    servidor_com_setor(db, ajur, email="sa@ex.com")
     _cria_processo(client, login(client, "sa@ex.com"), tipo_a, "P AJUR")
 
     gestor_de(db, cofin, ajur, email="gestor@ex.com")
@@ -100,8 +100,8 @@ def test_ordenacao_por_prazo_vencidos_primeiro(client, db):
     from app.db.models import Processo
 
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    usuario(db, unidade_id=cofin.id, email="ord@ex.com")
+    tipo = tipo_processo(db)
+    servidor_com_setor(db, cofin, email="ord@ex.com")
     token = login(client, "ord@ex.com")
 
     _cria_processo(client, token, tipo, "Futuro", prazo=30)
@@ -120,8 +120,8 @@ def test_ordenacao_por_prazo_vencidos_primeiro(client, db):
 
 def test_busca_por_numero_exato(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    usuario(db, unidade_id=cofin.id, email="b@ex.com")
+    tipo = tipo_processo(db)
+    servidor_com_setor(db, cofin, email="b@ex.com")
     token = login(client, "b@ex.com")
     proc = _cria_processo(client, token, tipo, "Alvo")
 
@@ -137,8 +137,8 @@ def test_busca_por_numero_exato(client, db):
 
 def test_card_do_kanban_traz_tipo_unidade_e_data_criacao(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin, nome="Licitação")
-    usuario(db, unidade_id=cofin.id, email="card@ex.com")
+    tipo = tipo_processo(db, nome="Licitação")
+    servidor_com_setor(db, cofin, email="card@ex.com")
     token = login(client, "card@ex.com")
     proc = _cria_processo(client, token, tipo, "Processo card")
 
@@ -153,8 +153,8 @@ def test_card_do_kanban_traz_tipo_unidade_e_data_criacao(client, db):
 
 def test_listar_kanban_sem_n_mais_1_ao_incluir_tipo_e_unidade(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin, nome="Licitação")
-    usuario(db, unidade_id=cofin.id, email="n1@ex.com")
+    tipo = tipo_processo(db, nome="Licitação")
+    servidor_com_setor(db, cofin, email="n1@ex.com")
     token = login(client, "n1@ex.com")
     _cria_processo(client, token, tipo, "P1")
 
@@ -172,8 +172,8 @@ def test_listar_kanban_sem_n_mais_1_ao_incluir_tipo_e_unidade(client, db):
 
 def test_busca_sem_n_mais_1_ao_incluir_tipo_e_unidade(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin, nome="Licitação")
-    usuario(db, unidade_id=cofin.id, email="n2@ex.com")
+    tipo = tipo_processo(db, nome="Licitação")
+    servidor_com_setor(db, cofin, email="n2@ex.com")
     token = login(client, "n2@ex.com")
     _cria_processo(client, token, tipo, "Contrato 1")
 
@@ -194,12 +194,12 @@ def test_busca_sem_n_mais_1_ao_incluir_tipo_e_unidade(client, db):
 
 def test_busca_por_assunto_restrita_a_unidade(client, db):
     cofin, ajur = unidade(db, "COFIN"), unidade(db, "AJUR")
-    tipo_c = tipo_com_roteiro(db, cofin, nome="TC")
-    tipo_a = tipo_com_roteiro(db, ajur, nome="TA")
+    tipo_c = tipo_processo(db, nome="TC")
+    tipo_a = tipo_processo(db, nome="TA")
 
-    usuario(db, unidade_id=cofin.id, email="bc@ex.com")
+    servidor_com_setor(db, cofin, email="bc@ex.com")
     _cria_processo(client, login(client, "bc@ex.com"), tipo_c, "Contrato especial")
-    usuario(db, unidade_id=ajur.id, email="ba@ex.com")
+    servidor_com_setor(db, ajur, email="ba@ex.com")
     token_ajur = login(client, "ba@ex.com")
     _cria_processo(client, token_ajur, tipo_a, "Contrato especial")
 
@@ -211,7 +211,7 @@ def test_busca_por_assunto_restrita_a_unidade(client, db):
 
 def test_busca_sem_resultados(client, db):
     cofin = unidade(db, "COFIN")
-    usuario(db, unidade_id=cofin.id, email="sr@ex.com")
+    servidor_com_setor(db, cofin, email="sr@ex.com")
     token = login(client, "sr@ex.com")
     resp = client.get("/processos/busca?assunto=inexistente", headers=auth(token))
     assert resp.json()["total"] == 0

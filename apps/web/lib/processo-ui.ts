@@ -46,8 +46,9 @@ export const MOTIVOS_DEVOLUCAO: { valor: string; rotulo: string }[] = [
 ];
 
 const ROTULO_EVENTO: Record<string, string> = {
-  despacho: "Despacho",
+  envio: "Envio",
   devolucao: "Devolução",
+  reatribuicao: "Reatribuição",
   conclusao: "Conclusão",
 };
 

@@ -8,9 +8,9 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
 
 ## 2. Personas
 
-* **Servidor Operacional:** Servidor de uma unidade administrativa (ex.: COFIN, AJUR). É o executor do dia a dia: cria novos processos, despacha para a próxima unidade conforme o roteiro predefinido, anexa documentos, assina documentos com certificado digital e consulta o histórico de processos em que atuou. Sua principal dor é a falta de visibilidade do que chegou para ele e a incerteza sobre o caminho correto de tramitação. Ele só vê e movimenta processos da sua própria unidade.
-* **Gestor:** Responsável por uma ou mais unidades administrativas. Visualiza dashboards de desempenho, analisa gargalos, gera relatórios de produtividade e toma decisões a partir dos KPIs. Pode ver todos os processos das unidades que gerencia e cadastrar novos usuários na sua unidade. Sua principal dor é não saber onde os processos estão travados nem quem está sobrecarregado.
-* **Administrador do Sistema (Super Admin):** Pessoa da equipe central de TI ou administração dedicada. Cadastra unidades, tipos de processo, perfis de acesso, roteiros de tramitação e usuários. É o guardião da configuração estrutural do sistema. Sua principal dor é a sobrecarga operacional se não houver delegação de cadastros básicos aos chefes de unidade.
+* **Servidor Operacional:** Servidor de uma unidade administrativa (ex.: COFIN, AJUR). É o executor do dia a dia: cria novos processos, envia-os explicitamente a outro servidor (unidade, setor e servidor de destino), anexa documentos, assina documentos com certificado digital e consulta o histórico de processos em que atuou. Sua principal dor é a falta de visibilidade do que chegou para ele e a incerteza sobre quem deve tratar cada processo. Ele só vê e movimenta processos da sua própria unidade.
+* **Gestor:** Responsável por uma ou mais unidades administrativas. Visualiza dashboards de desempenho, analisa gargalos, gera relatórios de produtividade e toma decisões a partir dos KPIs. Pode ver todos os processos das unidades que gerencia, cadastrar novos usuários na sua unidade e corrigir atribuições indevidas (Reatribuição) ou concluir processos da sua unidade. Sua principal dor é não saber onde os processos estão travados nem quem está sobrecarregado.
+* **Administrador do Sistema (Super Admin):** Pessoa da equipe central de TI ou administração dedicada. Cadastra unidades, setores, tipos de processo, perfis de acesso e usuários. É o guardião da configuração estrutural do sistema. Sua principal dor é a sobrecarga operacional se não houver delegação de cadastros básicos aos chefes de unidade.
 * **Cidadão / Parte Interessada Externa:** Pessoa sem autenticação no sistema. Acessa o portal de consulta pública para verificar o andamento de processos de seu interesse, pesquisando por número, assunto, tipo ou data. Sua principal dor é a falta de transparência e a necessidade de se deslocar ou telefonar para obter informação sobre um processo.
 * **Auditor / Controlador Interno:** Pessoa que precisa extrair dados para fiscalização e prestação de contas. Possui acesso a relatórios consolidados e, quando autorizado, pode visualizar processos de qualquer unidade, inclusive restritos ou sigilosos. Sua principal dor é a dificuldade de rastrear a cadeia completa de tramitação e decisões de um processo.
 
@@ -18,11 +18,11 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
 
 * **Dentro do Escopo:**
   * Autenticação própria do SETES.DOCS com login e senha
-  * Cadastro e gestão de usuários, unidades, tipos de processo e roteiros de tramitação
+  * Cadastro e gestão de usuários, unidades, setores e tipos de processo
   * Controle de acesso baseado em perfis (Administrador, Gestor, Servidor) com visibilidade restrita por unidade
   * Criação de processos com metadados (número, assunto, tipo, data, prazo, unidade de origem, interessados)
-  * Workflow roteirizado: tramitação de processos entre unidades conforme caminho predefinido por tipo de processo
-  * Quadro Kanban com colunas (Aberto, Em Tramitação, Concluído, Arquivado) e transições automáticas de status
+  * Tramitação manual: Envio, Devolução e Reatribuição com destino explícito (unidade, setor, servidor), e Conclusão como ação própria
+  * Quadro Kanban com colunas (Aberto, Em Tramitação, Concluído, Arquivado) e transições de status por ação explícita
   * Upload e anexação de documentos (PDF, Word, imagens) aos processos, com armazenamento no próprio sistema
   * ~~**Condicional ao Discovery Técnico:** Assinatura digital com certificado ICP-Brasil (e-CPF/e-CNPJ) com validade jurídica plena.~~ **REMOVIDO DO MVP — movido para a Fase 2** (decisão formalizada em 2026-07-27). O plano de contingência previsto neste item foi acionado: o MVP foi lançado sem assinatura digital, a interface não exibe o botão "Assinar" e os documentos tramitam sem assinatura. Critérios de aceite preservados no Épico 4 como backlog da Fase 2.
   * Notificações internas (ícone no sistema) e por e-mail para eventos relevantes (novo processo recebido, processo concluído, prazo próximo)
@@ -40,8 +40,7 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
   * Aplicativo mobile nativo — o MVP será responsivo para navegador, sem app dedicado
   * Integração com sistemas legados de organograma ou protocolo — cadastros serão manuais no MVP
   * Bloqueio de concorrência (dois usuários editando simultaneamente) — melhoria futura
-  * Tramitação livre (tipo e-mail) entre unidades — o MVP implementa apenas o modelo roteirizado
-  * Roteiros de tramitação condicionais (bifurcações baseadas em regras de negócio, ex.: "se valor > X, vá para unidade A; senão, vá para unidade B") — o MVP implementa apenas roteiros lineares sequenciais
+  * Tramitação em lote, delegação temporária ou substituto de férias — o MVP trata cada tramitação individualmente, por ação explícita do responsável atual
 
 ## 4. Histórias de Usuário e Critérios de Aceitação
 
@@ -246,9 +245,9 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
 * **US 2.1:** Como Servidor, eu quero criar um novo processo administrativo para dar início à tramitação formal.
   * **Critérios de Aceitação:**
     * *Cenário 1: Criação de processo com dados obrigatórios*
-      * **Dado** que estou autenticado como Servidor da unidade COFIN
+      * **Dado** que estou autenticado como Servidor da unidade COFIN, setor "Protocolo"
       * **Quando** preencho todos os campos obrigatórios (assunto, tipo de processo, interessados, prazo em dias corridos) e confirmo a criação
-      * **Então** o processo é criado com status "Aberto", recebe um número único gerado automaticamente no formato AAAA/NNNNNN (ano com 4 dígitos + sequencial com 6 dígitos, reiniciado a cada ano, ex.: 2026/000001). Caso o sequencial anual atinja o limite de 999.999, o sistema deve expandir automaticamente para 7 dígitos (AAAA/NNNNNNN), registrando o evento em log de sistema. Caso o sequencial de 7 dígitos atinja o limite de 9.999.999, o sistema deve expandir para 8 dígitos (AAAA/NNNNNNNN), registrando o evento em log de sistema. O formato segue o padrão AAAA/N..., sem limite superior de dígitos. Atingir 10 milhões de processos em um ano implica alerta administrativo automático ao Administrador para avaliação da capacidade do sistema e aparece no quadro Kanban da minha unidade
+      * **Então** o processo é criado com status "Aberto", recebe um número único gerado automaticamente no formato AAAA/NNNNNN (ano com 4 dígitos + sequencial com 6 dígitos, reiniciado a cada ano, ex.: 2026/000001) — caso o sequencial anual atinja o limite de 999.999, o sistema expande automaticamente para 7 dígitos (AAAA/NNNNNNN), registrando o evento em log de sistema, e assim sucessivamente, sem limite superior de dígitos, com alerta administrativo automático ao atingir 10 milhões de processos em um ano — e **eu** passo a ser o servidor responsável, com unidade e setor atuais iguais aos meus. O processo aparece imediatamente no meu quadro de trabalho, antes de qualquer tramitação
     * *Cenário 2: Criação sem campos obrigatórios*
       * **Dado** que estou autenticado como Servidor
       * **Quando** tento criar um processo sem preencher o campo "assunto" ou "tipo de processo"
@@ -261,56 +260,98 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
       * **Dado** que estou criando um processo e seleciono tipo de interessado "Pessoa Jurídica"
       * **Quando** preencho um CNPJ com dígito verificador inválido no campo de interessado
       * **Então** o sistema exibe "CNPJ inválido — verifique o número informado" e não permite prosseguir
-
-      * *Cenário 3c: Tipo de processo sem roteiro definido*
-        * **Dado** que estou autenticado como Servidor da unidade COFIN
-        * **Quando** tento criar um processo selecionando um tipo de processo cujo roteiro de tramitação está vazio (sem unidades definidas)
-        * **Então** o sistema exibe "Este tipo de processo não possui roteiro de tramitação configurado. Entre em contato com o Administrador." e não permite a criação
+    * *Cenário 3c: Criação por Servidor sem setor vinculado*
+      * **Dado** que sou um Servidor cujo cadastro não possui setor vinculado
+      * **Quando** tento criar um processo
+      * **Então** o sistema rejeita a operação informando que é necessário estar vinculado a um setor, e nenhum processo é criado
   * **Definição do campo "Interessados":** O campo "interessados" aceita um ou mais nomes de pessoas físicas ou jurídicas, com os seguintes subcampos: nome completo (obrigatório, texto livre), CPF ou CNPJ (opcional, validado por algoritmo de dígito verificador) e tipo de participação (opcional, seleção entre: Requerente, Representado, Terceiro).
+  * **Nota (change tramitacao-manual):** a tramitação automática entre unidades conforme o tipo de processo (roteiro) deixou de existir — o cliente rejeitou esse modelo na avaliação da primeira entrega. O tipo de processo permanece apenas como classificação (filtro de Kanban, dashboard, prazo de anonimização LGPD); a criação não exige nenhuma configuração de fluxo.
 
-* **US 2.2:** Como Servidor, eu quero despachar um processo para a próxima unidade conforme o roteiro predefinido para que ele siga o fluxo correto de tramitação.
+* **US 2.2:** Como Servidor responsável por um processo, eu quero enviá-lo escolhendo explicitamente a unidade, o setor e o servidor de destino, para encaminhá-lo a quem deve tratá-lo.
   * **Critérios de Aceitação:**
-    * *Cenário 1: Despacho para a próxima unidade do roteiro*
-      * **Dado** que um processo do tipo "Licitação" está na unidade COFIN com status "Aberto" e seu roteiro define o caminho COFIN → AJUR → DIRAD
-      * **Quando** eu, servidor da COFIN, seleciono o processo e aciono a ação "Despachar"
-      * **Então** o sistema move o processo para a unidade AJUR, altera seu status para "Em Tramitação" e registra a data/hora e o responsável pelo envio no histórico
-    * *Cenário 2: Processo na última unidade do roteiro*
-      * **Dado** que um processo está na última unidade prevista no roteiro
-      * **Quando** o servidor da unidade aciona "Despachar"
-      * **Então** o sistema exibe a confirmação "Este é o destino final do roteiro. Deseja concluir o processo?" e, ao confirmar, altera o status para "Concluído"
-    * *Cenário 3: Cancelamento da conclusão na última unidade*
-      * **Dado** que um processo está na última unidade prevista no roteiro
-      * **Quando** o servidor da unidade aciona "Despachar" e, na confirmação modal, clica em "Cancelar"
-      * **Então** o processo permanece na unidade atual com o mesmo status, sem alteração no histórico, e o servidor retorna à tela de detalhes do processo
-    * *Cenário 4: Roteiro com unidade única*
-      * **Dado** que um tipo de processo possui roteiro com apenas uma unidade e um processo desse tipo foi criado nessa mesma unidade (status "Aberto")
-      * **Quando** o servidor da unidade aciona "Despachar"
-      * **Então** o sistema exibe a mensagem "Esta é a unidade de origem e destino final do roteiro. Deseja concluir o processo?" (equivalente ao Cenário 2). Ao confirmar, o status é alterado para "Concluído".
+    * *Cenário 1: Envio com destino válido*
+      * **Dado** que sou o servidor responsável por um processo "Aberto" na unidade COFIN
+      * **Quando** envio o processo para o setor "Análise" da unidade AJUR, servidor "Maria Silva", com a mensagem "Segue para parecer jurídico"
+      * **Então** o processo passa a "Em Tramitação", Maria Silva passa a ser a responsável, a unidade e o setor atuais passam a ser AJUR/Análise, o evento é gravado no histórico com a mensagem, e o prazo permanece inalterado
+    * *Cenário 2: Envio para si mesmo é rejeitado*
+      * **Dado** que sou o servidor responsável por um processo
+      * **Quando** tento enviá-lo escolhendo a mim mesmo como servidor de destino
+      * **Então** o sistema rejeita a operação informando que o destino deve ser um servidor diferente do responsável atual, e nada é alterado
+    * *Cenário 3: Setor fora da unidade escolhida é rejeitado*
+      * **Dado** que estou preenchendo o destino de um envio com a unidade AJUR
+      * **Quando** informo um setor que pertence à unidade COFIN
+      * **Então** o sistema rejeita a operação como dado inconsistente e nenhum evento é gravado
+    * *Cenário 4: Servidor inativo não é destino válido*
+      * **Dado** que o servidor "Carlos" do setor de destino está inativo
+      * **Quando** monto o destino do envio
+      * **Então** Carlos não aparece na lista de servidores selecionáveis, e uma tentativa direta de enviá-lo o processo é rejeitada
+    * *Cenário 5: Envio por quem não é o responsável atual*
+      * **Dado** que um processo está sob responsabilidade do Servidor B e eu sou outro servidor da mesma unidade
+      * **Quando** tento enviar esse processo
+      * **Então** o sistema rejeita a operação com acesso negado, nada é alterado, e a tentativa é registrada em log de segurança
+  * **Nota (change tramitacao-manual):** substitui o antigo despacho roteirizado — o destino deixa de ser derivado de um roteiro predefinido e passa a ser escolhido pelo servidor a cada envio.
 
-* **US 2.2b:** Como Servidor, eu quero devolver um processo para a unidade anterior para solicitar correções ou diligências antes de prosseguir com a tramitação.
+* **US 2.2b:** Como Servidor responsável por um processo, eu quero devolvê-lo ao remetente anterior, informando motivo e justificativa, para solicitar correções ou diligências antes de prosseguir com a tramitação.
   * **Critérios de Aceitação:**
-    * *Cenário 1: Devolução para a unidade anterior*
-      * **Dado** que um processo está na minha unidade e veio da unidade COFIN
-      * **Quando** aciono a ação "Devolver", seleciono um motivo (opções predefinidas: "Documentação insuficiente", "Correção de dados", "Diligência complementar") e, opcionalmente, adiciono uma justificativa em texto livre
-      * **Então** o processo retorna para a unidade COFIN com status "Em Tramitação", a devolução é registrada no histórico com data/hora, responsável, motivo e justificativa, e os servidores da COFIN recebem notificação de devolução
-    * *Cenário 2: Tentativa de devolução na primeira unidade do roteiro*
-      * **Dado** que um processo está na primeira unidade do roteiro
-      * **Quando** o servidor tenta acionar "Devolver"
-      * **Então** o sistema exibe "Não é possível devolver um processo que está na unidade de origem do roteiro" e a ação não é concluída
+    * *Cenário 1: Devolução retorna ao remetente correto*
+      * **Dado** que o Servidor A me enviou um processo e eu sou o responsável atual
+      * **Quando** devolvo o processo informando motivo "Documentação insuficiente" e uma justificativa
+      * **Então** o processo retorna ao Servidor A, à unidade e ao setor dele, o evento de devolução é gravado com motivo e justificativa, e o prazo permanece inalterado
+    * *Cenário 2: Devolução sem remetente anterior é bloqueada*
+      * **Dado** que criei um processo e ele nunca foi enviado a ninguém — ainda estou como responsável
+      * **Quando** tento devolvê-lo
+      * **Então** o sistema bloqueia a operação informando que não há remetente anterior para o qual devolver, e nada é alterado
     * *Cenário 3: Devolução sem seleção de motivo*
       * **Dado** que estou devolvendo um processo
       * **Quando** tento confirmar a devolução sem selecionar um motivo
       * **Então** o sistema exibe "Selecione um motivo para a devolução" e não conclui a ação
+  * **Nota (change tramitacao-manual):** o destino da devolução não é mais "a unidade anterior do roteiro" — é resolvido automaticamente a partir do histórico imutável (o remetente que enviou o processo ao responsável atual), e não é informado pelo usuário.
+
+* **US 2.2c:** Como Servidor responsável, remetente da última tramitação ou Gestor da unidade, eu quero reatribuir um processo a outro servidor da mesma unidade para corrigir uma atribuição indevida.
+  * **Critérios de Aceitação:**
+    * *Cenário 1: Servidor que recebeu indevidamente reatribui*
+      * **Dado** que recebi um processo por engano e o servidor correto é "João Souza", do setor Protocolo da mesma unidade
+      * **Quando** reatribuo o processo para João Souza informando a justificativa
+      * **Então** João Souza passa a ser o responsável, o setor atual passa a Protocolo, a unidade permanece a mesma, o status e o prazo permanecem inalterados, e o evento de reatribuição é gravado no histórico com a justificativa
+    * *Cenário 2: Reatribuição para outra unidade é rejeitada*
+      * **Dado** que estou reatribuindo um processo que se encontra na unidade COFIN
+      * **Quando** tento designar um servidor da unidade AJUR
+      * **Então** o sistema rejeita a operação informando que a reatribuição não muda de unidade e que devolução é a ação apropriada nesse caso
+    * *Cenário 3: Reatribuição para o mesmo servidor é rejeitada*
+      * **Dado** que sou o responsável atual por um processo
+      * **Quando** tento reatribuí-lo para mim mesmo
+      * **Então** o sistema rejeita a operação informando que o destino deve ser um servidor diferente do responsável atual
+    * *Cenário 4: Reatribuição por servidor sem papel autorizado*
+      * **Dado** que sou servidor da mesma unidade do processo, mas não sou o responsável atual, nem o remetente da última tramitação, nem Gestor da unidade
+      * **Quando** tento reatribuir o processo
+      * **Então** o sistema rejeita a operação com acesso negado, nada é alterado, e a tentativa é registrada em log de segurança
+  * **Nota (change tramitacao-manual):** cobre o caso que o modelo por roteiro não tratava — um servidor atribuído indevidamente dentro da unidade certa. Diferente do Envio/Devolução, pode ser acionada também pelo Gestor da unidade, e é ortogonal ao status (não transiciona a máquina de estados, não altera o prazo).
+
+* **US 2.2d:** Como Servidor responsável ou Gestor da unidade, eu quero concluir um processo por ação própria, independentemente de qualquer envio, quando o tratamento estiver encerrado.
+  * **Critérios de Aceitação:**
+    * *Cenário 1: Conclusão a partir de "Em Tramitação"*
+      * **Dado** que sou o servidor responsável por um processo "Em Tramitação"
+      * **Quando** aciono "Concluir" e confirmo
+      * **Então** o processo passa a "Concluído", o instante de conclusão é registrado, o prazo de arquivamento é congelado a partir do parâmetro vigente em configuração do sistema, e o evento é gravado no histórico
+    * *Cenário 2: Conclusão a partir de "Aberto"*
+      * **Dado** que criei um processo, ainda sou o responsável e ele nunca foi enviado
+      * **Quando** aciono "Concluir" e confirmo
+      * **Então** o processo passa diretamente de "Aberto" a "Concluído" — não é necessário enviá-lo a ninguém antes
+    * *Cenário 3: Cancelar a confirmação não altera nada*
+      * **Dado** que acionei "Concluir" e a confirmação foi exibida
+      * **Quando** cancelo
+      * **Então** o processo permanece no status anterior e nenhum evento é gravado
+  * **Nota (change tramitacao-manual):** a conclusão deixa de ser consequência de um despacho na "última etapa do roteiro" — vira ação própria, com botão dedicado, disponível ao responsável atual e ao Gestor da unidade.
 
 * **US 2.3:** Como Servidor, eu quero visualizar o quadro Kanban dos processos da minha unidade para acompanhar o status de cada um de forma intuitiva.
   * **Critérios de Aceitação:**
     * *Cenário 1: Exibição do Kanban por colunas de status*
       * **Dado** que estou autenticado como Servidor da unidade COFIN
       * **Quando** acesso a tela de Processos
-      * **Então** visualizo um quadro com colunas "Aberto", "Em Tramitação", "Concluído" e "Arquivado", cada uma contendo os cards dos processos correspondentes, com número, assunto, prazo e dias restantes visíveis em cada card. O Kanban é um quadro de **visualização**, não de manipulação direta. As transições de status ocorrem exclusivamente por meio de ações explícitas: o botão "Despachar" move o card de "Aberto" para "Em Tramitação" (ou para fora da unidade, se despachado para a próxima); o botão "Concluir" na última unidade move para "Concluído"; a rotina automática move de "Concluído" para "Arquivado". Os cards **NÃO são arrastáveis** entre colunas no MVP.
-    * *Cenário 2: Atualização automática após despacho*
-      * **Dado** que um processo foi despachado para minha unidade por outra unidade
-      * **Quando** eu estiver visualizando o Kanban e um novo processo for despachado para minha unidade
+      * **Então** visualizo um quadro com colunas "Aberto", "Em Tramitação", "Concluído" e "Arquivado", cada uma contendo os cards dos processos correspondentes, com número, assunto, prazo e dias restantes visíveis em cada card. O Kanban é um quadro de **visualização**, não de manipulação direta. As transições de status ocorrem exclusivamente por meio de ações explícitas: o botão "Tramitar" (Envio ou Devolução) move o card de "Aberto"/entre unidades; o botão "Concluir", disponível a qualquer momento para o responsável ou o Gestor da unidade, move para "Concluído"; a rotina automática move de "Concluído" para "Arquivado". A Reatribuição não move o card entre colunas (ortogonal ao status). Os cards **NÃO são arrastáveis** entre colunas no MVP.
+    * *Cenário 2: Atualização automática após envio*
+      * **Dado** que um processo foi enviado para minha unidade por outra unidade
+      * **Quando** eu estiver visualizando o Kanban e um novo processo for enviado para minha unidade
       * **Então** o indicador de notificações no menu superior é incrementado, e o novo processo aparece na coluna "Aberto" após eu realizar as ações de: clicar no ícone de notificações OU acionar o botão "Atualizar" do Kanban OU navegar para outra tela e retornar
     * *Cenário 3: Kanban vazio*
       * **Dado** que estou autenticado como Servidor de uma unidade recém-criada
@@ -321,17 +362,24 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
       * **Quando** visualizo o Kanban
       * **Então** os cards são ordenados por prazo (mais próximo do vencimento primeiro), e processos com prazo vencido aparecem no topo com os seguintes indicadores visuais: (a) o número de dias vencidos é exibido em cor vermelha com um ícone de relógio/calendário; (b) o texto do prazo no card utiliza peso de fonte bold; (c) a borda esquerda do card recebe uma barra vermelha de 4px de espessura
 
-* **US 2.4:** Como Servidor, eu quero ver o histórico completo de tramitação de um processo para saber por quais unidades ele passou e quanto tempo permaneceu em cada uma.
+* **US 2.4:** Como Servidor, eu quero ver o histórico completo de tramitação de um processo — incluindo por quais unidades, setores e servidores ele passou — para acompanhar quem deteve o processo em cada etapa.
   * **Critérios de Aceitação:**
     * *Cenário 1: Visualização do histórico*
-      * **Dado** que um processo já passou por três unidades (COFIN → AJUR → DIRAD)
+      * **Dado** que um processo foi criado, enviado, devolvido, reenviado, reatribuído e concluído
       * **Quando** acesso a tela de detalhes do processo e clico em "Histórico"
-      * **Então** visualizo uma linha do tempo com cada movimentação, contendo: unidade de origem, unidade de destino, servidor responsável pelo envio, data/hora e status do processo naquele momento
-
-      * *Cenário 2: Histórico de processo recém-criado sem movimentações*
-        * **Dado** que um processo foi criado mas ainda não foi despachado para nenhuma unidade
-        * **Quando** acesso a tela de detalhes do processo e clico em "Histórico"
-        * **Então** visualizo a mensagem "Nenhuma movimentação registrada" e a data de criação do processo como informação complementar
+      * **Então** visualizo uma linha do tempo com cada evento em ordem cronológica, contendo: tipo de ação (Envio/Devolução/Reatribuição/Conclusão), unidade, setor e servidor de origem e de destino, responsável pela ação, mensagem ou justificativa, status resultante e data/hora
+    * *Cenário 2: Histórico de processo recém-criado sem movimentações*
+      * **Dado** que um processo foi criado mas ainda não foi enviado a ninguém
+      * **Quando** acesso a tela de detalhes do processo e clico em "Histórico"
+      * **Então** visualizo a mensagem "Nenhuma movimentação registrada" e a data de criação do processo como informação complementar
+    * *Cenário 3: Histórico não é alterável*
+      * **Dado** que existem eventos registrados no histórico de um processo
+      * **Quando** procuro uma forma de editar ou excluir qualquer evento, pela interface ou pela API
+      * **Então** não existe nenhuma rota, botão ou método que permita alterar ou remover um evento já gravado
+    * *Cenário 4: Gestor que reatribui é responsável, não detentor*
+      * **Dado** que o Gestor da unidade COFIN reatribui um processo do Servidor B para o Servidor C, sem nunca tê-lo detido
+      * **Quando** consulto o evento de reatribuição
+      * **Então** o responsável é o Gestor, o servidor de origem é B e o servidor de destino é C — o Gestor não aparece como detentor em nenhum momento da cadeia
 
 * **US 2.5:** Como Sistema, eu devo arquivar automaticamente processos concluídos após o prazo configurado para manter o quadro Kanban focado nos processos ativos.
   * **Critérios de Aceitação:**
@@ -649,7 +697,7 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
     * *Cenário 1: Cadastro de unidade*
       * **Dado** que estou autenticado como Administrador
       * **Quando** cadastro uma nova unidade com nome (ex.: COFIN), sigla e gestor responsável
-      * **Então** a unidade fica disponível para vinculação de usuários e para ser incluída em roteiros de tramitação
+      * **Então** a unidade fica disponível para vinculação de usuários e como destino de tramitação
     * *Cenário 2: Edição de unidade existente*
       * **Dado** que estou autenticado como Administrador e a unidade COFIN já existe
       * **Quando** altero o nome, sigla ou gestor responsável da unidade COFIN
@@ -661,7 +709,7 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
     * *Cenário 4: Desativação de unidade sem processos pendentes*
       * **Dado** que estou autenticado como Administrador e a unidade COFIN não possui processos em andamento
       * **Quando** desativo a unidade COFIN
-      * **Então** a unidade é marcada como inativa, seus usuários vinculados são automaticamente desvinculados de unidade e setor (perdendo acesso ao sistema até serem realocados por um Administrador), e a unidade deixa de aparecer como opção em novos roteiros de tramitação, mas permanece no histórico de processos já tramitados
+      * **Então** a unidade é marcada como inativa, seus usuários vinculados são automaticamente desvinculados de unidade e setor (perdendo acesso ao sistema até serem realocados por um Administrador), e a unidade deixa de aparecer como opção de destino em novas tramitações, mas permanece no histórico de processos já tramitados
     * *Cenário 5: Cadastro de setores da unidade*
       * **Dado** que estou autenticado como Administrador e a unidade COFIN existe
       * **Quando** cadastro um setor com nome e sigla nessa unidade
@@ -675,24 +723,17 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
       * **Quando** desativo a unidade COFIN, confirmando o aviso que exibe a quantidade de setores afetados
       * **Então** a unidade e todos os seus setores passam a inativos. Reativar a unidade **não** reativa os setores: cada um exige reativação explícita.
 
-* **US 8.2:** Como Administrador, eu quero cadastrar tipos de processo e definir seus roteiros de tramitação para que o sistema conduza cada processo pelo caminho correto.
+* **US 8.2:** Como Administrador, eu quero cadastrar tipos de processo para classificar os processos criados no sistema.
   * **Critérios de Aceitação:**
-    * *Cenário 1: Definição de roteiro de tramitação*
+    * *Cenário 1: Cadastro de tipo de processo*
       * **Dado** que estou autenticado como Administrador
-      * **Quando** crio ou edito um tipo de processo (ex.: "Licitação") e defino a sequência de unidades: COFIN → AJUR → DIRAD
-      * **Então** todos os processos criados com esse tipo seguirão esse roteiro obrigatório, e as unidades de destino aparecerão como opções durante o despacho
-    * *Cenário 2: Alteração de roteiro já em uso*
-      * **Dado** que existem processos em andamento do tipo "Licitação"
-      * **Quando** altero o roteiro do tipo "Licitação"
-      * **Então** o novo roteiro se aplica apenas a novos processos criados após a alteração; processos em andamento mantêm o roteiro vigente no momento de sua criação
-    * *Cenário 3: Tipo de processo com roteiro vazio*
-      * **Dado** que estou autenticado como Administrador
-      * **Quando** tento criar um tipo de processo sem adicionar nenhuma unidade ao roteiro de tramitação
-      * **Então** o sistema exibe "O roteiro deve conter ao menos uma unidade" e não conclui a criação
-    * *Cenário 4: Tipo de processo com nome duplicado*
+      * **Quando** crio um tipo de processo informando apenas o nome (ex.: "Licitação")
+      * **Então** o tipo é criado como ativo e passa a estar disponível na criação de processos (US 2.1), no filtro do Kanban e do dashboard, e no prazo de anonimização LGPD (US 10.3)
+    * *Cenário 2: Tipo de processo com nome duplicado*
       * **Dado** que já existe um tipo de processo chamado "Licitação"
       * **Quando** tento criar outro tipo de processo com o mesmo nome "Licitação"
       * **Então** o sistema exibe "Já existe um tipo de processo com este nome" e não conclui a criação
+  * **Nota (change tramitacao-manual):** o tipo de processo deixou de determinar o fluxo de tramitação — não há mais roteiro (sequência predefinida de unidades) para definir, alterar ou validar. O destino de cada tramitação é escolhido explicitamente pelo servidor a cada ação (Envio, Devolução, Reatribuição — US 2.2, 2.2b, 2.2c).
 
 * **US 8.3:** Como Administrador, eu quero conceder e revogar permissão de auditoria a usuários específicos para que auditores autorizados possam acessar processos sigilosos conforme as regras de auditoria.
   * **Critérios de Aceitação:**
@@ -876,9 +917,9 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
 5. Gestores podem visualizar processos de todas as unidades que gerenciam e cadastrar usuários em suas unidades
 6. Administradores têm acesso irrestrito a todos os processos, unidades e configurações do sistema
 7. O sistema deve gerar automaticamente um número único sequencial para cada processo criado
-8. Cada tipo de processo deve ter um roteiro de tramitação predefinido (sequência ordenada de unidades)
-9. O envio de um processo para a próxima unidade do roteiro deve ser feito pelo servidor da unidade atual por meio da ação "Despachar"
-10. O sistema deve alterar automaticamente o status do processo conforme seu avanço: "Aberto" ao ser criado, "Em Tramitação" ao ser despachado pela primeira vez, "Concluído" ao chegar à última unidade do roteiro e ser despachado
+8. O processo deve nascer atribuído ao servidor que o criou (unidade, setor e servidor atuais iguais aos do criador), aparecendo imediatamente na área de trabalho dele
+9. O envio de um processo (unidade, setor e servidor de destino explícitos) deve ser feito pelo servidor responsável atual por meio da ação "Enviar"
+10. O sistema deve alterar o status do processo conforme a ação realizada: "Aberto" ao ser criado, "Em Tramitação" ao ser enviado ou devolvido pela primeira vez, "Concluído" pela ação explícita de Conclusão (disponível ao responsável atual ou ao Gestor da unidade, independentemente de qualquer envio)
 11. O quadro Kanban deve exibir os processos agrupados por status (Aberto, Em Tramitação, Concluído, Arquivado)
 12. Processos concluídos devem ser arquivados automaticamente após um número configurável de dias (padrão: 30)
 13. O sistema deve permitir upload de documentos nos formatos PDF, DOC, DOCX, JPG e PNG com tamanho máximo de 20 MB por arquivo
@@ -893,7 +934,8 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
 22. A consulta pública deve permitir pesquisa de processos por número, assunto, tipo de processo e período, sem exigir autenticação
 23. Processos marcados como sigilosos não devem aparecer nos resultados da consulta pública
 24. O perfil do usuário deve exibir a relação de processos em que atuou e documentos assinados
-25. Toda movimentação de processo deve ser registrada em histórico imutável com: data, hora, unidade de origem, unidade de destino, servidor responsável e ação realizada
+25. Toda movimentação de processo deve ser registrada em histórico imutável com: data, hora, unidade/setor/servidor de origem e de destino, responsável pela ação e tipo de ação realizada (Envio, Devolução, Reatribuição ou Conclusão)
+25b. O sistema deve permitir reatribuir um processo a outro servidor da mesma unidade (correção de atribuição indevida), sem alterar status nem prazo, acionável pelo responsável atual, pelo remetente da última tramitação ou pelo Gestor da unidade
 26. O sistema deve permitir ao Administrador cadastrar, editar e desativar unidades e tipos de processo
 27. O sistema deve permitir que usuários com perfil de Auditor visualizem qualquer processo do sistema, inclusive restritos ou sigilosos, mediante autorização do Administrador
 28. O sistema deve permitir que usuários com perfil de Auditor gerem relatórios consolidados de tramitação filtrando por período, unidade ou tipo de processo
@@ -902,7 +944,7 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
 31. O sistema deve encerrar automaticamente sessões após 30 minutos de inatividade do usuário
 32. O sistema deve permitir busca e filtro interno de processos por número, assunto e período para usuários autenticados
 33. O sistema deve permitir ao Administrador desativar usuários, impedindo seu acesso ao sistema
-34. O sistema deve permitir ao servidor da unidade atual devolver um processo para a unidade anterior do roteiro, mediante seleção de motivo predefinido e justificativa opcional
+34. O sistema deve permitir ao servidor responsável devolver um processo ao remetente anterior — resolvido automaticamente a partir do histórico, nunca informado pelo usuário —, mediante seleção de motivo predefinido e justificativa opcional
 35. O sistema deve permitir ao Administrador configurar parâmetros operacionais (prazo de arquivamento, timeout de sessão) via interface de administração, sem necessidade de intervenção no código-fonte
 36. Dados pessoais de interessados (CPF/CNPJ) não devem ser exibidos na consulta pública; apenas o nome do interessado será visível ao cidadão
 37. O sistema deve disponibilizar canal de solicitação para que titulares de dados pessoais requeiram a exclusão ou anonimização de seus dados, em conformidade com a LGPD
@@ -922,7 +964,7 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
 * **Usabilidade:** A interface deve ser responsiva, permitindo o uso por navegadores de desktop e dispositivos móveis. O sistema deve seguir os padrões visuais definidos pelo cliente nas telas de referência. As ações mais frequentes (despachar processo, anexar documento) devem ser acessíveis em no máximo dois cliques a partir da tela principal.
 * **Conformidade Legal:** O sistema deve estar em conformidade com a Lei Geral de Proteção de Dados (LGPD) no tratamento de dados pessoais de servidores, interessados e cidadãos. *(FASE 2 — Épico 4, fora do MVP)* As assinaturas digitais devem atender aos requisitos da MP 2.200-2/2001 e normas da ICP-Brasil. Os registros de tramitação devem atender aos requisitos de auditoria para órgãos públicos.
 * **Escalabilidade:** A arquitetura deve suportar o crescimento gradual de usuários e processos sem degradação significativa, comportando no MVP até 500 usuários ativos e 10.000 processos simultâneos.
-* **Manutenibilidade:** A configuração de unidades, tipos de processo, roteiros e prazos de arquivamento deve ser dinâmica (via interface de administração), sem necessidade de intervenção no código-fonte.
+* **Manutenibilidade:** A configuração de unidades, setores, tipos de processo e prazos de arquivamento deve ser dinâmica (via interface de administração), sem necessidade de intervenção no código-fonte.
 
 ## 7. Métricas de Sucesso
 

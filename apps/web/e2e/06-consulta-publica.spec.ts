@@ -15,12 +15,13 @@ const SERVIDOR_CONSULTA = {
   senha: "SenhaOuvidoria1",
 };
 
-// Tasks 7.1/7.2/7.3 — E2E obrigatório da Consulta Pública (US 7.1, 7.2). Usa um
-// roteiro de unidade única para concluir o processo em um único despacho. A
-// consulta pública não exige logout — o endpoint público não envia o Bearer
-// token (lib/api.ts) — então visitamos /consulta-publica com a sessão do
-// Servidor ainda ativa no navegador, o que também evita consumir mais
-// tentativas do rate limit de login (10/min/IP) do que o necessário.
+// Tasks 7.1/7.2/7.3 — E2E obrigatório da Consulta Pública (US 7.1, 7.2). A
+// conclusão é ação própria (change tramitacao-manual) — não depende de
+// roteiro/despacho (removidos pelo change tramitacao-manual). A consulta
+// pública não exige logout — o endpoint público
+// não envia o Bearer token (lib/api.ts) — então visitamos /consulta-publica
+// com a sessão do Servidor ainda ativa no navegador, o que também evita
+// consumir mais tentativas do rate limit de login (10/min/IP) do que o necessário.
 test("cidadão consulta processo por número, sigiloso é indistinguível de inexistente, e pesquisa lista/pagina resultados", async ({
   page,
 }) => {
@@ -34,10 +35,6 @@ test("cidadão consulta processo por número, sigiloso é indistinguível de ine
 
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_CONSULTA.nome);
-  await page
-    .getByLabel("Adicionar unidade ao roteiro")
-    .selectOption({ label: UNIDADE_CONSULTA.nome });
-  await page.getByRole("button", { name: "Adicionar etapa" }).click();
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
   await expect(page.getByRole("heading", { name: TIPO_CONSULTA.nome })).toBeVisible();
 
@@ -69,8 +66,8 @@ test("cidadão consulta processo por número, sigiloso é indistinguível de ine
   const urlProcessoA = page.url();
   const numeroA = (await page.locator("h1").first().innerText()).trim();
 
-  // Única etapa do roteiro -> despachar já pede confirmação de conclusão.
-  await page.getByRole("button", { name: "Despachar" }).click();
+  // Conclusão como ação própria — direto de "Aberto" (US 2.5).
+  await page.getByRole("button", { name: "Concluir" }).click();
   await page
     .getByRole("dialog", { name: "Confirmar conclusão" })
     .getByRole("button", { name: "Concluir processo" })

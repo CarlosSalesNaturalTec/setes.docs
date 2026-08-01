@@ -43,11 +43,25 @@ async function cadastrarUsuario(
   await expect(page).toHaveURL(/\/perfil$/);
 }
 
-// Task 6.1 (obrigatório) — change visibilidade-processos-origem. Cenário
-// completo: despacho -> acompanhamento read-only na origem -> sigiloso some
-// do acompanhamento -> devolução destaca o card -> novo despacho apaga o
-// destaque. US 1.4 (revisada), US 2.3, US 2.6.
-test("Servidor da origem acompanha em modo leitura, sigiloso some, devolução destaca e novo despacho apaga o destaque", async ({
+async function enviarPara(
+  page: import("@playwright/test").Page,
+  destino: { unidadeNome: string; setorNome: string; servidorNome: string },
+): Promise<void> {
+  await page.getByRole("button", { name: "Tramitar" }).click();
+  const modal = page.getByRole("dialog", { name: "Tramitar processo" });
+  await modal.getByLabel("Unidade de destino").selectOption({ label: destino.unidadeNome });
+  await modal.getByLabel("Setor de destino").selectOption({ label: destino.setorNome });
+  await modal.getByLabel("Servidor de destino").selectOption({ label: destino.servidorNome });
+  await modal.getByRole("button", { name: "Enviar" }).click();
+}
+
+// Task 6.1 (obrigatório) — change visibilidade-processos-origem, atualizado
+// pelo change tramitacao-manual: Envio com destino explícito (unidade → setor
+// → servidor) substitui o despacho roteirizado. Cenário completo: envio ->
+// acompanhamento read-only na origem -> sigiloso some do acompanhamento ->
+// devolução destaca o card -> novo envio apaga o destaque. US 1.4 (revisada),
+// US 2.3, US 2.6.
+test("Servidor da origem acompanha em modo leitura, sigiloso some, devolução destaca e novo envio apaga o destaque", async ({
   page,
 }) => {
   await login(page, ADMIN_ROOT.email, ADMIN_ROOT.senha);
@@ -65,10 +79,6 @@ test("Servidor da origem acompanha em modo leitura, sigiloso some, devolução d
 
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_PROCESSO.nome);
-  await page.getByLabel("Adicionar unidade ao roteiro").selectOption({ label: UNIDADE_ORIGEM.nome });
-  await page.getByRole("button", { name: "Adicionar etapa" }).click();
-  await page.getByLabel("Adicionar unidade ao roteiro").selectOption({ label: UNIDADE_DESTINO.nome });
-  await page.getByRole("button", { name: "Adicionar etapa" }).click();
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
   await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
 
@@ -78,7 +88,7 @@ test("Servidor da origem acompanha em modo leitura, sigiloso some, devolução d
   await cadastrarUsuario(page, SERVIDOR_B, UNIDADE_DESTINO.nome);
   await logout(page);
 
-  // Servidor A cria e despacha para a unidade de destino.
+  // Servidor A cria e envia para a unidade de destino (Servidor B).
   await login(page, SERVIDOR_A.email, SERVIDOR_A.senha);
   await page.goto("/processos/novo");
   await page.getByLabel("Assunto").fill(ASSUNTO);
@@ -88,9 +98,13 @@ test("Servidor da origem acompanha em modo leitura, sigiloso some, devolução d
   await expect(page).toHaveURL(/\/processos\/[0-9a-f-]+$/);
   const urlProcesso = page.url();
 
-  await page.getByRole("button", { name: "Despachar" }).click();
+  await enviarPara(page, {
+    unidadeNome: UNIDADE_DESTINO.nome,
+    setorNome: SETOR_PADRAO.nome,
+    servidorNome: SERVIDOR_B.nome,
+  });
   await expect(page).toHaveURL(/\/processos$/);
-  await expect(page.getByText(`Processo despachado para ${UNIDADE_DESTINO.sigla}.`)).toBeVisible();
+  await expect(page.getByText(`Processo enviado para ${UNIDADE_DESTINO.sigla}.`)).toBeVisible();
 
   // Kanban de A: card acinzentado (somente leitura), acompanhamento por origem.
   const cardOrigem = page.getByText(ASSUNTO).locator("..");
@@ -101,8 +115,8 @@ test("Servidor da origem acompanha em modo leitura, sigiloso some, devolução d
   await expect(
     page.getByText("Acompanhamento em modo leitura — este processo está atualmente em outra unidade."),
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: "Despachar" })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Devolver" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Tramitar" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Concluir" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Marcar como Sigiloso" })).toHaveCount(0);
 
   // Servidor B marca o processo como sigiloso na unidade de destino.
@@ -128,8 +142,9 @@ test("Servidor da origem acompanha em modo leitura, sigiloso some, devolução d
   await page.getByRole("button", { name: "Remover Sigilo" }).click();
   await expect(page.getByLabel("Sigiloso")).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Devolver" }).click();
-  const modalDevolucao = page.getByRole("dialog", { name: "Devolver processo" });
+  await page.getByRole("button", { name: "Tramitar" }).click();
+  const modalDevolucao = page.getByRole("dialog", { name: "Tramitar processo" });
+  await modalDevolucao.getByLabel("Tipo de ação").selectOption("devolver");
   await modalDevolucao.getByLabel("Motivo").selectOption({ label: "Documentação insuficiente" });
   await modalDevolucao.getByRole("button", { name: "Confirmar devolução" }).click();
   await expect(page).toHaveURL(/\/processos$/);
@@ -144,16 +159,20 @@ test("Servidor da origem acompanha em modo leitura, sigiloso some, devolução d
   await expect(cardDevolvido).not.toHaveClass(/bg-gray-100/);
 
   await page.goto(urlProcesso);
-  await expect(page.getByRole("button", { name: "Despachar" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Devolver" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Tramitar" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Concluir" })).toBeVisible();
 
-  // Novo despacho de A: o destaque de devolução some (histórico avançou).
-  await page.getByRole("button", { name: "Despachar" }).click();
+  // Novo envio de A: o destaque de devolução some (histórico avançou).
+  await enviarPara(page, {
+    unidadeNome: UNIDADE_DESTINO.nome,
+    setorNome: SETOR_PADRAO.nome,
+    servidorNome: SERVIDOR_B.nome,
+  });
   await expect(page).toHaveURL(/\/processos$/);
-  await expect(page.getByText(`Processo despachado para ${UNIDADE_DESTINO.sigla}.`)).toBeVisible();
+  await expect(page.getByText(`Processo enviado para ${UNIDADE_DESTINO.sigla}.`)).toBeVisible();
 
   await page.goto("/processos");
-  const cardAposRedespacho = page.getByText(ASSUNTO).locator("..");
-  await expect(cardAposRedespacho.getByText("↩ Devolvido")).toHaveCount(0);
-  await expect(cardAposRedespacho).toHaveClass(/bg-gray-100/);
+  const cardAposReenvio = page.getByText(ASSUNTO).locator("..");
+  await expect(cardAposReenvio.getByText("↩ Devolvido")).toHaveCount(0);
+  await expect(cardAposReenvio).toHaveClass(/bg-gray-100/);
 });

@@ -151,14 +151,15 @@ def reativar_unidade(
 @router.get("/{unidade_id}/setores", response_model=list[SetorResponse])
 def listar_setores(
     unidade_id: uuid.UUID,
-    _admin: Annotated[Usuario, Depends(_require_admin)],
+    _usuario: Annotated[Usuario, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
     apenas_ativos: bool = False,
 ) -> list[SetorResponse]:
-    """Setores da unidade. Restrito ao Administrador junto com as demais rotas
-    de setor (task 2.4) — o único consumidor hoje é a administração; se a tela
-    de tramitação precisar da cascata para outros perfis, o alargamento entra
-    no change que a introduzir, com justificativa própria."""
+    """Setores da unidade. Aberto a qualquer usuário autenticado (change
+    tramitacao-manual, design.md — fluxo de Reatribuição): a cascata
+    unidade→setor→servidor da tela de Tramitação precisa que o Servidor
+    resolva os setores da própria unidade, não só o Administrador. Cadastro/
+    edição/desativação de setor continuam admin-only (rotas abaixo)."""
     setores = servico.listar_setores(db, unidade_id, apenas_ativos=apenas_ativos)
     return [SetorResponse.de(s) for s in setores]
 

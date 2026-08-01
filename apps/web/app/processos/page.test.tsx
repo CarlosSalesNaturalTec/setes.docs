@@ -226,8 +226,8 @@ describe("ProcessosPage (Kanban)", () => {
     expect(aberto?.className).toContain("text-status-aberto");
   });
 
-  it("exibe a confirmação de sucesso vinda do despacho/devolução e limpa a query string", async () => {
-    searchParams = new URLSearchParams({ acao: "despacho", destino: "AJUR" });
+  it("exibe a confirmação de sucesso vinda do envio/devolução e limpa a query string", async () => {
+    searchParams = new URLSearchParams({ acao: "envio", destino: "AJUR" });
     listarKanban.mockResolvedValue({
       items: [],
       total: 0,
@@ -238,7 +238,7 @@ describe("ProcessosPage (Kanban)", () => {
 
     render(<ProcessosPage />);
 
-    expect(await screen.findByText("Processo despachado para AJUR.")).toBeInTheDocument();
+    expect(await screen.findByText("Processo enviado para AJUR.")).toBeInTheDocument();
     expect(replace).toHaveBeenCalledWith("/processos");
   });
 

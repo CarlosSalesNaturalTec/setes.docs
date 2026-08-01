@@ -5,7 +5,7 @@ US 2.6 Cen.1/1b/2/3."""
 from __future__ import annotations
 
 from app.db.models import LogSeguranca, PerfilUsuario, TipoEventoLog
-from tests.helpers_processo import auth, gestor_de, login, tipo_com_roteiro, unidade, usuario
+from tests.helpers_processo import auth, gestor_de, login, servidor_com_setor, tipo_processo, unidade, usuario
 
 
 def _criar_processo(client, token, tipo):
@@ -20,8 +20,8 @@ def _criar_processo(client, token, tipo):
 
 def test_servidor_da_unidade_atual_marca_e_remove_sigilo(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    usuario(db, unidade_id=cofin.id, email="serv@ex.com")
+    tipo = tipo_processo(db)
+    servidor_com_setor(db, cofin, email="serv@ex.com")
     token = login(client, "serv@ex.com")
     proc = _criar_processo(client, token, tipo)
 
@@ -36,8 +36,8 @@ def test_servidor_da_unidade_atual_marca_e_remove_sigilo(client, db):
 
 def test_gestor_da_unidade_marca_sigilo(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    usuario(db, unidade_id=cofin.id, email="serv2@ex.com")
+    tipo = tipo_processo(db)
+    servidor_com_setor(db, cofin, email="serv2@ex.com")
     proc = _criar_processo(client, login(client, "serv2@ex.com"), tipo)
 
     gestor_de(db, cofin, email="gestor@ex.com")
@@ -49,8 +49,8 @@ def test_gestor_da_unidade_marca_sigilo(client, db):
 
 def test_administrador_marca_sigilo_em_qualquer_unidade(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    usuario(db, unidade_id=cofin.id, email="serv3@ex.com")
+    tipo = tipo_processo(db)
+    servidor_com_setor(db, cofin, email="serv3@ex.com")
     proc = _criar_processo(client, login(client, "serv3@ex.com"), tipo)
 
     usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin@ex.com")
@@ -62,8 +62,8 @@ def test_administrador_marca_sigilo_em_qualquer_unidade(client, db):
 
 def test_servidor_de_outra_unidade_recebe_acesso_negado_e_loga(client, db):
     cofin, ajur = unidade(db, "COFIN"), unidade(db, "AJUR")
-    tipo = tipo_com_roteiro(db, cofin)
-    usuario(db, unidade_id=cofin.id, email="serv4@ex.com")
+    tipo = tipo_processo(db)
+    servidor_com_setor(db, cofin, email="serv4@ex.com")
     proc = _criar_processo(client, login(client, "serv4@ex.com"), tipo)
 
     usuario(db, unidade_id=ajur.id, email="intruso@ex.com")
@@ -83,8 +83,8 @@ def test_servidor_de_outra_unidade_recebe_acesso_negado_e_loga(client, db):
 
 def test_processo_sigiloso_continua_no_kanban_da_unidade(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    usuario(db, unidade_id=cofin.id, email="serv5@ex.com")
+    tipo = tipo_processo(db)
+    servidor_com_setor(db, cofin, email="serv5@ex.com")
     token = login(client, "serv5@ex.com")
     proc = _criar_processo(client, token, tipo)
 

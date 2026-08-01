@@ -19,7 +19,8 @@ from tests.helpers_processo import (
     login,
     processo_ativo,
     processo_concluido,
-    tipo_com_roteiro,
+    servidor_com_setor,
+    tipo_processo,
     unidade,
     usuario,
 )
@@ -28,7 +29,7 @@ from tests.helpers_processo import (
 def _tramitacao(db, *, processo, responsavel, status_resultante):
     evento = Tramitacao(
         processo_id=processo.id,
-        tipo_evento=TipoEventoTramitacao.DESPACHO,
+        tipo_evento=TipoEventoTramitacao.ENVIO,
         unidade_origem_id=processo.unidade_atual_id,
         unidade_destino_id=processo.unidade_atual_id,
         responsavel_id=responsavel.id,
@@ -60,8 +61,8 @@ def test_desativacao_sem_pendencias_registra_log(client, db):
 def test_desativacao_bloqueada_por_processos_em_andamento(client, db):
     cofin = unidade(db, "COFIN")
     usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin@example.com")
-    alvo = usuario(db, perfil=PerfilUsuario.SERVIDOR, unidade_id=cofin.id, email="alvo@example.com")
-    tipo = tipo_com_roteiro(db, cofin)
+    alvo, _setor_alvo = servidor_com_setor(db, cofin, email="alvo@example.com")
+    tipo = tipo_processo(db)
     token = login(client, "admin@example.com")
 
     for _ in range(3):
@@ -82,8 +83,8 @@ def test_desativacao_bloqueada_por_processos_em_andamento(client, db):
 def test_processo_concluido_ou_arquivado_nao_bloqueia_desativacao(client, db):
     cofin = unidade(db, "COFIN")
     usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin@example.com")
-    alvo = usuario(db, perfil=PerfilUsuario.SERVIDOR, unidade_id=cofin.id, email="alvo@example.com")
-    tipo = tipo_com_roteiro(db, cofin)
+    alvo, _setor_alvo = servidor_com_setor(db, cofin, email="alvo@example.com")
+    tipo = tipo_processo(db)
     token = login(client, "admin@example.com")
 
     agora = datetime.now(timezone.utc)

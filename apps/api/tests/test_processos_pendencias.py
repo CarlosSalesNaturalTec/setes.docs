@@ -7,7 +7,9 @@ from app.db.models import LogSeguranca, TipoEventoLog, Usuario
 from tests.helpers_processo import (
     auth,
     login,
-    tipo_com_roteiro,
+    servidor_com_setor,
+    setor,
+    tipo_processo,
     unidade,
     usuario,
 )
@@ -24,8 +26,8 @@ def _cria(client, token, tipo, assunto="A", prazo=10):
 def test_acesso_direto_por_url_a_processo_de_outra_unidade_negado_e_logado(client, db):
     """US 1.4 Cen.2 — detalhe por URL de processo fora do escopo → 403 + log."""
     cofin, ajur = unidade(db, "COFIN"), unidade(db, "AJUR")
-    tipo = tipo_com_roteiro(db, cofin)
-    usuario(db, unidade_id=cofin.id, email="dono@ex.com")
+    tipo = tipo_processo(db)
+    dono, _setor = servidor_com_setor(db, cofin, email="dono@ex.com")
     proc = _cria(client, login(client, "dono@ex.com"), tipo, "Sigiloso COFIN")
 
     usuario(db, unidade_id=ajur.id, email="curioso@ex.com")
@@ -45,11 +47,22 @@ def test_acesso_direto_por_url_a_processo_de_outra_unidade_negado_e_logado(clien
 def test_meu_perfil_lista_processos_atuados(client, db):
     """US 1.5 Cen.1 — criador e responsável por tramitação aparecem em 'Meu Perfil'."""
     cofin, ajur = unidade(db, "COFIN"), unidade(db, "AJUR")
-    tipo = tipo_com_roteiro(db, cofin, ajur)
-    usuario(db, unidade_id=cofin.id, email="atuante@ex.com")
+    tipo = tipo_processo(db)
+    servidor_com_setor(db, cofin, email="atuante@ex.com")
     token = login(client, "atuante@ex.com")
     proc = _cria(client, token, tipo, "Meu processo")
-    client.post(f"/processos/{proc['id']}/despachar", json={}, headers=auth(token))
+
+    setor_ajur = setor(db, ajur, "Análise")
+    serv_ajur = usuario(db, unidade_id=ajur.id, setor_id=setor_ajur.id, email="ajur-destino@ex.com")
+    client.post(
+        f"/processos/{proc['id']}/enviar",
+        json={
+            "unidade_destino_id": str(ajur.id),
+            "setor_destino_id": str(setor_ajur.id),
+            "servidor_destino_id": str(serv_ajur.id),
+        },
+        headers=auth(token),
+    )
 
     resp = client.get("/usuarios/me/perfil", headers=auth(token))
     body = resp.json()
@@ -57,7 +70,7 @@ def test_meu_perfil_lista_processos_atuados(client, db):
     item = body["processos"][0]
     assert item["numero"] == proc["numero"]
     assert item["assunto"] == "Meu processo"
-    assert item["tipo_acao"] == "despacho"
+    assert item["tipo_acao"] == "envio"
 
 
 def test_meu_perfil_vazio_para_recem_cadastrado(client, db):
@@ -73,12 +86,23 @@ def test_meu_perfil_vazio_para_recem_cadastrado(client, db):
 
 def test_servidor_transferido_mantem_historico_de_atuacao(client, db):
     """US 1.4 Cen.3 — atuação na unidade anterior permanece após transferência."""
-    cofin, ajur, dirad = unidade(db, "COFIN"), unidade(db, "AJUR"), unidade(db, "DIRAD")
-    tipo = tipo_com_roteiro(db, cofin, ajur, dirad)
-    serv = usuario(db, unidade_id=cofin.id, email="movel@ex.com")
+    cofin, ajur, _dirad = unidade(db, "COFIN"), unidade(db, "AJUR"), unidade(db, "DIRAD")
+    tipo = tipo_processo(db)
+    serv, _setor = servidor_com_setor(db, cofin, email="movel@ex.com")
     token = login(client, "movel@ex.com")
     proc = _cria(client, token, tipo, "Antes da transferência")
-    client.post(f"/processos/{proc['id']}/despachar", json={}, headers=auth(token))
+
+    setor_ajur = setor(db, ajur, "Análise")
+    serv_ajur = usuario(db, unidade_id=ajur.id, setor_id=setor_ajur.id, email="ajur-destino2@ex.com")
+    client.post(
+        f"/processos/{proc['id']}/enviar",
+        json={
+            "unidade_destino_id": str(ajur.id),
+            "setor_destino_id": str(setor_ajur.id),
+            "servidor_destino_id": str(serv_ajur.id),
+        },
+        headers=auth(token),
+    )
 
     # Transfere o servidor para AJUR (processo já saiu da COFIN e está em AJUR).
     serv_db = db.get(Usuario, serv.id)
@@ -95,8 +119,8 @@ def test_desativacao_bloqueada_com_processo_em_andamento(client, db):
     from app.db.models import PerfilUsuario
 
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    usuario(db, unidade_id=cofin.id, email="serv@ex.com")
+    tipo = tipo_processo(db)
+    servidor_com_setor(db, cofin, email="serv@ex.com")
     _cria(client, login(client, "serv@ex.com"), tipo, "Pendente")
 
     usuario(db, perfil=PerfilUsuario.ADMINISTRADOR, email="admin@ex.com")

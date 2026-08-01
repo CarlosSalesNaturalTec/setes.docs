@@ -6,7 +6,7 @@ US 3.1 Cen.3, US 1.4 Cen.2, US 3.2 (acesso negado ao conteúdo)."""
 from __future__ import annotations
 
 from app.db.models import LogSeguranca, TipoEventoLog, TipoEventoTramitacao, Tramitacao
-from tests.helpers_processo import auth, login, tipo_com_roteiro, unidade, usuario
+from tests.helpers_processo import auth, login, servidor_com_setor, tipo_processo, unidade, usuario
 
 PDF = b"%PDF-1.4\n1 0 obj\n<< >>\nendobj\n%%EOF"
 EXE_DISFARCADO_DE_PDF = b"MZ\x90\x00\x03\x00\x00\x00" + b"\x00" * 20
@@ -14,8 +14,8 @@ EXE_DISFARCADO_DE_PDF = b"MZ\x90\x00\x03\x00\x00\x00" + b"\x00" * 20
 
 def _processo_com_documento(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id, email=f"dono-{cofin.id}@ex.com")
+    tipo = tipo_processo(db)
+    criador, _setor_criador = servidor_com_setor(db, cofin, email=f"dono-{cofin.id}@ex.com")
     token = login(client, criador.email)
     resp = client.post(
         "/processos",
@@ -40,8 +40,8 @@ def _logs_acesso_negado(db):
 
 def test_servidor_de_outra_unidade_nao_anexa_e_loga(client, db):
     cofin, ajur = unidade(db, "COFIN"), unidade(db, "AJUR")
-    tipo = tipo_com_roteiro(db, cofin)
-    usuario(db, unidade_id=cofin.id, email=f"dono2-{cofin.id}@ex.com")
+    tipo = tipo_processo(db)
+    servidor_com_setor(db, cofin, email=f"dono2-{cofin.id}@ex.com")
     intruso = usuario(db, unidade_id=ajur.id, email=f"intruso-{ajur.id}@ex.com")
     token_dono = login(client, f"dono2-{cofin.id}@ex.com")
     proc_id = client.post(
@@ -124,8 +124,8 @@ def test_remocao_gera_evento_imutavel_no_historico(client, db):
 
 def test_upload_com_mime_falsificado_e_rejeitado(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id, email=f"mimefake-{cofin.id}@ex.com")
+    tipo = tipo_processo(db)
+    criador, _setor_criador = servidor_com_setor(db, cofin, email=f"mimefake-{cofin.id}@ex.com")
     token = login(client, criador.email)
     proc_id = client.post(
         "/processos",

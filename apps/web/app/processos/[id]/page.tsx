@@ -13,13 +13,15 @@ import { DocumentosSection } from "./documentos-section";
 type Processo = Schemas["ProcessoResponse"];
 type Historico = Schemas["HistoricoResponse"];
 type Unidade = Schemas["UnidadeResponse"];
+type Setor = Schemas["SetorResponse"];
+type ServidorResumo = Schemas["UsuarioResumoResponse"];
+
+type TipoAcaoTramitacao = "enviar" | "devolver" | "reatribuir";
 
 function ModalConclusao({
-  mensagem,
   onConfirmar,
   onCancelar,
 }: {
-  mensagem: string;
   onConfirmar: () => void;
   onCancelar: () => void;
 }) {
@@ -30,7 +32,7 @@ function ModalConclusao({
       className="fixed inset-0 flex items-center justify-center bg-black/30 p-4"
     >
       <div className="w-full max-w-sm rounded bg-white p-4 shadow-lg">
-        <p className="text-sm">{mensagem}</p>
+        <p className="text-sm">Deseja concluir este processo?</p>
         <div className="mt-4 flex justify-end gap-2">
           <button type="button" onClick={onCancelar} className="rounded border px-3 py-1 text-sm">
             Cancelar
@@ -48,70 +50,371 @@ function ModalConclusao({
   );
 }
 
-function ModalDevolucao({
-  onConfirmar,
-  onCancelar,
-}: {
-  onConfirmar: (motivo: string, justificativa: string) => void;
-  onCancelar: () => void;
-}) {
-  const [motivo, setMotivo] = useState("");
-  const [justificativa, setJustificativa] = useState("");
-  const [erro, setErro] = useState<string | null>(null);
-
-  function confirmar() {
-    if (!motivo) {
-      setErro("Selecione um motivo para a devolução");
+function useSetoresDaUnidade(unidadeId: string | null) {
+  const [setores, setSetores] = useState<Setor[]>([]);
+  useEffect(() => {
+    if (!unidadeId) {
+      setSetores([]);
       return;
     }
-    onConfirmar(motivo, justificativa);
+    let ativo = true;
+    void (async () => {
+      try {
+        const lista = await api.listarSetores(unidadeId, true);
+        if (ativo) setSetores(lista);
+      } catch {
+        if (ativo) setSetores([]);
+      }
+    })();
+    return () => {
+      ativo = false;
+    };
+  }, [unidadeId]);
+  return setores;
+}
+
+function useServidoresDoSetor(setorId: string | null) {
+  const [servidores, setServidores] = useState<ServidorResumo[]>([]);
+  useEffect(() => {
+    if (!setorId) {
+      setServidores([]);
+      return;
+    }
+    let ativo = true;
+    void (async () => {
+      try {
+        const lista = await api.listarServidoresAtivosPorSetor(setorId);
+        if (ativo) setServidores(lista);
+      } catch {
+        if (ativo) setServidores([]);
+      }
+    })();
+    return () => {
+      ativo = false;
+    };
+  }, [setorId]);
+  return servidores;
+}
+
+function ModalTramitacao({
+  processo,
+  unidades,
+  onConfirmarEnvio,
+  onConfirmarDevolucao,
+  onConfirmarReatribuicao,
+  onCancelar,
+}: {
+  processo: Processo;
+  unidades: Unidade[];
+  onConfirmarEnvio: (body: Schemas["EnviarRequest"]) => Promise<void>;
+  onConfirmarDevolucao: (motivo: string, justificativa: string) => Promise<void>;
+  onConfirmarReatribuicao: (body: Schemas["ReatribuirRequest"]) => Promise<void>;
+  onCancelar: () => void;
+}) {
+  const [tipoAcao, setTipoAcao] = useState<TipoAcaoTramitacao>("enviar");
+  const [erro, setErro] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState(false);
+
+  // Envio: unidade → setor → servidor em cascata, mais mensagem.
+  const [unidadeDestino, setUnidadeDestino] = useState("");
+  const [setorEnvio, setSetorEnvio] = useState("");
+  const [servidorEnvio, setServidorEnvio] = useState("");
+  const [mensagem, setMensagem] = useState("");
+  const setoresEnvio = useSetoresDaUnidade(unidadeDestino || null);
+  const servidoresEnvio = useServidoresDoSetor(setorEnvio || null);
+
+  // Devolução: destino resolvido pelo backend — só motivo + justificativa.
+  const [motivo, setMotivo] = useState("");
+  const [justificativaDevolucao, setJustificativaDevolucao] = useState("");
+
+  // Reatribuição: unidade FIXA (a atual) — setor → servidor + justificativa.
+  const [setorReatribuicao, setSetorReatribuicao] = useState("");
+  const [servidorReatribuicao, setServidorReatribuicao] = useState("");
+  const [justificativaReatribuicao, setJustificativaReatribuicao] = useState("");
+  const setoresReatribuicao = useSetoresDaUnidade(processo.unidade_atual_id);
+  const servidoresReatribuicao = useServidoresDoSetor(setorReatribuicao || null);
+
+  const nomeUnidadeAtual =
+    unidades.find((u) => u.id === processo.unidade_atual_id)?.nome ?? processo.unidade_atual_id;
+
+  async function confirmar() {
+    setErro(null);
+    setEnviando(true);
+    try {
+      if (tipoAcao === "enviar") {
+        if (!unidadeDestino || !setorEnvio || !servidorEnvio) {
+          setErro("Selecione unidade, setor e servidor de destino.");
+          return;
+        }
+        if (servidorEnvio === processo.servidor_atual_id) {
+          setErro("O destino deve ser um servidor diferente do responsável atual.");
+          return;
+        }
+        await onConfirmarEnvio({
+          unidade_destino_id: unidadeDestino,
+          setor_destino_id: setorEnvio,
+          servidor_destino_id: servidorEnvio,
+          mensagem: mensagem || null,
+        });
+      } else if (tipoAcao === "devolver") {
+        if (!motivo) {
+          setErro("Selecione um motivo para a devolução");
+          return;
+        }
+        await onConfirmarDevolucao(motivo, justificativaDevolucao);
+      } else {
+        if (!setorReatribuicao || !servidorReatribuicao) {
+          setErro("Selecione setor e servidor de destino.");
+          return;
+        }
+        if (servidorReatribuicao === processo.servidor_atual_id) {
+          setErro("O destino deve ser um servidor diferente do responsável atual.");
+          return;
+        }
+        if (!justificativaReatribuicao.trim()) {
+          setErro("Informe a justificativa da reatribuição.");
+          return;
+        }
+        await onConfirmarReatribuicao({
+          setor_destino_id: setorReatribuicao,
+          servidor_destino_id: servidorReatribuicao,
+          justificativa: justificativaReatribuicao,
+        });
+      }
+    } catch (err) {
+      setErro(err instanceof ApiError ? err.detail : "Não foi possível concluir a ação.");
+    } finally {
+      setEnviando(false);
+    }
   }
 
   return (
     <div
       role="dialog"
-      aria-label="Devolver processo"
+      aria-label="Tramitar processo"
       className="fixed inset-0 flex items-center justify-center bg-black/30 p-4"
     >
-      <div className="w-full max-w-sm rounded bg-white p-4 shadow-lg">
-        <h2 className="text-sm font-medium">Devolver para a unidade anterior</h2>
-        <label htmlFor="motivo" className="mt-3 block text-sm">
-          Motivo
+      <div className="w-full max-w-md rounded bg-white p-4 shadow-lg">
+        <h2 className="text-sm font-medium">Tramitar processo</h2>
+
+        <label htmlFor="tipo-acao" className="mt-3 block text-sm">
+          Tipo de ação
         </label>
         <select
-          id="motivo"
-          value={motivo}
-          onChange={(e) => setMotivo(e.target.value)}
+          id="tipo-acao"
+          value={tipoAcao}
+          onChange={(e) => setTipoAcao(e.target.value as TipoAcaoTramitacao)}
           className="mt-1 w-full rounded border px-2 py-1 text-sm"
         >
-          <option value="">Selecione…</option>
-          {MOTIVOS_DEVOLUCAO.map((m) => (
-            <option key={m.valor} value={m.valor}>
-              {m.rotulo}
-            </option>
-          ))}
+          <option value="enviar">Envio</option>
+          <option value="devolver">Devolução</option>
+          <option value="reatribuir">Reatribuir</option>
         </select>
-        <label htmlFor="justificativa" className="mt-3 block text-sm">
-          Justificativa (opcional)
-        </label>
-        <textarea
-          id="justificativa"
-          value={justificativa}
-          onChange={(e) => setJustificativa(e.target.value)}
-          className="mt-1 w-full rounded border px-2 py-1 text-sm"
-          rows={3}
-        />
+
+        {tipoAcao === "enviar" && (
+          <div className="mt-3 space-y-3">
+            <div>
+              <label htmlFor="unidade-destino" className="block text-sm">
+                Unidade de destino
+              </label>
+              <select
+                id="unidade-destino"
+                value={unidadeDestino}
+                onChange={(e) => {
+                  setUnidadeDestino(e.target.value);
+                  setSetorEnvio("");
+                  setServidorEnvio("");
+                }}
+                className="mt-1 w-full rounded border px-2 py-1 text-sm"
+              >
+                <option value="">Selecione…</option>
+                {unidades
+                  .filter((u) => u.ativo)
+                  .map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.nome}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="setor-envio" className="block text-sm">
+                Setor de destino
+              </label>
+              <select
+                id="setor-envio"
+                value={setorEnvio}
+                onChange={(e) => {
+                  setSetorEnvio(e.target.value);
+                  setServidorEnvio("");
+                }}
+                disabled={!unidadeDestino}
+                className="mt-1 w-full rounded border px-2 py-1 text-sm"
+              >
+                <option value="">Selecione…</option>
+                {setoresEnvio.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="servidor-envio" className="block text-sm">
+                Servidor de destino
+              </label>
+              <select
+                id="servidor-envio"
+                value={servidorEnvio}
+                onChange={(e) => setServidorEnvio(e.target.value)}
+                disabled={!setorEnvio}
+                className="mt-1 w-full rounded border px-2 py-1 text-sm"
+              >
+                <option value="">Selecione…</option>
+                {servidoresEnvio.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="mensagem-envio" className="block text-sm">
+                Mensagem
+              </label>
+              <textarea
+                id="mensagem-envio"
+                value={mensagem}
+                onChange={(e) => setMensagem(e.target.value)}
+                rows={2}
+                className="mt-1 w-full rounded border px-2 py-1 text-sm"
+              />
+            </div>
+          </div>
+        )}
+
+        {tipoAcao === "devolver" && (
+          <div className="mt-3 space-y-3">
+            <p className="rounded bg-gray-100 p-2 text-sm text-gray-600">
+              O processo será devolvido automaticamente para quem o enviou.
+            </p>
+            <div>
+              <label htmlFor="motivo" className="block text-sm">
+                Motivo
+              </label>
+              <select
+                id="motivo"
+                value={motivo}
+                onChange={(e) => setMotivo(e.target.value)}
+                className="mt-1 w-full rounded border px-2 py-1 text-sm"
+              >
+                <option value="">Selecione…</option>
+                {MOTIVOS_DEVOLUCAO.map((m) => (
+                  <option key={m.valor} value={m.valor}>
+                    {m.rotulo}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="justificativa-devolucao" className="block text-sm">
+                Justificativa (opcional)
+              </label>
+              <textarea
+                id="justificativa-devolucao"
+                value={justificativaDevolucao}
+                onChange={(e) => setJustificativaDevolucao(e.target.value)}
+                rows={3}
+                className="mt-1 w-full rounded border px-2 py-1 text-sm"
+              />
+            </div>
+          </div>
+        )}
+
+        {tipoAcao === "reatribuir" && (
+          <div className="mt-3 space-y-3">
+            <div>
+              <label htmlFor="unidade-reatribuicao" className="block text-sm">
+                Unidade
+              </label>
+              <input
+                id="unidade-reatribuicao"
+                value={nomeUnidadeAtual}
+                readOnly
+                disabled
+                className="mt-1 w-full rounded border bg-gray-100 px-2 py-1 text-sm text-gray-600"
+              />
+            </div>
+            <div>
+              <label htmlFor="setor-reatribuicao" className="block text-sm">
+                Setor de destino
+              </label>
+              <select
+                id="setor-reatribuicao"
+                value={setorReatribuicao}
+                onChange={(e) => {
+                  setSetorReatribuicao(e.target.value);
+                  setServidorReatribuicao("");
+                }}
+                className="mt-1 w-full rounded border px-2 py-1 text-sm"
+              >
+                <option value="">Selecione…</option>
+                {setoresReatribuicao.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="servidor-reatribuicao" className="block text-sm">
+                Servidor de destino
+              </label>
+              <select
+                id="servidor-reatribuicao"
+                value={servidorReatribuicao}
+                onChange={(e) => setServidorReatribuicao(e.target.value)}
+                disabled={!setorReatribuicao}
+                className="mt-1 w-full rounded border px-2 py-1 text-sm"
+              >
+                <option value="">Selecione…</option>
+                {servidoresReatribuicao.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="justificativa-reatribuicao" className="block text-sm">
+                Justificativa
+              </label>
+              <textarea
+                id="justificativa-reatribuicao"
+                value={justificativaReatribuicao}
+                onChange={(e) => setJustificativaReatribuicao(e.target.value)}
+                rows={3}
+                className="mt-1 w-full rounded border px-2 py-1 text-sm"
+              />
+            </div>
+          </div>
+        )}
+
         {erro && <p className="mt-2 text-sm text-red-600">{erro}</p>}
+
         <div className="mt-4 flex justify-end gap-2">
           <button type="button" onClick={onCancelar} className="rounded border px-3 py-1 text-sm">
             Cancelar
           </button>
           <button
             type="button"
-            onClick={confirmar}
-            className="rounded-card bg-navy-900 px-3 py-1 text-sm font-medium text-white"
+            onClick={() => void confirmar()}
+            disabled={enviando}
+            className="rounded-card bg-navy-900 px-3 py-1 text-sm font-medium text-white disabled:opacity-50"
           >
-            Confirmar devolução
+            {tipoAcao === "enviar" && "Enviar"}
+            {tipoAcao === "devolver" && "Confirmar devolução"}
+            {tipoAcao === "reatribuir" && "Reatribuir"}
           </button>
         </div>
       </div>
@@ -126,15 +429,16 @@ function DetalheConteudo({ id }: { id: string }) {
   const [processo, setProcesso] = useState<Processo | null>(null);
   // Change visibilidade-processos-origem (design D2/D5) — Servidor fora da
   // unidade atual do processo (acompanhamento por origem, sem sigilo) vê o
-  // acompanhamento em modo leitura: sem Despachar/Devolver/sigilo/anexos.
+  // acompanhamento em modo leitura: sem Tramitar/Concluir/sigilo/anexos.
   const somenteLeitura =
     ehServidor && !!processo && usuario?.unidade_id !== processo.unidade_atual_id;
   const [historico, setHistorico] = useState<Historico | null>(null);
   const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [aba, setAba] = useState<"detalhe" | "documentos" | "historico">("detalhe");
   const [erro, setErro] = useState<string | null>(null);
-  const [promptConclusao, setPromptConclusao] = useState<string | null>(null);
-  const [mostrarDevolucao, setMostrarDevolucao] = useState(false);
+  const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
+  const [mostrarConclusao, setMostrarConclusao] = useState(false);
+  const [mostrarTramitacao, setMostrarTramitacao] = useState(false);
   const [alterandoSigilo, setAlterandoSigilo] = useState(false);
 
   const carregar = useCallback(async () => {
@@ -167,58 +471,72 @@ function DetalheConteudo({ id }: { id: string }) {
     return (uid: string | null) => (uid ? (mapa.get(uid) ?? uid) : "—");
   }, [unidades]);
 
-  async function irParaKanbanComSucesso(acao: "despacho" | "devolucao", unidadeDestinoId: string | null) {
+  async function irParaKanbanComSucesso(acao: "envio" | "devolucao", unidadeDestinoId: string | null) {
     const params = new URLSearchParams({ acao, destino: nomeUnidade(unidadeDestinoId) });
     router.push(`/processos?${params.toString()}`);
   }
 
-  async function despachar(confirmar: boolean) {
-    setErro(null);
+  async function enviar(body: Schemas["EnviarRequest"]) {
     const unidadeAnterior = processo?.unidade_atual_id ?? null;
+    const resposta = await api.enviarProcesso(id, body);
+    setMostrarTramitacao(false);
+    if (resposta.unidade_atual_id !== unidadeAnterior) {
+      // O processo saiu do escopo da unidade: navegar sem reler o detalhe
+      // (uma releitura aqui retornaria 403).
+      await irParaKanbanComSucesso("envio", resposta.unidade_atual_id);
+      return;
+    }
+    setProcesso(resposta);
     try {
-      const resposta = await api.despacharProcesso(id, { confirmar });
-      setPromptConclusao(null);
-      if (resposta.unidade_atual_id !== unidadeAnterior) {
-        // O processo saiu do escopo da unidade: navegar sem reler o detalhe
-        // (uma releitura aqui retornaria 403, ver openspec/changes/corrigir-feedback-despacho-devolucao).
-        await irParaKanbanComSucesso("despacho", resposta.unidade_atual_id);
-        return;
-      }
-      setProcesso(resposta);
-      try {
-        setHistorico(await api.historicoProcesso(id));
-      } catch {
-        // atualização do histórico é best-effort — o despacho já foi concluído
-      }
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 409) {
-        // Última etapa: backend pede confirmação de conclusão (US 2.2 Cen.2/4).
-        setPromptConclusao(err.detail);
-        return;
-      }
-      setErro(err instanceof ApiError ? err.detail : "Não foi possível despachar.");
+      setHistorico(await api.historicoProcesso(id));
+    } catch {
+      // atualização do histórico é best-effort — o envio já foi concluído
     }
   }
 
   async function devolver(motivo: string, justificativa: string) {
-    setErro(null);
     const unidadeAnterior = processo?.unidade_atual_id ?? null;
+    const resposta = await api.devolverProcesso(id, { motivo, justificativa: justificativa || null });
+    setMostrarTramitacao(false);
+    if (resposta.unidade_atual_id !== unidadeAnterior) {
+      await irParaKanbanComSucesso("devolucao", resposta.unidade_atual_id);
+      return;
+    }
+    setProcesso(resposta);
     try {
-      const resposta = await api.devolverProcesso(id, { motivo, justificativa: justificativa || null });
-      setMostrarDevolucao(false);
-      if (resposta.unidade_atual_id !== unidadeAnterior) {
-        await irParaKanbanComSucesso("devolucao", resposta.unidade_atual_id);
-        return;
-      }
+      setHistorico(await api.historicoProcesso(id));
+    } catch {
+      // atualização do histórico é best-effort — a devolução já foi concluída
+    }
+  }
+
+  async function reatribuir(body: Schemas["ReatribuirRequest"]) {
+    const resposta = await api.reatribuirProcesso(id, body);
+    setMostrarTramitacao(false);
+    // Reatribuição nunca muda de unidade (D2/D9) — permanece na tela.
+    setProcesso(resposta);
+    setMensagemSucesso("Processo reatribuído. O prazo foi mantido.");
+    try {
+      setHistorico(await api.historicoProcesso(id));
+    } catch {
+      // atualização do histórico é best-effort — a reatribuição já foi concluída
+    }
+  }
+
+  async function concluir() {
+    setErro(null);
+    try {
+      const resposta = await api.concluirProcesso(id);
+      setMostrarConclusao(false);
       setProcesso(resposta);
       try {
         setHistorico(await api.historicoProcesso(id));
       } catch {
-        // atualização do histórico é best-effort — a devolução já foi concluída
+        // atualização do histórico é best-effort — a conclusão já foi concluída
       }
     } catch (err) {
-      setMostrarDevolucao(false);
-      setErro(err instanceof ApiError ? err.detail : "Não foi possível devolver.");
+      setMostrarConclusao(false);
+      setErro(err instanceof ApiError ? err.detail : "Não foi possível concluir.");
     }
   }
 
@@ -263,17 +581,17 @@ function DetalheConteudo({ id }: { id: string }) {
             <>
               <button
                 type="button"
-                onClick={() => void despachar(false)}
+                onClick={() => setMostrarTramitacao(true)}
                 className="rounded-card bg-navy-900 px-3 py-1 text-sm font-medium text-white"
               >
-                Despachar
+                Tramitar
               </button>
               <button
                 type="button"
-                onClick={() => setMostrarDevolucao(true)}
+                onClick={() => setMostrarConclusao(true)}
                 className="rounded border px-3 py-1 text-sm"
               >
-                Devolver
+                Concluir
               </button>
             </>
           )}
@@ -302,6 +620,7 @@ function DetalheConteudo({ id }: { id: string }) {
       </div>
 
       {erro && <p className="mt-3 text-sm text-red-600">{erro}</p>}
+      {mensagemSucesso && <p className="mt-3 text-sm text-green-700">{mensagemSucesso}</p>}
       {somenteLeitura && (
         <p className="mt-3 rounded bg-gray-100 p-2 text-sm text-gray-600">
           Acompanhamento em modo leitura — este processo está atualmente em outra unidade.
@@ -386,6 +705,7 @@ function DetalheConteudo({ id }: { id: string }) {
                   <div className="text-xs text-gray-500">
                     {e.criado_em} · {rotuloStatus(e.status_resultante)}
                   </div>
+                  {e.mensagem && <div className="text-xs text-gray-500">Mensagem: {e.mensagem}</div>}
                   {e.motivo && <div className="text-xs text-gray-500">Motivo: {e.motivo}</div>}
                   {e.justificativa && (
                     <div className="text-xs text-gray-500">Justificativa: {e.justificativa}</div>
@@ -397,15 +717,18 @@ function DetalheConteudo({ id }: { id: string }) {
         </div>
       )}
 
-      {promptConclusao && (
-        <ModalConclusao
-          mensagem={promptConclusao}
-          onConfirmar={() => void despachar(true)}
-          onCancelar={() => setPromptConclusao(null)}
-        />
+      {mostrarConclusao && (
+        <ModalConclusao onConfirmar={() => void concluir()} onCancelar={() => setMostrarConclusao(false)} />
       )}
-      {mostrarDevolucao && (
-        <ModalDevolucao onConfirmar={devolver} onCancelar={() => setMostrarDevolucao(false)} />
+      {mostrarTramitacao && (
+        <ModalTramitacao
+          processo={processo}
+          unidades={unidades}
+          onConfirmarEnvio={enviar}
+          onConfirmarDevolucao={devolver}
+          onConfirmarReatribuicao={reatribuir}
+          onCancelar={() => setMostrarTramitacao(false)}
+        />
       )}
     </div>
   );

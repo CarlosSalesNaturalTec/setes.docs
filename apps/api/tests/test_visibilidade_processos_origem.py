@@ -4,7 +4,16 @@ tramitação/dados pessoais). US 1.4 (revisada), US 2.3, US 2.7, US 2.8."""
 
 from __future__ import annotations
 
-from tests.helpers_processo import auth, gestor_de, login, tipo_com_roteiro, unidade, usuario
+from tests.helpers_processo import (
+    auth,
+    enviar_para,
+    gestor_de,
+    login,
+    servidor_com_setor,
+    tipo_processo,
+    unidade,
+    usuario,
+)
 
 
 def _criar_processo(client, token, tipo, assunto="Origem"):
@@ -17,13 +26,13 @@ def _criar_processo(client, token, tipo, assunto="Origem"):
     return resp.json()
 
 
-def test_processo_despachado_visivel_por_origem_como_somente_leitura(client, db):
+def test_processo_enviado_visivel_por_origem_como_somente_leitura(client, db):
     cofin, ajur = unidade(db, "COFIN"), unidade(db, "AJUR")
-    tipo = tipo_com_roteiro(db, cofin, ajur)
-    usuario(db, unidade_id=cofin.id, email="origem@ex.com")
+    tipo = tipo_processo(db)
+    _serv, _setor = servidor_com_setor(db, cofin, email="origem@ex.com")
     token_cofin = login(client, "origem@ex.com")
     proc = _criar_processo(client, token_cofin, tipo)
-    client.post(f"/processos/{proc['id']}/despachar", json={}, headers=auth(token_cofin))
+    enviar_para(client, db, processo_id=proc["id"], token_origem=token_cofin, unidade_destino=ajur)
 
     resp = client.get("/processos", headers=auth(token_cofin))
     assert resp.status_code == 200
@@ -38,13 +47,15 @@ def test_processo_despachado_visivel_por_origem_como_somente_leitura(client, db)
 
 def test_sigiloso_fora_da_unidade_ausente_do_kanban_e_da_busca(client, db):
     cofin, ajur = unidade(db, "COFIN"), unidade(db, "AJUR")
-    tipo = tipo_com_roteiro(db, cofin, ajur)
-    usuario(db, unidade_id=cofin.id, email="sigorigem@ex.com")
+    tipo = tipo_processo(db)
+    _serv, _setor = servidor_com_setor(db, cofin, email="sigorigem@ex.com")
     token_cofin = login(client, "sigorigem@ex.com")
     proc = _criar_processo(client, token_cofin, tipo, "Sigiloso")
-    client.post(f"/processos/{proc['id']}/despachar", json={}, headers=auth(token_cofin))
+    _resp, _dest, _s = enviar_para(
+        client, db, processo_id=proc["id"], token_origem=token_cofin, unidade_destino=ajur,
+        email_destino="destino@ex.com",
+    )
 
-    usuario(db, unidade_id=ajur.id, email="destino@ex.com")
     token_ajur = login(client, "destino@ex.com")
     marcar = client.post(f"/processos/{proc['id']}/sigilo", headers=auth(token_ajur))
     assert marcar.status_code == 200, marcar.text
@@ -56,15 +67,17 @@ def test_sigiloso_fora_da_unidade_ausente_do_kanban_e_da_busca(client, db):
     assert busca.json()["total"] == 0
 
 
-def test_devolvido_verdadeiro_apos_devolucao_e_falso_apos_novo_despacho(client, db):
+def test_devolvido_verdadeiro_apos_devolucao_e_falso_apos_novo_envio(client, db):
     cofin, ajur = unidade(db, "COFIN"), unidade(db, "AJUR")
-    tipo = tipo_com_roteiro(db, cofin, ajur)
-    usuario(db, unidade_id=cofin.id, email="devcofin@ex.com")
+    tipo = tipo_processo(db)
+    _serv, _setor = servidor_com_setor(db, cofin, email="devcofin@ex.com")
     token_cofin = login(client, "devcofin@ex.com")
     proc = _criar_processo(client, token_cofin, tipo)
-    client.post(f"/processos/{proc['id']}/despachar", json={}, headers=auth(token_cofin))
+    _resp, _dest, _s = enviar_para(
+        client, db, processo_id=proc["id"], token_origem=token_cofin, unidade_destino=ajur,
+        email_destino="devajur@ex.com",
+    )
 
-    usuario(db, unidade_id=ajur.id, email="devajur@ex.com")
     token_ajur = login(client, "devajur@ex.com")
     dev = client.post(
         f"/processos/{proc['id']}/devolver",
@@ -78,10 +91,13 @@ def test_devolvido_verdadeiro_apos_devolucao_e_falso_apos_novo_despacho(client, 
     assert card["devolvido"] is True
     assert card["somente_leitura"] is False
 
-    # Novo despacho da COFIN — o destaque de devolução cessa (D3: derivado do
+    # Novo envio da COFIN — o destaque de devolução cessa (D3: derivado do
     # último evento, sem estado adicional); o processo volta a ser somente
     # leitura por origem para a COFIN.
-    client.post(f"/processos/{proc['id']}/despachar", json={}, headers=auth(token_cofin))
+    enviar_para(
+        client, db, processo_id=proc["id"], token_origem=token_cofin, unidade_destino=ajur,
+        nome_setor="Setor2", email_destino="devajur2@ex.com",
+    )
     resp2 = client.get("/processos", headers=auth(token_cofin))
     card2 = resp2.json()["items"][0]
     assert card2["devolvido"] is False
@@ -90,11 +106,11 @@ def test_devolvido_verdadeiro_apos_devolucao_e_falso_apos_novo_despacho(client, 
 
 def test_incluir_finalizados_filtra_status(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    usuario(db, unidade_id=cofin.id, email="fin@ex.com")
+    tipo = tipo_processo(db)
+    _serv, _setor = servidor_com_setor(db, cofin, email="fin@ex.com")
     token = login(client, "fin@ex.com")
     proc = _criar_processo(client, token, tipo)
-    client.post(f"/processos/{proc['id']}/despachar", json={"confirmar": True}, headers=auth(token))
+    client.post(f"/processos/{proc['id']}/concluir", json={}, headers=auth(token))
 
     resp_default = client.get("/processos", headers=auth(token))
     assert resp_default.json()["total"] == 0
@@ -106,11 +122,11 @@ def test_incluir_finalizados_filtra_status(client, db):
 
 def test_gestor_ve_origem_das_unidades_geridas(client, db):
     cofin, ajur, dirad = unidade(db, "COFIN"), unidade(db, "AJUR"), unidade(db, "DIRAD")
-    tipo = tipo_com_roteiro(db, cofin, dirad)
-    usuario(db, unidade_id=cofin.id, email="gcofin@ex.com")
+    tipo = tipo_processo(db)
+    _serv, _setor = servidor_com_setor(db, cofin, email="gcofin@ex.com")
     token_cofin = login(client, "gcofin@ex.com")
     proc = _criar_processo(client, token_cofin, tipo)
-    client.post(f"/processos/{proc['id']}/despachar", json={}, headers=auth(token_cofin))
+    enviar_para(client, db, processo_id=proc["id"], token_origem=token_cofin, unidade_destino=dirad)
 
     gestor_de(db, cofin, ajur, email="gestorX@ex.com")
     token_gestor = login(client, "gestorX@ex.com")
@@ -123,11 +139,11 @@ def test_gestor_ve_origem_das_unidades_geridas(client, db):
 
 def test_servidor_de_terceira_unidade_nao_ve_processo_alheio(client, db):
     cofin, ajur, dirad = unidade(db, "COFIN"), unidade(db, "AJUR"), unidade(db, "DIRAD")
-    tipo = tipo_com_roteiro(db, cofin, ajur)
-    usuario(db, unidade_id=cofin.id, email="c3@ex.com")
+    tipo = tipo_processo(db)
+    _serv, _setor = servidor_com_setor(db, cofin, email="c3@ex.com")
     token_cofin = login(client, "c3@ex.com")
     proc = _criar_processo(client, token_cofin, tipo)
-    client.post(f"/processos/{proc['id']}/despachar", json={}, headers=auth(token_cofin))
+    enviar_para(client, db, processo_id=proc["id"], token_origem=token_cofin, unidade_destino=ajur)
 
     usuario(db, unidade_id=dirad.id, email="d3@ex.com")
     token_dirad = login(client, "d3@ex.com")

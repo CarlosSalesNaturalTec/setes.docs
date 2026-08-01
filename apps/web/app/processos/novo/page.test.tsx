@@ -28,7 +28,7 @@ vi.mock("@/lib/api", async () => {
 
 import NovoProcessoPage from "./page";
 
-const TIPO = { id: "tipo-1", nome: "Licitação", ativo: true, roteiro: { id: "r1", etapas: [] } };
+const TIPO = { id: "tipo-1", nome: "Licitação", ativo: true, prazo_anonimizacao_anos: 5 };
 
 describe("NovoProcessoPage", () => {
   beforeEach(() => {

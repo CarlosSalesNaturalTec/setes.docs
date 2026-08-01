@@ -12,7 +12,15 @@ from fastapi import HTTPException
 from app.db.models import Documento, Processo, StatusProcesso, TipoEventoTramitacao, Tramitacao
 from app.services import documento as documento_service
 from app.services.storage import FilesystemStorage
-from tests.helpers_processo import auth, login, processo_concluido, tipo_com_roteiro, unidade, usuario
+from tests.helpers_processo import (
+    auth,
+    enviar_para,
+    login,
+    processo_concluido,
+    servidor_com_setor,
+    tipo_processo,
+    unidade,
+)
 
 PDF = b"%PDF-1.4\n1 0 obj\n<< >>\nendobj\n%%EOF"
 DOCX = b"PK\x03\x04" + b"\x00" * 20
@@ -35,8 +43,8 @@ def _criar_processo(client, token, tipo):
 
 def _processo_aberto(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin, unidade(db, "AJUR"))
-    criador = usuario(db, unidade_id=cofin.id, email=f"criador-{cofin.id}@ex.com")
+    tipo = tipo_processo(db)
+    criador, _setor = servidor_com_setor(db, cofin, email=f"criador-{cofin.id}@ex.com")
     token = login(client, criador.email)
     proc = _criar_processo(client, token, tipo)
     return db.get(Processo, proc["id"]), criador, cofin, tipo
@@ -181,10 +189,11 @@ def test_pode_remover_processo_aberto(client, db):
     assert documento_service.pode_remover(db, processo=processo) is True
 
 
-def test_pode_remover_bloqueia_apos_despacho(client, db):
+def test_pode_remover_bloqueia_apos_envio(client, db):
     processo, criador, cofin, tipo = _processo_aberto(client, db)
     token = login(client, criador.email)
-    client.post(f"/processos/{processo.id}/despachar", json={}, headers=auth(token))
+    ajur = unidade(db, "AJUR2")
+    enviar_para(client, db, processo_id=str(processo.id), token_origem=token, unidade_destino=ajur)
     db.refresh(processo)
 
     assert processo.status == StatusProcesso.EM_TRAMITACAO
@@ -194,10 +203,11 @@ def test_pode_remover_bloqueia_apos_despacho(client, db):
 def test_pode_remover_permite_apos_devolucao(client, db):
     processo, criador, cofin, tipo = _processo_aberto(client, db)
     token = login(client, criador.email)
-    client.post(f"/processos/{processo.id}/despachar", json={}, headers=auth(token))
+    ajur = unidade(db, "AJUR2")
+    _resp, servidor_ajur, _setor = enviar_para(
+        client, db, processo_id=str(processo.id), token_origem=token, unidade_destino=ajur
+    )
     db.refresh(processo)
-    ajur_id = processo.unidade_atual_id
-    servidor_ajur = usuario(db, unidade_id=ajur_id, email=f"ajur-{processo.id}@ex.com")
     token_ajur = login(client, servidor_ajur.email)
     client.post(
         f"/processos/{processo.id}/devolver",
@@ -210,12 +220,14 @@ def test_pode_remover_permite_apos_devolucao(client, db):
     assert documento_service.pode_remover(db, processo=processo) is True
 
 
-def test_pode_remover_bloqueia_apos_redespacho_pos_devolucao(client, db):
+def test_pode_remover_bloqueia_apos_reenvio_pos_devolucao(client, db):
     processo, criador, cofin, tipo = _processo_aberto(client, db)
     token = login(client, criador.email)
-    client.post(f"/processos/{processo.id}/despachar", json={}, headers=auth(token))
+    ajur = unidade(db, "AJUR2")
+    _resp, servidor_ajur, _setor = enviar_para(
+        client, db, processo_id=str(processo.id), token_origem=token, unidade_destino=ajur
+    )
     db.refresh(processo)
-    servidor_ajur = usuario(db, unidade_id=processo.unidade_atual_id, email=f"ajur2-{processo.id}@ex.com")
     token_ajur = login(client, servidor_ajur.email)
     client.post(
         f"/processos/{processo.id}/devolver",
@@ -223,7 +235,10 @@ def test_pode_remover_bloqueia_apos_redespacho_pos_devolucao(client, db):
         headers=auth(token_ajur),
     )
     db.refresh(processo)
-    client.post(f"/processos/{processo.id}/despachar", json={}, headers=auth(token))
+    enviar_para(
+        client, db, processo_id=str(processo.id), token_origem=token, unidade_destino=ajur,
+        nome_setor="Setor2", email_destino=f"ajur3-{processo.id}@ex.com",
+    )
     db.refresh(processo)
 
     assert processo.status == StatusProcesso.EM_TRAMITACAO
@@ -232,8 +247,8 @@ def test_pode_remover_bloqueia_apos_redespacho_pos_devolucao(client, db):
 
 def test_pode_remover_bloqueia_processo_concluido(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id, email=f"concl-{cofin.id}@ex.com")
+    tipo = tipo_processo(db)
+    criador, _setor = servidor_com_setor(db, cofin, email=f"concl-{cofin.id}@ex.com")
 
     processo = processo_concluido(
         db, unidade=cofin, criador=criador, tipo=tipo,
@@ -246,8 +261,8 @@ def test_pode_remover_bloqueia_processo_concluido(client, db):
 
 def test_pode_remover_bloqueia_processo_arquivado(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id, email=f"arq-{cofin.id}@ex.com")
+    tipo = tipo_processo(db)
+    criador, _setor = servidor_com_setor(db, cofin, email=f"arq-{cofin.id}@ex.com")
 
     processo = processo_concluido(
         db, unidade=cofin, criador=criador, tipo=tipo,
@@ -286,7 +301,7 @@ def test_remover_soft_deleta_e_gera_evento_imutavel(client, db, tmp_path):
     assert evento.status_resultante == processo.status
 
 
-def test_remover_bloqueado_apos_despacho(client, db, tmp_path):
+def test_remover_bloqueado_apos_envio(client, db, tmp_path):
     processo, criador, _cofin, _tipo = _processo_aberto(client, db)
     storage = _storage(tmp_path)
     documento = documento_service.anexar(
@@ -294,7 +309,8 @@ def test_remover_bloqueado_apos_despacho(client, db, tmp_path):
         nome_arquivo="a.pdf", conteudo=PDF,
     )
     token = login(client, criador.email)
-    client.post(f"/processos/{processo.id}/despachar", json={}, headers=auth(token))
+    ajur = unidade(db, "AJUR3")
+    enviar_para(client, db, processo_id=str(processo.id), token_origem=token, unidade_destino=ajur)
     db.refresh(processo)
 
     with pytest.raises(HTTPException) as exc:

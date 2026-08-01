@@ -20,6 +20,10 @@ function descricaoTipo(notificacao: Notificacao): string {
       return "Processo concluído";
     case "alerta_prazo":
       return "Prazo próximo";
+    case "reatribuido_para_voce":
+      return "Reatribuído para você";
+    case "destino_corrigido":
+      return "Destino da tramitação corrigido";
     default:
       return notificacao.tipo;
   }
@@ -156,6 +160,9 @@ export function NotificacoesSino() {
                 </div>
                 <p className="text-gray-700">{notificacao.assunto}</p>
                 <p className="text-xs text-gray-500">{descricaoTipo(notificacao)}</p>
+                {notificacao.justificativa && (
+                  <p className="text-xs text-gray-500">{notificacao.justificativa}</p>
+                )}
               </button>
             ))}
           </div>

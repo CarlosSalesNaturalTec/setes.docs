@@ -10,7 +10,8 @@ from tests.helpers_processo import (
     gestor_de,
     login,
     processo_ativo,
-    tipo_com_roteiro,
+    servidor_com_setor,
+    tipo_processo,
     unidade,
     usuario,
 )
@@ -20,9 +21,9 @@ def test_gestor_recebe_kpis_do_escopo(client, db):
     cofin = unidade(db, "COFIN")
     ajur = unidade(db, "AJUR")
     gestor = gestor_de(db, cofin, email="gestor-kpi@example.com")
-    criador = usuario(db, unidade_id=cofin.id, email="criador-kpi@example.com")
-    tipo_cofin = tipo_com_roteiro(db, cofin)
-    tipo_ajur = tipo_com_roteiro(db, ajur)
+    criador, _setor_criador = servidor_com_setor(db, cofin, email="criador-kpi@example.com")
+    tipo_cofin = tipo_processo(db)
+    tipo_ajur = tipo_processo(db)
 
     hoje = date.today()
     processo_ativo(db, unidade=cofin, criador=criador, tipo=tipo_cofin, prazo_em=hoje + timedelta(days=10))
@@ -53,8 +54,8 @@ def test_estado_vazio_gestor_sem_processos(client, db):
 def test_drill_down_ativos_reflete_contagem_do_kpi(client, db):
     cofin = unidade(db, "COFIN")
     gestor = gestor_de(db, cofin, email="gestor-drill@example.com")
-    criador = usuario(db, unidade_id=cofin.id, email="criador-drill@example.com")
-    tipo = tipo_com_roteiro(db, cofin)
+    criador, _setor_criador = servidor_com_setor(db, cofin, email="criador-drill@example.com")
+    tipo = tipo_processo(db)
 
     hoje = date.today()
     p1 = processo_ativo(db, unidade=cofin, criador=criador, tipo=tipo, prazo_em=hoje + timedelta(days=5))
@@ -84,9 +85,9 @@ def test_filtro_por_unidade_gerida_restringe_calculo(client, db):
     cofin = unidade(db, "COFIN")
     ajur = unidade(db, "AJUR")
     gestor = gestor_de(db, cofin, ajur, email="gestor-filtro@example.com")
-    criador = usuario(db, unidade_id=cofin.id, email="criador-filtro@example.com")
-    tipo_cofin = tipo_com_roteiro(db, cofin)
-    tipo_ajur = tipo_com_roteiro(db, ajur)
+    criador, _setor_criador = servidor_com_setor(db, cofin, email="criador-filtro@example.com")
+    tipo_cofin = tipo_processo(db)
+    tipo_ajur = tipo_processo(db)
 
     hoje = date.today()
     processo_ativo(db, unidade=cofin, criador=criador, tipo=tipo_cofin, prazo_em=hoje + timedelta(days=10))
@@ -157,9 +158,9 @@ def test_gestor_recebe_distribuicoes_do_escopo(client, db):
     cofin = unidade(db, "COFIN")
     ajur = unidade(db, "AJUR")
     gestor = gestor_de(db, cofin, email="gestor-dist@example.com")
-    criador = usuario(db, unidade_id=cofin.id, email="criador-dist@example.com")
-    tipo_cofin = tipo_com_roteiro(db, cofin)
-    tipo_ajur = tipo_com_roteiro(db, ajur)
+    criador, _setor_criador = servidor_com_setor(db, cofin, email="criador-dist@example.com")
+    tipo_cofin = tipo_processo(db)
+    tipo_ajur = tipo_processo(db)
 
     hoje = date.today()
     processo_ativo(db, unidade=cofin, criador=criador, tipo=tipo_cofin, prazo_em=hoje + timedelta(days=10))
@@ -178,9 +179,9 @@ def test_filtro_por_unidade_restringe_distribuicoes(client, db):
     cofin = unidade(db, "COFIN")
     ajur = unidade(db, "AJUR")
     gestor = gestor_de(db, cofin, ajur, email="gestor-dist-filtro@example.com")
-    criador = usuario(db, unidade_id=cofin.id, email="criador-dist-filtro@example.com")
-    tipo_cofin = tipo_com_roteiro(db, cofin)
-    tipo_ajur = tipo_com_roteiro(db, ajur)
+    criador, _setor_criador = servidor_com_setor(db, cofin, email="criador-dist-filtro@example.com")
+    tipo_cofin = tipo_processo(db)
+    tipo_ajur = tipo_processo(db)
 
     hoje = date.today()
     processo_ativo(db, unidade=cofin, criador=criador, tipo=tipo_cofin, prazo_em=hoje + timedelta(days=10))

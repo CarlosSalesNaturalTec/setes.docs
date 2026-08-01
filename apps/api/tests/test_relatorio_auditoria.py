@@ -9,8 +9,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from app.db.models import LogSeguranca, PerfilUsuario, Processo, StatusProcesso, TipoEventoLog
 from app.services import relatorio_auditoria as relatorio_service
-from app.services.roteiros import obter_roteiro_vigente
-from tests.helpers_processo import auth, login, tipo_com_roteiro, unidade, usuario
+from tests.helpers_processo import auth, login, servidor_com_setor, tipo_processo, unidade, usuario
 
 HOJE = date(2026, 7, 16)
 
@@ -25,16 +24,15 @@ def _processo(
     status: StatusProcesso = StatusProcesso.ABERTO,
     concluido_em: datetime | None = None,
 ) -> Processo:
-    roteiro = obter_roteiro_vigente(db, tipo.id)
     processo = Processo(
         numero=f"2026/{uuid.uuid4().int % 999999:06d}",
         assunto="Processo de teste",
         tipo_processo_id=tipo.id,
-        roteiro_id=roteiro.id,
         status=status,
         unidade_atual_id=unidade_obj.id,
         unidade_origem_id=unidade_obj.id,
-        ordem_atual=0,
+        setor_atual_id=criador.setor_id,
+        servidor_atual_id=criador.id,
         prazo_dias=30,
         prazo_em=criado_em.date() + timedelta(days=30),
         criado_por_id=criador.id,
@@ -58,8 +56,8 @@ def _auditor(db, *, unidade_obj) -> object:
 
 def test_gerar_relatorio_totaliza_e_calcula_tempo_medio_no_periodo(db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id)
+    tipo = tipo_processo(db)
+    criador, _setor_cofin = servidor_com_setor(db, cofin)
 
     _processo(
         db,
@@ -102,9 +100,9 @@ def test_gerar_relatorio_totaliza_e_calcula_tempo_medio_no_periodo(db):
 def test_gerar_relatorio_filtra_por_unidade_e_tipo(db):
     cofin = unidade(db, "COFIN")
     ajur = unidade(db, "AJUR")
-    tipo_cofin = tipo_com_roteiro(db, cofin, nome="TipoCofin")
-    tipo_ajur = tipo_com_roteiro(db, ajur, nome="TipoAjur")
-    criador = usuario(db, unidade_id=cofin.id)
+    tipo_cofin = tipo_processo(db, nome="TipoCofin")
+    tipo_ajur = tipo_processo(db, nome="TipoAjur")
+    criador, _setor_cofin = servidor_com_setor(db, cofin)
 
     _processo(db, unidade_obj=cofin, criador=criador, tipo=tipo_cofin, criado_em=datetime.now(timezone.utc))
     _processo(db, unidade_obj=ajur, criador=criador, tipo=tipo_ajur, criado_em=datetime.now(timezone.utc))
@@ -118,8 +116,8 @@ def test_gerar_relatorio_filtra_por_unidade_e_tipo(db):
 
 def test_gerar_relatorio_tempo_medio_none_sem_concluidos(db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id)
+    tipo = tipo_processo(db)
+    criador, _setor_cofin = servidor_com_setor(db, cofin)
 
     _processo(
         db,
@@ -149,8 +147,8 @@ def test_gerar_relatorio_sem_processos_retorna_vazio(db):
 
 def test_auditor_gera_relatorio_com_filtros(client, db):
     cofin = unidade(db, "COFIN")
-    tipo = tipo_com_roteiro(db, cofin)
-    criador = usuario(db, unidade_id=cofin.id)
+    tipo = tipo_processo(db)
+    criador, _setor_cofin = servidor_com_setor(db, cofin)
     _processo(
         db,
         unidade_obj=cofin,

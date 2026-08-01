@@ -38,10 +38,6 @@ test("Gestora vê os KPIs das unidades geridas, filtra por unidade e aciona o dr
 
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_PROCESSO.nome);
-  await page
-    .getByLabel("Adicionar unidade ao roteiro")
-    .selectOption({ label: UNIDADE_DASHBOARD.nome });
-  await page.getByRole("button", { name: "Adicionar etapa" }).click();
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
   await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
 
