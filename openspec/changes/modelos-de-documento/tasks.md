@@ -39,7 +39,7 @@
 
 ## 7. Testes E2E Playwright (obrigatório — altera fluxo de documentos)
 
-- [ ] 7.1 Cenário: Administrador cadastra um modelo de "Requerimento" com lacunas → Servidor cria processo escolhendo esse modelo, substitui as lacunas e salva → o PDF aparece na lista de anexos do processo e é baixável → o Servidor remove o documento e o Administrador o restaura na área de documentos removidos. Aceite: `pnpm test:e2e` verde.
+- [x] 7.1 Cenário: Administrador cadastra um modelo de "Requerimento" com lacunas → Servidor cria processo escolhendo esse modelo, substitui as lacunas e salva → o PDF aparece na lista de anexos do processo e é baixável → o Servidor remove o documento e o Administrador o restaura na área de documentos removidos. Aceite: `pnpm test:e2e` verde.
 
 ## 8. Documentação mestre
 
