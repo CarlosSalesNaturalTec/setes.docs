@@ -104,22 +104,6 @@ def test_devolvido_verdadeiro_apos_devolucao_e_falso_apos_novo_envio(client, db)
     assert card2["somente_leitura"] is True
 
 
-def test_incluir_finalizados_filtra_status(client, db):
-    cofin = unidade(db, "COFIN")
-    tipo = tipo_processo(db)
-    _serv, _setor = servidor_com_setor(db, cofin, email="fin@ex.com")
-    token = login(client, "fin@ex.com")
-    proc = _criar_processo(client, token, tipo)
-    client.post(f"/processos/{proc['id']}/concluir", json={}, headers=auth(token))
-
-    resp_default = client.get("/processos", headers=auth(token))
-    assert resp_default.json()["total"] == 0
-
-    resp_incluir = client.get("/processos?incluir_finalizados=true", headers=auth(token))
-    assert resp_incluir.json()["total"] == 1
-    assert resp_incluir.json()["items"][0]["status"] == "concluido"
-
-
 def test_gestor_ve_origem_das_unidades_geridas(client, db):
     cofin, ajur, dirad = unidade(db, "COFIN"), unidade(db, "AJUR"), unidade(db, "DIRAD")
     tipo = tipo_processo(db)

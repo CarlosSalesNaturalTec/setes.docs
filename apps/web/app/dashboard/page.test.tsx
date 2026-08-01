@@ -4,12 +4,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
   obterDashboardKpis,
+  obterDashboardContagens,
   obterDashboardDistribuicoes,
   obterProcessosAtivosDashboard,
   obterProcessosParadosDashboard,
   listarUnidades,
 } = vi.hoisted(() => ({
   obterDashboardKpis: vi.fn(),
+  obterDashboardContagens: vi.fn(),
   obterDashboardDistribuicoes: vi.fn(),
   obterProcessosAtivosDashboard: vi.fn(),
   obterProcessosParadosDashboard: vi.fn(),
@@ -26,6 +28,7 @@ vi.mock("@/lib/api", async () => {
     ...actual,
     api: {
       obterDashboardKpis,
+      obterDashboardContagens,
       obterDashboardDistribuicoes,
       obterProcessosAtivosDashboard,
       obterProcessosParadosDashboard,
@@ -50,9 +53,12 @@ const DISTRIBUICOES_VAZIO = {
   por_usuario: [],
 };
 
+const CONTAGENS_VAZIO = { total: 0, abertos: 0, em_tramitacao: 0, concluidos: 0, arquivados: 0 };
+
 describe("DashboardPage", () => {
   beforeEach(() => {
     obterDashboardKpis.mockReset();
+    obterDashboardContagens.mockReset().mockResolvedValue(CONTAGENS_VAZIO);
     obterDashboardDistribuicoes.mockReset().mockResolvedValue(DISTRIBUICOES_VAZIO);
     obterProcessosAtivosDashboard.mockReset();
     obterProcessosParadosDashboard.mockReset();
@@ -222,6 +228,39 @@ describe("DashboardPage", () => {
 
     await waitFor(() =>
       expect(obterDashboardDistribuicoes).toHaveBeenLastCalledWith({ unidade_id: "un-1" }),
+    );
+  });
+
+  it("renderiza os cinco cards de contagem por status (change kanban-por-servidor, design D8)", async () => {
+    obterDashboardKpis.mockResolvedValue(KPIS_VAZIO);
+    obterDashboardContagens.mockResolvedValue({
+      total: 55,
+      abertos: 12,
+      em_tramitacao: 30,
+      concluidos: 8,
+      arquivados: 5,
+    });
+
+    render(<DashboardPage />);
+
+    expect(await screen.findByTestId("contagem-total")).toHaveTextContent("55");
+    expect(screen.getByTestId("contagem-abertos")).toHaveTextContent("12");
+    expect(screen.getByTestId("contagem-em-tramitacao")).toHaveTextContent("30");
+    expect(screen.getByTestId("contagem-concluidos")).toHaveTextContent("8");
+    expect(screen.getByTestId("contagem-arquivados")).toHaveTextContent("5");
+  });
+
+  it("recarrega as contagens ao selecionar o filtro por unidade", async () => {
+    obterDashboardKpis.mockResolvedValue(KPIS_VAZIO);
+
+    render(<DashboardPage />);
+    await screen.findByTestId("kpi-ativos");
+
+    const filtro = screen.getByLabelText("Filtrar por unidade");
+    await userEvent.selectOptions(filtro, "un-1");
+
+    await waitFor(() =>
+      expect(obterDashboardContagens).toHaveBeenLastCalledWith({ unidade_id: "un-1" }),
     );
   });
 });

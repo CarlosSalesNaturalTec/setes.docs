@@ -439,6 +439,9 @@ class Processo(Base):
         "TipoProcesso", foreign_keys=[tipo_processo_id]
     )
     unidade_atual: Mapped["Unidade"] = relationship("Unidade", foreign_keys=[unidade_atual_id])
+    # Nome do detentor atual no card (change kanban-por-servidor, design D2/D5)
+    # — eager loading em `processo_consulta` para evitar N+1.
+    servidor_atual: Mapped["Usuario"] = relationship("Usuario", foreign_keys=[servidor_atual_id])
 
 
 class ProcessoInteressado(Base):

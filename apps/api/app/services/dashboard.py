@@ -230,6 +230,37 @@ def prazos_em_risco(
     )
 
 
+def contagens_por_status(db: Session, unidades: list[uuid.UUID]) -> dict[str, int]:
+    """Contagem de processos por status no escopo de unidades geridas (design
+    D8, change kanban-por-servidor). Uma única consulta `GROUP BY status` —
+    nunca quatro/cinco consultas separadas — para que `total` (soma das
+    parcelas) nunca discorde delas por efeito de concorrência entre queries.
+    """
+    contagens = {
+        StatusProcesso.ABERTO: 0,
+        StatusProcesso.EM_TRAMITACAO: 0,
+        StatusProcesso.CONCLUIDO: 0,
+        StatusProcesso.ARQUIVADO: 0,
+    }
+    if unidades:
+        linhas = (
+            db.query(Processo.status, func.count(Processo.id))
+            .filter(Processo.unidade_atual_id.in_(unidades))
+            .group_by(Processo.status)
+            .all()
+        )
+        for status_processo, quantidade in linhas:
+            contagens[status_processo] = quantidade
+
+    return {
+        "total": sum(contagens.values()),
+        "abertos": contagens[StatusProcesso.ABERTO],
+        "em_tramitacao": contagens[StatusProcesso.EM_TRAMITACAO],
+        "concluidos": contagens[StatusProcesso.CONCLUIDO],
+        "arquivados": contagens[StatusProcesso.ARQUIVADO],
+    }
+
+
 def dias_para_processo_parado(db: Session) -> int:
     config = db.get(SistemaConfig, 1)
     return config.dias_para_processo_parado

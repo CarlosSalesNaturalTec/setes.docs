@@ -113,3 +113,15 @@ class DistribuicoesResponse(BaseModel):
     por_unidade: list[DistribuicaoItem] = Field(default_factory=list)
     por_tipo: list[DistribuicaoItem] = Field(default_factory=list)
     por_usuario: list[DistribuicaoItem] = Field(default_factory=list)
+
+
+class ContagensPorStatusResponse(BaseModel):
+    """Cards de contagem por status do dashboard (change kanban-por-servidor,
+    design D8). `total` é a soma das quatro parcelas — calculado a partir de
+    uma única consulta `GROUP BY status`, nunca de consultas separadas."""
+
+    total: int
+    abertos: int
+    em_tramitacao: int
+    concluidos: int
+    arquivados: int

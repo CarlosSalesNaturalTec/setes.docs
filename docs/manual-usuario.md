@@ -109,16 +109,20 @@ acontece, basta entrar de novo.
 ## Perfil Servidor
 
 O Servidor é o **executor do dia a dia**. Ao entrar, você chega ao seu
-**quadro de processos (Kanban) da sua unidade**.
+**quadro de processos (Kanban) pessoal**.
 
-> **Regra de visibilidade:** você enxerga os processos **atualmente na sua
-> unidade** (totalmente acionáveis) e também **acompanha, em modo somente
-> leitura, os processos que a sua unidade protocolou** e que já seguiram para
-> outra unidade — cards acinzentados, sem os botões de ação. Um processo
-> sigiloso em outra unidade **não aparece** nesse acompanhamento — o sigilo
-> prevalece. Esses processos continuam também no seu histórico pessoal ("Meu
-> Perfil") e nas buscas, com o mesmo escopo do quadro. Tentar abrir um
-> processo fora desse escopo resulta em **"Acesso negado"**.
+> **Regra de visibilidade:** o seu quadro é **pessoal** — mostra
+> exclusivamente os processos em que você é o **responsável atual**, os que
+> você **criou** e aqueles pelos quais você **já passou** (foi responsável em
+> algum momento do histórico). Não é mais "todos os processos da sua
+> unidade": um colega da sua unidade que você nunca tocou não aparece no seu
+> quadro. Um processo sigiloso fora da sua unidade atual **não aparece**,
+> mesmo que você já tenha sido responsável por ele — o sigilo prevalece. Isso
+> muda apenas a **composição do quadro**, não o acesso: você continua podendo
+> abrir qualquer processo da sua unidade por link direto ou pela busca
+> interna (que continua por unidade, veja "Buscar e filtrar processos").
+> Tentar abrir um processo fora do seu escopo por unidade resulta em
+> **"Acesso negado"**.
 
 ### A tela de Processos (Kanban e Lista)
 
@@ -133,20 +137,33 @@ controle no cabeçalho:
   indicada à direita de cada linha.
 
 Cada card (ou linha) mostra o **número**, o **tipo de processo**, o
-**assunto**, a **unidade atual** (nome por extenso), a **data de criação**, o
-**prazo com os dias restantes** e o cadeado 🔒 quando o processo é sigiloso.
-Os processos aparecem **ordenados por prazo**, e o cabeçalho exibe o total de
-processos visíveis.
+**assunto**, a **unidade atual** (nome por extenso), o **servidor
+responsável**, a **data de criação**, o **prazo com os dias restantes** e o
+cadeado 🔒 quando o processo é sigiloso. Os processos aparecem **ordenados
+por prazo**, e o cabeçalho exibe o total de processos visíveis.
 
-- **Cards acinzentados** são processos que a sua unidade protocolou e que já
-  tramitaram para outra unidade — você os acompanha, mas não pode agir sobre
-  eles (abrir o detalhe mostra o aviso "Acompanhamento em modo leitura").
+- **Cards com destaque sólido** e o selo **"Ação necessária"** são processos
+  em que você é o responsável atual — a próxima ação é sua.
+- **Cards discretos** (borda tracejada) são processos que você criou ou já
+  deteve, mas que estão agora com outro servidor — o nome de quem está com o
+  processo aparece no card ("Com: Fulano"). Você pode acompanhá-los, mas não
+  agir sobre eles enquanto não voltarem a ser sua responsabilidade.
+- **Cards acinzentados** (`somente_leitura`) são processos que a sua unidade
+  protocolou e que já tramitaram para uma unidade que não é a sua — eixo
+  independente do anterior: um card pode ser discreto (acompanhamento) e
+  acinzentado (fora da sua unidade) ao mesmo tempo.
 - Um card com o selo **"↩ Devolvido"** e borda âmbar indica que o processo
-  acabou de ser devolvido à sua unidade e está pronto para uma nova ação; o
-  destaque some assim que você enviar novamente.
-- O checkbox **"Exibir concluídos e arquivados"**, no topo da tela, começa
-  **desmarcado** — os processos finalizados ficam ocultos até você marcá-lo.
-  A preferência é lembrada da próxima vez que você acessar a tela.
+  acabou de ser devolvido a você e está pronto para uma nova ação; o destaque
+  some assim que você enviar novamente.
+- O checkbox **"Exibir Arquivados"**, no topo da tela, começa **desmarcado**
+  — processos **"Concluído" aparecem sempre**; só os **"Arquivado"** ficam
+  ocultos até você marcá-lo. A preferência é lembrada da próxima vez que você
+  acessar a tela.
+- Uma **barra de filtros** permite refinar o quadro por **tipo de
+  processo**, por **assunto** (texto parcial) e por **período de criação**
+  (data inicial/final) — combináveis entre si e com "Exibir Arquivados", sem
+  nunca mostrar processos fora do seu quadro pessoal. Um botão "Limpar
+  filtros" restaura a visão completa.
 
 ### Criar um novo processo
 
@@ -229,10 +246,13 @@ uma. Esse histórico serve para entender toda a trajetória do processo.
 
 ### Buscar e filtrar processos
 
-Você pode **localizar processos** por número, assunto ou período. A busca
-sempre respeita a mesma regra de visibilidade do quadro — retorna os processos
-da sua unidade e os que ela protocolou (origem), sempre excluindo sigilosos
-fora da sua unidade.
+Você pode **localizar processos** por número, assunto ou período. Diferente
+do seu quadro (que agora é pessoal), a **busca continua por unidade** — ela
+retorna os processos atualmente na sua unidade e os que ela protocolou
+(origem), sempre excluindo sigilosos fora da sua unidade. É assim de
+propósito: o quadro é a sua área de trabalho pessoal, a busca serve para
+localizar processos que colegas da sua unidade estão tratando, mesmo que
+você nunca os tenha tocado.
 
 ### Anexar, consultar e remover documentos
 
@@ -283,13 +303,22 @@ ao **Painel de Indicadores**.
 > qualquer unidade que você gerencia** — não apenas uma — e também acompanha,
 > em modo somente leitura (card acinzentado), os processos **originados em
 > uma unidade sua** que já tramitaram para uma unidade que você não gerencia
-> (exceto sigilosos). Quais unidades você gerencia é definido pelo
-> Administrador.
+> (exceto sigilosos). Diferente do Servidor, o seu quadro **não é estreitado
+> para o pessoal** — você continua vendo tudo das unidades geridas,
+> independentemente de ter criado, detido ou estar responsável pelo
+> processo. A maioria dos cards aparece como acompanhamento (mostrando o
+> servidor responsável de cada um); só os atribuídos pessoalmente a você têm
+> o destaque de "Ação necessária". Quais unidades você gerencia é definido
+> pelo Administrador.
 
 ### Painel de Indicadores (KPIs)
 
-O painel reúne os números que ajudam a monitorar a eficiência das suas
-unidades, como:
+No topo do painel, cinco **cards de contagem por status** dão o panorama
+geral das suas unidades: **Total**, **Abertos**, **Em Tramitação**,
+**Concluídos** e **Arquivados** — o Total é sempre a soma dos outros quatro.
+
+Abaixo, o painel reúne os números que ajudam a monitorar a eficiência das
+suas unidades, como:
 
 - **Processos ativos** no momento;
 - **Tempo médio de tramitação**;
@@ -311,7 +340,9 @@ Use esses indicadores para identificar **onde os processos estão travando** e
 Além dos números, você vê um **quadro de processos consolidado** reunindo, em
 um só lugar, os processos de **todas as unidades que você gerencia** — uma visão
 completa do que está sob sua responsabilidade. Um **filtro por unidade** permite
-focar em uma unidade de cada vez, e a alternância **Kanban / Lista** funciona
+focar em uma unidade de cada vez, combinável com os filtros de tipo, assunto e
+período e com o checkbox "Exibir Arquivados" (mesma mecânica do Servidor,
+veja "A tela de Processos"), e a alternância **Kanban / Lista** funciona
 igual à do Servidor.
 
 ### Cadastrar usuários da sua unidade

@@ -291,7 +291,11 @@ export const api = {
     }),
   listarKanban: (query?: {
     filtro_unidade?: string;
-    incluir_finalizados?: boolean;
+    incluir_arquivados?: boolean;
+    tipo_processo_id?: string;
+    assunto?: string;
+    data_inicial?: string;
+    data_final?: string;
     page?: number;
     page_size?: number;
   }) => get<Schemas["KanbanResponse"]>("/processos", { auth: true, query }),
@@ -379,6 +383,8 @@ export const api = {
   // Dashboard de KPIs do Gestor (Épico 6, US 6.1).
   obterDashboardKpis: (query?: { unidade_id?: string }) =>
     get<Schemas["DashboardKpisResponse"]>("/dashboard/kpis", { auth: true, query }),
+  obterDashboardContagens: (query?: { unidade_id?: string }) =>
+    get<Schemas["ContagensPorStatusResponse"]>("/dashboard/contagens", { auth: true, query }),
   obterProcessosAtivosDashboard: (query?: { unidade_id?: string }) =>
     get<Schemas["ProcessosAtivosResponse"]>("/dashboard/processos-ativos", { auth: true, query }),
   obterProcessosParadosDashboard: (query?: { unidade_id?: string }) =>

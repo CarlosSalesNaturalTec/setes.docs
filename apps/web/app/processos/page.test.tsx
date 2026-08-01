@@ -2,9 +2,10 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { listarKanban, listarUnidades, replace } = vi.hoisted(() => ({
+const { listarKanban, listarUnidades, listarTiposProcesso, replace } = vi.hoisted(() => ({
   listarKanban: vi.fn(),
   listarUnidades: vi.fn(),
+  listarTiposProcesso: vi.fn(),
   replace: vi.fn(),
 }));
 let usuario: { perfil: string } = { perfil: "servidor" };
@@ -27,7 +28,7 @@ vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
   return {
     ...actual,
-    api: { listarKanban, listarUnidades },
+    api: { listarKanban, listarUnidades, listarTiposProcesso },
   };
 });
 
@@ -37,6 +38,7 @@ const CARD_BASE = {
   status: "aberto",
   unidade_atual_id: "un-1",
   unidade_atual_nome: "Coordenação de Finanças",
+  servidor_atual_nome: "Fulano de Tal",
   tipo_processo_nome: "Licitação",
   criado_em: "2026-07-15T10:30:00Z",
   prazo_em: "2026-08-01",
@@ -45,12 +47,14 @@ const CARD_BASE = {
   sigiloso: false,
   somente_leitura: false,
   devolvido: false,
+  acao_requerida: true,
 };
 
 describe("ProcessosPage (Kanban)", () => {
   beforeEach(() => {
     listarKanban.mockReset();
     listarUnidades.mockReset();
+    listarTiposProcesso.mockReset().mockResolvedValue([]);
     replace.mockReset();
     listarUnidades.mockResolvedValue([]);
     usuario = { perfil: "servidor" };
@@ -152,7 +156,7 @@ describe("ProcessosPage (Kanban)", () => {
     await waitFor(() =>
       expect(listarKanban).toHaveBeenLastCalledWith({
         filtro_unidade: "un-2",
-        incluir_finalizados: false,
+        incluir_arquivados: false,
       }),
     );
   });
@@ -272,7 +276,7 @@ describe("ProcessosPage (Kanban)", () => {
     expect(listarKanban).toHaveBeenCalledTimes(1);
   });
 
-  it('checkbox "Exibir concluídos e arquivados" desmarcado por padrão (change visibilidade-processos-origem, D4)', async () => {
+  it('checkbox "Exibir Arquivados" desmarcado por padrão (change kanban-por-servidor, D4)', async () => {
     listarKanban.mockResolvedValue({
       items: [],
       total: 0,
@@ -284,14 +288,14 @@ describe("ProcessosPage (Kanban)", () => {
     render(<ProcessosPage />);
     await screen.findByText("Nenhum processo encontrado nesta unidade");
 
-    const checkbox = screen.getByLabelText("Exibir concluídos e arquivados");
+    const checkbox = screen.getByLabelText("Exibir Arquivados");
     expect(checkbox).not.toBeChecked();
     await waitFor(() =>
-      expect(listarKanban).toHaveBeenLastCalledWith({ incluir_finalizados: false }),
+      expect(listarKanban).toHaveBeenLastCalledWith({ incluir_arquivados: false }),
     );
   });
 
-  it("marcar o checkbox chama a API com incluir_finalizados=true e persiste a preferência", async () => {
+  it("marcar o checkbox chama a API com incluir_arquivados=true e persiste a preferência", async () => {
     listarKanban.mockResolvedValue({
       items: [],
       total: 0,
@@ -303,17 +307,35 @@ describe("ProcessosPage (Kanban)", () => {
     render(<ProcessosPage />);
     await screen.findByText("Nenhum processo encontrado nesta unidade");
 
-    const checkbox = screen.getByLabelText("Exibir concluídos e arquivados");
+    const checkbox = screen.getByLabelText("Exibir Arquivados");
     await userEvent.click(checkbox);
 
     expect(checkbox).toBeChecked();
     await waitFor(() =>
-      expect(listarKanban).toHaveBeenLastCalledWith({ incluir_finalizados: true }),
+      expect(listarKanban).toHaveBeenLastCalledWith({ incluir_arquivados: true }),
     );
-    expect(window.localStorage.getItem("setes:processos:exibir-finalizados")).toBe("true");
+    expect(window.localStorage.getItem("setes:processos:exibir-arquivados")).toBe("true");
   });
 
   it("reaplica a preferência salva do checkbox na próxima visita", async () => {
+    window.localStorage.setItem("setes:processos:exibir-arquivados", "true");
+    listarKanban.mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      page_size: 50,
+      mensagem_vazio: null,
+    });
+
+    render(<ProcessosPage />);
+
+    await waitFor(() =>
+      expect(listarKanban).toHaveBeenLastCalledWith({ incluir_arquivados: true }),
+    );
+    expect(screen.getByLabelText("Exibir Arquivados")).toBeChecked();
+  });
+
+  it("não lê a chave antiga do checkbox (exibir-finalizados)", async () => {
     window.localStorage.setItem("setes:processos:exibir-finalizados", "true");
     listarKanban.mockResolvedValue({
       items: [],
@@ -326,12 +348,12 @@ describe("ProcessosPage (Kanban)", () => {
     render(<ProcessosPage />);
 
     await waitFor(() =>
-      expect(listarKanban).toHaveBeenLastCalledWith({ incluir_finalizados: true }),
+      expect(listarKanban).toHaveBeenLastCalledWith({ incluir_arquivados: false }),
     );
-    expect(screen.getByLabelText("Exibir concluídos e arquivados")).toBeChecked();
+    expect(screen.getByLabelText("Exibir Arquivados")).not.toBeChecked();
   });
 
-  it("o contador do cabeçalho reflete só o total retornado (finalizados ocultos)", async () => {
+  it("o contador do cabeçalho reflete só o total retornado (arquivados ocultos)", async () => {
     listarKanban.mockResolvedValue({
       items: [{ ...CARD_BASE, id: "proc-1", numero: "2026/000001", assunto: "A" }],
       total: 1,
@@ -392,5 +414,171 @@ describe("ProcessosPage (Kanban)", () => {
     const card = (await screen.findByText("2026/000001")).closest("a");
     expect(card?.className).toContain("border-l-amber-500");
     expect(within(card as HTMLElement).getByText("↩ Devolvido")).toBeInTheDocument();
+  });
+
+  it('exibe o card de ação com destaque e o badge "Ação necessária" (change kanban-por-servidor, D2)', async () => {
+    listarKanban.mockResolvedValue({
+      items: [
+        {
+          ...CARD_BASE,
+          id: "proc-1",
+          numero: "2026/000001",
+          assunto: "Está comigo",
+          acao_requerida: true,
+        },
+      ],
+      total: 1,
+      page: 1,
+      page_size: 50,
+      mensagem_vazio: null,
+    });
+
+    render(<ProcessosPage />);
+
+    const card = (await screen.findByText("2026/000001")).closest("a");
+    expect(within(card as HTMLElement).getByText("Ação necessária")).toBeInTheDocument();
+    expect(card?.className).toContain("ring-navy-400");
+    expect(card?.className).not.toContain("border-dashed");
+  });
+
+  it("exibe o card de acompanhamento discreto com o nome do detentor (change kanban-por-servidor, D2)", async () => {
+    listarKanban.mockResolvedValue({
+      items: [
+        {
+          ...CARD_BASE,
+          id: "proc-1",
+          numero: "2026/000001",
+          assunto: "Está com Maria",
+          acao_requerida: false,
+          servidor_atual_nome: "Maria Silva",
+        },
+      ],
+      total: 1,
+      page: 1,
+      page_size: 50,
+      mensagem_vazio: null,
+    });
+
+    render(<ProcessosPage />);
+
+    const card = (await screen.findByText("2026/000001")).closest("a");
+    expect(within(card as HTMLElement).queryByText("Ação necessária")).not.toBeInTheDocument();
+    expect(within(card as HTMLElement).getByText(/Maria Silva/)).toBeInTheDocument();
+    expect(card?.className).toContain("border-dashed");
+  });
+
+  it("filtra por tipo de processo e reflete na query (D5/6.3)", async () => {
+    listarKanban.mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      page_size: 50,
+      mensagem_vazio: null,
+    });
+    listarTiposProcesso.mockResolvedValue([
+      { id: "tp-1", nome: "Requerimento", ativo: true, prazo_anonimizacao_anos: 5 },
+      { id: "tp-2", nome: "Licitação", ativo: true, prazo_anonimizacao_anos: 5 },
+    ]);
+
+    render(<ProcessosPage />);
+    const filtro = await screen.findByLabelText("Filtrar por tipo de processo");
+    await userEvent.selectOptions(filtro, "tp-1");
+
+    await waitFor(() =>
+      expect(listarKanban).toHaveBeenLastCalledWith({
+        incluir_arquivados: false,
+        tipo_processo_id: "tp-1",
+      }),
+    );
+  });
+
+  it("filtra por assunto com debounce de 300ms (D5/6.3)", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    listarKanban.mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      page_size: 50,
+      mensagem_vazio: null,
+    });
+
+    const user = userEvent.setup({ delay: null });
+    render(<ProcessosPage />);
+    await screen.findByLabelText("Filtrar por assunto");
+
+    const campo = screen.getByLabelText("Filtrar por assunto");
+    await user.type(campo, "diária");
+
+    // Antes do debounce, ainda não filtrou por assunto.
+    expect(listarKanban).not.toHaveBeenLastCalledWith(
+      expect.objectContaining({ assunto: "diária" }),
+    );
+
+    vi.advanceTimersByTime(300);
+
+    await waitFor(() =>
+      expect(listarKanban).toHaveBeenLastCalledWith({
+        incluir_arquivados: false,
+        assunto: "diária",
+      }),
+    );
+    vi.useRealTimers();
+  });
+
+  it("filtra por período de criação (D5/6.3)", async () => {
+    listarKanban.mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      page_size: 50,
+      mensagem_vazio: null,
+    });
+
+    render(<ProcessosPage />);
+    const inicio = await screen.findByLabelText("Data inicial");
+    const fim = screen.getByLabelText("Data final");
+
+    await userEvent.type(inicio, "2026-07-01");
+    await userEvent.type(fim, "2026-07-31");
+
+    await waitFor(() =>
+      expect(listarKanban).toHaveBeenLastCalledWith({
+        incluir_arquivados: false,
+        data_inicial: "2026-07-01",
+        data_final: "2026-07-31",
+      }),
+    );
+  });
+
+  it("combina os três filtros e o Limpar filtros restaura o quadro completo (D5/6.3)", async () => {
+    listarKanban.mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      page_size: 50,
+      mensagem_vazio: null,
+    });
+    listarTiposProcesso.mockResolvedValue([
+      { id: "tp-1", nome: "Requerimento", ativo: true, prazo_anonimizacao_anos: 5 },
+    ]);
+
+    render(<ProcessosPage />);
+    const filtroTipo = await screen.findByLabelText("Filtrar por tipo de processo");
+    await userEvent.selectOptions(filtroTipo, "tp-1");
+    await userEvent.type(screen.getByLabelText("Data inicial"), "2026-07-01");
+
+    await waitFor(() =>
+      expect(listarKanban).toHaveBeenLastCalledWith({
+        incluir_arquivados: false,
+        tipo_processo_id: "tp-1",
+        data_inicial: "2026-07-01",
+      }),
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Limpar filtros" }));
+
+    await waitFor(() =>
+      expect(listarKanban).toHaveBeenLastCalledWith({ incluir_arquivados: false }),
+    );
   });
 });

@@ -6,15 +6,18 @@ um provedor de e-mail real nem de acesso direto ao Postgres a partir do Node.
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 
 from app import main
 from app.config import Settings, get_settings
-from app.db.models import Unidade
+from app.db.models import Processo, StatusProcesso, Unidade
 from app.email.provider import EmailMessage
 from app.email.queue import config_from_settings, dev_inbox_limpar, enqueue_email
+from tests.helpers_processo import processo_concluido, servidor_com_setor, tipo_processo, unidade
 
 
 @pytest.fixture(autouse=True)
@@ -116,3 +119,68 @@ def test_reset_rate_limit_libera_novas_tentativas_de_login(db):
             assert c.post("/auth/login", json=credenciais).status_code == 401
     finally:
         main.app.dependency_overrides.clear()
+
+
+def test_arquivar_vencidos_retorna_404_quando_desabilitado(client):
+    resp = client.post("/internal/dev/arquivar-vencidos")
+    assert resp.status_code == 404
+
+
+def test_arquivar_vencidos_adianta_o_arquivamento_automatico(db):
+    """Usado pelo E2E do quadro pessoal (change kanban-por-servidor, task 7.2)
+    para alcançar o estado Arquivado sem esperar `dias_para_arquivamento`."""
+    cofin = unidade(db, "COFIN")
+    tipo = tipo_processo(db)
+    criador, _setor = servidor_com_setor(db, cofin)
+    processo = processo_concluido(
+        db,
+        unidade=cofin,
+        criador=criador,
+        tipo=tipo,
+        concluido_em=datetime.utcnow(),
+        arquivar_em=datetime.utcnow() + timedelta(days=30),
+    )
+
+    settings = Settings(DEV_DB_RESET=True)
+    main.app.dependency_overrides[get_settings] = lambda: settings
+    try:
+        with TestClient(main.app) as c:
+            resp = c.post("/internal/dev/arquivar-vencidos")
+            assert resp.status_code == 204
+    finally:
+        main.app.dependency_overrides.clear()
+
+    db.refresh(processo)
+    assert processo.status == StatusProcesso.ARQUIVADO
+
+
+def test_arquivar_vencidos_nao_toca_processo_nao_concluido(db):
+    cofin = unidade(db, "COFIN")
+    tipo = tipo_processo(db)
+    criador, _setor = servidor_com_setor(db, cofin)
+    processo = Processo(
+        numero="2026/999999",
+        assunto="Ainda aberto",
+        tipo_processo_id=tipo.id,
+        status=StatusProcesso.ABERTO,
+        unidade_atual_id=cofin.id,
+        unidade_origem_id=cofin.id,
+        setor_atual_id=criador.setor_id,
+        servidor_atual_id=criador.id,
+        prazo_dias=30,
+        prazo_em=datetime.utcnow().date(),
+        criado_por_id=criador.id,
+    )
+    db.add(processo)
+    db.commit()
+
+    settings = Settings(DEV_DB_RESET=True)
+    main.app.dependency_overrides[get_settings] = lambda: settings
+    try:
+        with TestClient(main.app) as c:
+            assert c.post("/internal/dev/arquivar-vencidos").status_code == 204
+    finally:
+        main.app.dependency_overrides.clear()
+
+    db.refresh(processo)
+    assert processo.status == StatusProcesso.ABERTO

@@ -140,12 +140,16 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
       * **Quando** tento fazer login com minhas credenciais corretas
       * **Então** o sistema rejeita a autenticação e exibe "Conta desativada. Entre em contato com o Administrador do sistema." NENHUM e-mail de alerta é enviado (pois a desativação é uma ação administrativa legítima, não uma tentativa de invasão).
 
-* **US 1.4:** Como Servidor, eu quero ver os processos da minha unidade e acompanhar os que protocolei mesmo depois de tramitados para que eu não visualizo indevidamente processos de outras unidades, mas não perco o acompanhamento do que a minha unidade originou.
+* **US 1.4:** Como Servidor, eu quero ver no meu quadro apenas os processos que me dizem respeito — os que criei, os que tenho sob minha responsabilidade e os que já detive — para não me perder em processos de colegas que nunca tratei, mas ainda poder localizar e acessar qualquer processo da minha unidade quando precisar.
   * **Critérios de Aceitação:**
-    * *Cenário 1: Acesso pela unidade atual e acompanhamento pela unidade de origem (revisado — change visibilidade-processos-origem)*
+    * *Cenário 1: Quadro pessoal — responsável, criador e participante histórico (revisado — change kanban-por-servidor)*
       * **Dado** que estou autenticado como Servidor vinculado à unidade COFIN
-      * **Quando** acesso a listagem de processos ou realizo qualquer busca
-      * **Então** vejo os processos atualmente na unidade COFIN (colunas Aberto, Em Tramitação, Concluído e Arquivado do Kanban da COFIN, integralmente acionáveis) e, em modo **somente leitura** (card acinzentado, sem Despachar/Devolver/sigilo/anexar-remover documentos), os processos **cuja unidade de origem é a COFIN** e que já tramitaram para outra unidade. Processo sigiloso que está em outra unidade **não aparece** no acompanhamento por origem — o sigilo prevalece. Concluído/Arquivado só aparecem quando o checkbox "Exibir concluídos e arquivados" está marcado (default desmarcado)
+      * **Quando** acesso a tela de Processos
+      * **Então** vejo exclusivamente os processos em que sou o **responsável atual**, os que **criei** e aqueles pelos quais **já passei** (fui detentor em algum evento do histórico de tramitação) — não mais todos os processos da unidade COFIN. Um Gestor ou colega que apenas **agiu** sobre o processo (ex.: reatribuiu) sem tê-lo detido não passa a vê-lo por esse motivo. Processo sigiloso fora da minha unidade atual **não aparece**, mesmo que eu já o tenha detido — o sigilo prevalece sobre o acompanhamento
+    * *Cenário 1b: Visão estreita não estreita a autorização*
+      * **Dado** que um processo da minha unidade não aparece no meu quadro porque nunca o toquei
+      * **Quando** acesso o detalhe desse processo por URL direta ou pela busca interna (US 2.7, que permanece por unidade)
+      * **Então** o acesso é **permitido** — a autorização continua sendo por unidade (atual ou origem); apenas a composição do meu quadro pessoal foi estreitada
     * *Cenário 2: Tentativa de acesso direto por URL a processo de outra unidade*
       * **Dado** que estou autenticado como Servidor da unidade COFIN e conheço o ID de um processo que nunca passou pela COFIN
       * **Quando** tento acessar diretamente a URL desse processo de outra unidade
@@ -153,7 +157,8 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
     * *Cenário 3: Servidor transferido de unidade*
       * **Dado** que eu era Servidor da unidade COFIN e fui transferido para a unidade AJUR
       * **Quando** acesso meu histórico de atuação (Meu Perfil)
-      * **Então** visualizo os processos em que atuei quando estava na COFIN (histórico permanece), mas não tenho mais acesso ao Kanban ou aos detalhes atuais dos processos que estão na COFIN, exceto se o processo também tiver tramitado pela AJUR
+      * **Então** visualizo os processos em que atuei quando estava na COFIN (histórico permanece), mas não tenho mais acesso ao Kanban ou aos detalhes atuais dos processos que estão na COFIN, exceto se o processo também tiver tramitado pela AJUR ou eu continuar responsável/criador/detentor dele
+  * **Nota (change kanban-por-servidor):** o quadro do Servidor deixa de ser "por unidade ampliado à origem" (change visibilidade-processos-origem) e passa a ser pessoal — o cliente rejeitou o recorte por unidade inteira na avaliação da primeira entrega (`docs/Ajustes SETES DOCS.pdf`). A autorização de acesso direto/busca não muda; apenas a composição do quadro.
 
 * **US 1.5:** Como Usuário, eu quero acessar meu perfil para visualizar meu histórico de atuação no sistema.
   * **Critérios de Aceitação:**
@@ -343,24 +348,36 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
       * **Então** o processo permanece no status anterior e nenhum evento é gravado
   * **Nota (change tramitacao-manual):** a conclusão deixa de ser consequência de um despacho na "última etapa do roteiro" — vira ação própria, com botão dedicado, disponível ao responsável atual e ao Gestor da unidade.
 
-* **US 2.3:** Como Servidor, eu quero visualizar o quadro Kanban dos processos da minha unidade para acompanhar o status de cada um de forma intuitiva.
+* **US 2.3:** Como Servidor, eu quero visualizar o quadro Kanban pessoal dos processos que me dizem respeito para acompanhar o status de cada um e distinguir rapidamente o que exige minha ação do que estou apenas acompanhando.
   * **Critérios de Aceitação:**
-    * *Cenário 1: Exibição do Kanban por colunas de status*
-      * **Dado** que estou autenticado como Servidor da unidade COFIN
+    * *Cenário 1: Exibição do Kanban por colunas de status (quadro pessoal — revisado, change kanban-por-servidor)*
+      * **Dado** que estou autenticado como Servidor e tenho processos que criei, que estão sob minha responsabilidade atual e que já detive
       * **Quando** acesso a tela de Processos
-      * **Então** visualizo um quadro com colunas "Aberto", "Em Tramitação", "Concluído" e "Arquivado", cada uma contendo os cards dos processos correspondentes, com número, assunto, prazo e dias restantes visíveis em cada card. O Kanban é um quadro de **visualização**, não de manipulação direta. As transições de status ocorrem exclusivamente por meio de ações explícitas: o botão "Tramitar" (Envio ou Devolução) move o card de "Aberto"/entre unidades; o botão "Concluir", disponível a qualquer momento para o responsável ou o Gestor da unidade, move para "Concluído"; a rotina automática move de "Concluído" para "Arquivado". A Reatribuição não move o card entre colunas (ortogonal ao status). Os cards **NÃO são arrastáveis** entre colunas no MVP.
+      * **Então** visualizo um quadro com colunas "Aberto", "Em Tramitação", "Concluído" e "Arquivado", contendo exclusivamente os cards desses processos — não mais todos os da minha unidade. Cada card exibe número, assunto, unidade atual, **servidor atualmente responsável**, prazo e dias restantes. O Kanban é um quadro de **visualização**, não de manipulação direta. As transições de status ocorrem exclusivamente por meio de ações explícitas: o botão "Tramitar" (Envio ou Devolução) move o card de "Aberto"/entre unidades; o botão "Concluir", disponível a qualquer momento para o responsável ou o Gestor da unidade, move para "Concluído"; a rotina automática move de "Concluído" para "Arquivado". A Reatribuição não move o card entre colunas (ortogonal ao status). Os cards **NÃO são arrastáveis** entre colunas no MVP.
+    * *Cenário 1c: Distinção entre ação requerida e acompanhamento (change kanban-por-servidor)*
+      * **Dado** que sou o responsável atual por um processo do meu quadro e apenas acompanho outro, que enviei para a Servidora "Maria Silva"
+      * **Quando** visualizo o quadro
+      * **Então** o card do processo sob minha responsabilidade aparece com **destaque visual sólido**; o card do processo enviado a Maria aparece de forma **discreta**, exibindo "Maria Silva" como responsável atual. Um processo devolvido a mim volta a ter destaque sólido de ação requerida
     * *Cenário 2: Atualização automática após envio*
-      * **Dado** que um processo foi enviado para minha unidade por outra unidade
-      * **Quando** eu estiver visualizando o Kanban e um novo processo for enviado para minha unidade
-      * **Então** o indicador de notificações no menu superior é incrementado, e o novo processo aparece na coluna "Aberto" após eu realizar as ações de: clicar no ícone de notificações OU acionar o botão "Atualizar" do Kanban OU navegar para outra tela e retornar
-    * *Cenário 3: Kanban vazio*
-      * **Dado** que estou autenticado como Servidor de uma unidade recém-criada
-      * **Quando** acesso a tela de Processos e não há nenhum processo na unidade
+      * **Dado** que um processo foi enviado a mim
+      * **Quando** eu estiver visualizando o Kanban e um novo processo for enviado a mim
+      * **Então** o indicador de notificações no menu superior é incrementado, e o novo processo aparece na coluna "Aberto" (ou correspondente) do meu quadro pessoal após eu realizar as ações de: clicar no ícone de notificações OU acionar o botão "Atualizar" do Kanban OU navegar para outra tela e retornar
+    * *Cenário 3: Kanban pessoal vazio*
+      * **Dado** que estou autenticado como Servidor recém-cadastrado, sem processos criados, recebidos ou detidos
+      * **Quando** acesso a tela de Processos
       * **Então** visualizo as colunas do Kanban vazias com a mensagem "Nenhum processo encontrado nesta unidade"
     * *Cenário 4: Ordenação dos cards*
-      * **Dado** que minha unidade possui múltiplos processos em uma mesma coluna
+      * **Dado** que meu quadro possui múltiplos processos em uma mesma coluna
       * **Quando** visualizo o Kanban
       * **Então** os cards são ordenados por prazo (mais próximo do vencimento primeiro), e processos com prazo vencido aparecem no topo com os seguintes indicadores visuais: (a) o número de dias vencidos é exibido em cor vermelha com um ícone de relógio/calendário; (b) o texto do prazo no card utiliza peso de fonte bold; (c) a borda esquerda do card recebe uma barra vermelha de 4px de espessura
+    * *Cenário 5: Checkbox "Exibir Arquivados" — Concluído sempre exibido (revisado, change kanban-por-servidor)*
+      * **Dado** que meu quadro possui processos em todos os status
+      * **Quando** acesso a tela de Processos sem nunca ter alterado a preferência
+      * **Então** o checkbox "Exibir Arquivados" aparece **desmarcado por padrão**; processos "Aberto", "Em Tramitação" e **"Concluído" são sempre exibidos**; processos "Arquivado" ficam ocultos até que eu marque o checkbox — que não amplia meu escopo pessoal, apenas revela os arquivados que já estariam no meu quadro
+    * *Cenário 6: Filtros de tipo, assunto e data (change kanban-por-servidor)*
+      * **Dado** que meu quadro contém processos de tipos, assuntos e datas de criação variados
+      * **Quando** aplico, isolada ou combinadamente, um filtro por tipo de processo, um filtro de assunto (texto parcial, sem distinção de maiúsculas/minúsculas) e um período de criação (data inicial/final, incluindo o dia final inteiro), com ou sem "Exibir Arquivados" marcado
+      * **Então** o quadro exibe apenas os processos que satisfazem todos os filtros aplicados, sempre dentro do meu escopo pessoal — nenhum filtro amplia o que posso ver; limpar os filtros restaura o quadro completo do meu escopo
 
 * **US 2.4:** Como Servidor, eu quero ver o histórico completo de tramitação de um processo — incluindo por quais unidades, setores e servidores ele passou — para acompanhar quem deteve o processo em cada etapa.
   * **Critérios de Aceitação:**
@@ -420,6 +437,7 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
       * **Então** o processo aparece normalmente no Kanban da unidade, com um indicador visual de "Sigiloso" (ícone de cadeado ou tarja)
 
 * **US 2.7:** Como Servidor, eu quero buscar e filtrar processos da minha unidade por número, assunto ou período para localizar rapidamente um processo específico.
+  * **Nota (change kanban-por-servidor):** a busca interna **mantém** o escopo por unidade (atual ∪ origem), mesmo depois de o quadro (US 1.4/2.3) ter passado a ser pessoal — divergência deliberada (design D6): o quadro é minha área de trabalho, a busca é investigativa e serve para localizar processos que colegas da minha unidade estão tratando. Como a autorização permanece por unidade, a busca não revela nada que eu já não pudesse abrir por acesso direto.
   * **Critérios de Aceitação:**
     * *Cenário 1: Busca por número exato*
       * **Dado** que estou autenticado como Servidor da unidade COFIN
@@ -443,11 +461,11 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
     * *Cenário 1: Kanban multi-unidade*
       * **Dado** que estou autenticado como Gestor das unidades COFIN, AJUR e DIRAD
       * **Quando** acesso a tela de Processos
-      * **Então** visualizo um quadro Kanban consolidado com colunas "Aberto", "Em Tramitação", "Concluído" e "Arquivado", contendo os cards de processos de todas as unidades que gerencio. Cada card exibe: número do processo, assunto, unidade atual, prazo e dias restantes. O card também exibe o nome da unidade atual para identificação rápida.
+      * **Então** visualizo um quadro Kanban consolidado com colunas "Aberto", "Em Tramitação", "Concluído" e "Arquivado", contendo os cards de processos de todas as unidades que gerencio — o estreitamento pessoal do Servidor (US 1.4/2.3, change kanban-por-servidor) **não se aplica** ao meu perfil. Cada card exibe: número do processo, assunto, unidade atual, servidor responsável, prazo e dias restantes. Como quase nenhum processo costuma estar pessoalmente atribuído a mim, a maioria dos cards aparece em modo de acompanhamento, exibindo o servidor responsável de cada um; só tenho `acao_requerida` verdadeiro nos que estão atribuídos a mim pessoalmente.
     * *Cenário 2: Filtro por unidade no Kanban do Gestor*
       * **Dado** que estou visualizando o Kanban consolidado com processos de três unidades
       * **Quando** seleciono uma unidade específica no filtro de unidades
-      * **Então** o Kanban é filtrado para exibir apenas os processos da unidade selecionada
+      * **Então** o Kanban é filtrado para exibir apenas os processos da unidade selecionada — combinável com os filtros de tipo, assunto e data e com "Exibir Arquivados" (US 2.3 Cenário 6), sempre dentro das unidades que gerencio
     * *Cenário 3: Kanban consolidado vazio*
       * **Dado** que estou autenticado como Gestor de unidades que ainda não possuem processos
       * **Quando** acesso a tela de Processos
@@ -620,11 +638,11 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
     * *Cenário 1: Exibição do dashboard com indicadores*
       * **Dado** que estou autenticado como Gestor de ao menos uma unidade que possui processos
       * **Quando** acesso o Dashboard
-      * **Então** visualizo: total de processos ativos, tempo médio de tramitação (em dias corridos, medido da data de criação do processo até a data de conclusão, considerando apenas processos concluídos nos últimos 12 meses), quantidade de processos parados (sem movimentação há mais de 7 dias corridos), produtividade por unidade (processos concluídos no mês) e lista dos processos com prazo vencido ou próximo do vencimento
+      * **Então** visualizo, no topo, cinco cards de contagem por status — **Total**, **Abertos**, **Em Tramitação**, **Concluídos** e **Arquivados**, com o Total sempre igual à soma dos outros quatro (change kanban-por-servidor) — seguidos dos KPIs: total de processos ativos, tempo médio de tramitação (em dias corridos, medido da data de criação do processo até a data de conclusão, considerando apenas processos concluídos nos últimos 12 meses), quantidade de processos parados (sem movimentação há mais de 7 dias corridos), produtividade por unidade (processos concluídos no mês) e lista dos processos com prazo vencido ou próximo do vencimento
     * *Cenário 2: Dashboard sem dados (gestor recém-cadastrado)*
       * **Dado** que estou autenticado como Gestor de unidades que ainda não possuem processos
       * **Quando** acesso o Dashboard
-      * **Então** visualizo os cards de KPI com valor zero e a mensagem "Nenhum dado disponível para o período" em cada seção
+      * **Então** visualizo os cinco cards de contagem zerados e os cards de KPI com valor zero e a mensagem "Nenhum dado disponível para o período" em cada seção
     * *Cenário 3: Filtro por unidade gerenciada*
       * **Dado** que estou autenticado como Gestor de três unidades (COFIN, AJUR, DIRAD)
       * **Quando** seleciono apenas a unidade COFIN no filtro do Dashboard
