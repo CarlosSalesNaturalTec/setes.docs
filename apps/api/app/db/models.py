@@ -127,6 +127,23 @@ class TipoNotificacao(str, enum.Enum):
     DESTINO_CORRIGIDO = "destino_corrigido"
 
 
+class TipoModeloDocumento(str, enum.Enum):
+    """Change modelos-de-documento (design.md D7) — enum de domínio, não texto
+    livre, para sustentar filtro e agrupamento do catálogo. `categoria`
+    permanece texto livre (campo aberto pedido pelo cliente)."""
+
+    REQUERIMENTO = "requerimento"
+    OFICIO = "oficio"
+    MEMORANDO = "memorando"
+    DESPACHO = "despacho"
+    PARECER = "parecer"
+    NOTA_TECNICA = "nota_tecnica"
+    RELATORIO = "relatorio"
+    ATA = "ata"
+    CONTRATO = "contrato"
+    OUTRO = "outro"
+
+
 class TipoSolicitacaoLgpd(str, enum.Enum):
     """Épico 10 (US 10.1) — tipo da solicitação registrada no canal público."""
 
@@ -526,10 +543,40 @@ class Tramitacao(Base):
     )
 
 
+class ModeloDocumento(Base):
+    """Catálogo de modelos de documento (change modelos-de-documento, design.md
+    D1, D6, D7). Nunca excluído fisicamente, apenas desativado (`ativo`) — um
+    modelo já usado é referenciado por `Documento.modelo_id`. `conteudo` é HTML
+    já sanitizado contra a whitelist do serviço (D3), nunca dado bruto do
+    editor."""
+
+    __tablename__ = "modelo_documento"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    nome: Mapped[str] = mapped_column(String(200), nullable=False)
+    categoria: Mapped[str] = mapped_column(String(200), nullable=False)
+    tipo: Mapped[TipoModeloDocumento] = mapped_column(
+        _enum_col(TipoModeloDocumento, "tipo_modelo_documento"), nullable=False
+    )
+    descricao: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    conteudo: Mapped[str] = mapped_column(Text, nullable=False)
+    ativo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    criado_por_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("usuario.id"), nullable=False
+    )
+    criado_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
 class Documento(Base):
     """Anexo de processo (Épico 3, fatia A). Soft-delete derivado: `removido_em
     IS NULL` = visível (D2) — nenhuma coluna de status textual. `objeto_chave`
-    é a chave opaca do objeto no bucket, desacoplada de `nome_exibicao` (D3)."""
+    é a chave opaca do objeto no bucket, desacoplada de `nome_exibicao` (D3).
+    `modelo_id` (change modelos-de-documento, design.md D6) é nulo para anexos
+    enviados por upload e preenchido para documentos gerados a partir de um
+    modelo — proveniência auditável, sem criar uma segunda classe de documento
+    (D1)."""
 
     __tablename__ = "documento"
     __table_args__ = (CheckConstraint("tamanho_bytes > 0", name="ck_documento_tamanho_positivo"),)
@@ -555,6 +602,9 @@ class Documento(Base):
         UUID(as_uuid=True), ForeignKey("usuario.id"), nullable=True
     )
     purgar_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    modelo_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("modelo_documento.id"), nullable=True
+    )
 
     # Só leitura — a área administrativa "Documentos Removidos" (US 8.7) exibe
     # número/assunto do processo de origem na listagem cross-processo.

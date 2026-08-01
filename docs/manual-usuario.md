@@ -179,6 +179,30 @@ Para criar um processo você precisa estar vinculado a um **setor** da sua
 unidade; se seu cadastro não tiver setor, peça ao Administrador para
 completá-lo antes de tentar criar um processo.
 
+### Abrir um processo a partir de um modelo (opcional)
+
+Para evitar redigitar do zero requerimentos, ofícios, memorandos e outros
+textos repetitivos, você pode **escolher um modelo** do catálogo ao criar um
+processo:
+
+1. No formulário de "Novo processo", em **"Modelo de documento (opcional)"**,
+   escolha um modelo ativo do catálogo. O texto do modelo aparece no editor.
+2. **Edite o texto livremente**, substituindo as lacunas (trechos como
+   "[NOME DO SOLICITANTE]") pelas informações reais do caso. O editor destaca
+   visualmente qualquer lacuna que ainda não foi preenchida, como lembrete —
+   isso **não impede** você de salvar o processo mesmo assim.
+3. Use a barra de formatação para **negrito, itálico, sublinhado, alinhamento
+   e listas**.
+4. Ao confirmar a criação do processo, o texto é convertido em **PDF** e
+   aparece automaticamente na lista de documentos do processo — como
+   qualquer outro anexo: pode ser baixado, e removido/restaurado pelas mesmas
+   regras da seção seguinte. Uma vez salvo, o documento gerado **não pode ser
+   editado**; para corrigir um erro de digitação, remova-o e gere outro a
+   partir do modelo.
+
+Escolher um modelo é **opcional** — criar um processo digitando só o assunto
+continua funcionando exatamente como antes.
+
 ### Tramitar um processo: Enviar, Devolver ou Reatribuir
 
 Não existe mais um "caminho predefinido" por tipo de processo — você escolhe
@@ -269,6 +293,10 @@ você nunca os tenha tocado.
   confirmação, fica registrada no histórico do processo (com autor e data/hora)
   e o arquivo é preservado por **30 dias** — nesse período, o Administrador
   consegue restaurá-lo se a remoção tiver sido um engano.
+- **Documentos gerados a partir de modelo:** o PDF gerado ao abrir um
+  processo com um modelo (seção anterior) aparece na mesma lista dos anexos
+  enviados por upload, com os mesmos controles de visualização, download,
+  remoção, retenção e restauração — não há distinção nenhuma no tratamento.
 
 ### Assinar documentos digitalmente
 
@@ -436,6 +464,30 @@ tramitação** — cada envio, devolução ou reatribuição tem seu destino esc
 explicitamente pelo Servidor no momento da ação. Na tela de cada tipo, você
 também configura o **prazo de anonimização LGPD** (em anos).
 
+### Cadastrar modelos de documento
+
+Em **"Modelos de Documento"**, mantenha o catálogo de modelos que o Servidor
+pode escolher ao abrir um processo (veja "Abrir um processo a partir de um
+modelo"):
+
+- **Cadastrar/editar:** informe nome, categoria (texto livre), tipo
+  (requerimento, ofício, memorando, despacho, parecer, nota técica,
+  relatório, ata, contrato ou outro), descrição opcional e o conteúdo, escrito
+  no editor com a barra de formatação restrita a **negrito, itálico,
+  sublinhado, alinhamento e listas**. Use marcações de lacuna no texto (ex.:
+  "[NOME DO SOLICITANTE]", "____________") para indicar onde o servidor deve
+  substituir pelas informações reais.
+- **Não inclua dados pessoais reais no modelo** — nome, CPF, endereço ou
+  qualquer dado de uma pessoa específica não devem aparecer no modelo, só
+  marcações de lacuna. A tela adverte sobre isso a cada cadastro.
+- **Desativar/reativar:** um modelo desativado some da lista de escolha do
+  Servidor, mas os documentos já gerados a partir dele **permanecem intactos**
+  na lista de anexos dos respectivos processos. **Não existe exclusão** de
+  modelo — apenas desativação, exatamente como unidades, setores e tipos de
+  processo.
+- Use os filtros por **tipo** e por **situação** (ativo/inativo) para localizar
+  um modelo no catálogo.
+
 ### Conceder permissão de Auditoria
 
 Você pode **conceder e revogar a permissão de Auditoria** a usuários
@@ -551,6 +603,7 @@ protocolo — é por ele que a solicitação é identificada.
 | **Unidade** | Coordenadoria ou diretoria do órgão (ex.: uma coordenadoria financeira). Base do controle de acesso. |
 | **Setor** | Subdivisão de uma unidade (ex.: o gabinete da coordenadoria financeira). Organiza as pessoas e é escolhido a cada tramitação; **não** altera quem enxerga o quê — isso continua sendo por unidade. |
 | **Tipo de processo** | Categoria do processo, usada em filtros do Kanban/dashboard e no prazo de anonimização LGPD — não define mais um caminho de tramitação. |
+| **Modelo de documento** | Texto pré-formatado com lacunas, cadastrado pelo Administrador, que o Servidor pode escolher e completar ao abrir um processo; gera um PDF anexado ao processo, tratado como qualquer outro documento. |
 | **Tramitação** | O conjunto de ações (Envio, Devolução, Reatribuição, Conclusão) que movem um processo entre servidores, setores e unidades. |
 | **Enviar** | Encaminhar o processo a um servidor de destino escolhido explicitamente (unidade, setor, servidor), com mensagem. |
 | **Devolver** | Mandar o processo de volta a quem o enviou por último (resolvido automaticamente pelo sistema), com motivo e justificativa. |

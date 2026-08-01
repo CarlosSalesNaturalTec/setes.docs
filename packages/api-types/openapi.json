@@ -468,6 +468,63 @@
         "title": "ContagensPorStatusResponse",
         "type": "object"
       },
+      "CriarModeloRequest": {
+        "properties": {
+          "categoria": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Categoria",
+            "type": "string"
+          },
+          "conteudo": {
+            "minLength": 1,
+            "title": "Conteudo",
+            "type": "string"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          },
+          "nome": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Nome",
+            "type": "string"
+          },
+          "tipo": {
+            "enum": [
+              "requerimento",
+              "oficio",
+              "memorando",
+              "despacho",
+              "parecer",
+              "nota_tecnica",
+              "relatorio",
+              "ata",
+              "contrato",
+              "outro"
+            ],
+            "title": "Tipo",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nome",
+          "categoria",
+          "tipo",
+          "conteudo"
+        ],
+        "title": "CriarModeloRequest",
+        "type": "object"
+      },
       "CriarProcessoRequest": {
         "properties": {
           "assunto": {
@@ -723,6 +780,17 @@
             "title": "Id",
             "type": "string"
           },
+          "modelo_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modelo Id"
+          },
           "nome_exibicao": {
             "title": "Nome Exibicao",
             "type": "string"
@@ -776,6 +844,83 @@
           }
         },
         "title": "DocumentosRemovidosListResponse",
+        "type": "object"
+      },
+      "EditarModeloRequest": {
+        "properties": {
+          "categoria": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Categoria"
+          },
+          "conteudo": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conteudo"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          },
+          "nome": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nome"
+          },
+          "tipo": {
+            "anyOf": [
+              {
+                "enum": [
+                  "requerimento",
+                  "oficio",
+                  "memorando",
+                  "despacho",
+                  "parecer",
+                  "nota_tecnica",
+                  "relatorio",
+                  "ata",
+                  "contrato",
+                  "outro"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tipo"
+          }
+        },
+        "title": "EditarModeloRequest",
         "type": "object"
       },
       "EditarSetorRequest": {
@@ -1059,6 +1204,26 @@
           "criado_em"
         ],
         "title": "EventoHistoricoResponse",
+        "type": "object"
+      },
+      "GerarDocumentoRequest": {
+        "description": "Change modelos-de-documento — geração de documento a partir de um\nmodelo do catálogo; `conteudo` é o HTML editado pelo servidor (lacunas já\nsubstituídas ou não, D4), sanitizado de novo no backend antes do render.",
+        "properties": {
+          "conteudo": {
+            "minLength": 1,
+            "title": "Conteudo",
+            "type": "string"
+          },
+          "modelo_id": {
+            "title": "Modelo Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "modelo_id",
+          "conteudo"
+        ],
+        "title": "GerarDocumentoRequest",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -1542,6 +1707,79 @@
           "usuario"
         ],
         "title": "MeuPerfilResponse",
+        "type": "object"
+      },
+      "ModeloResponse": {
+        "properties": {
+          "ativo": {
+            "title": "Ativo",
+            "type": "boolean"
+          },
+          "categoria": {
+            "title": "Categoria",
+            "type": "string"
+          },
+          "conteudo": {
+            "title": "Conteudo",
+            "type": "string"
+          },
+          "criado_em": {
+            "format": "date-time",
+            "title": "Criado Em",
+            "type": "string"
+          },
+          "criado_por_id": {
+            "title": "Criado Por Id",
+            "type": "string"
+          },
+          "descricao": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descricao"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nome": {
+            "title": "Nome",
+            "type": "string"
+          },
+          "tipo": {
+            "enum": [
+              "requerimento",
+              "oficio",
+              "memorando",
+              "despacho",
+              "parecer",
+              "nota_tecnica",
+              "relatorio",
+              "ata",
+              "contrato",
+              "outro"
+            ],
+            "title": "Tipo",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "categoria",
+          "tipo",
+          "descricao",
+          "conteudo",
+          "ativo",
+          "criado_por_id",
+          "criado_em"
+        ],
+        "title": "ModeloResponse",
         "type": "object"
       },
       "MovimentacaoPublicaResponse": {
@@ -4206,6 +4444,377 @@
         ]
       }
     },
+    "/modelos": {
+      "get": {
+        "description": "Catálogo de modelos — leitura aberta a qualquer usuário autenticado\n(Servidor/Gestor precisam escolher modelo na abertura de processo).\n`ativo=true` filtra só os selecionáveis; omitido lista todos (tela\nadministrativa).",
+        "operationId": "listar_modelos_modelos_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ativo",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ativo"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ModeloResponse"
+                  },
+                  "title": "Response Listar Modelos Modelos Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Listar Modelos",
+        "tags": [
+          "modelos"
+        ]
+      },
+      "post": {
+        "operationId": "criar_modelo_modelos_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarModeloRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModeloResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Criar Modelo",
+        "tags": [
+          "modelos"
+        ]
+      }
+    },
+    "/modelos/{modelo_id}": {
+      "get": {
+        "operationId": "obter_modelo_modelos__modelo_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "modelo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Modelo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModeloResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Obter Modelo",
+        "tags": [
+          "modelos"
+        ]
+      },
+      "patch": {
+        "operationId": "editar_modelo_modelos__modelo_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "modelo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Modelo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditarModeloRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModeloResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Editar Modelo",
+        "tags": [
+          "modelos"
+        ]
+      }
+    },
+    "/modelos/{modelo_id}/desativar": {
+      "post": {
+        "operationId": "desativar_modelo_modelos__modelo_id__desativar_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "modelo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Modelo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModeloResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Desativar Modelo",
+        "tags": [
+          "modelos"
+        ]
+      }
+    },
+    "/modelos/{modelo_id}/reativar": {
+      "post": {
+        "operationId": "reativar_modelo_modelos__modelo_id__reativar_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "modelo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Modelo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModeloResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reativar Modelo",
+        "tags": [
+          "modelos"
+        ]
+      }
+    },
     "/notificacoes": {
       "get": {
         "description": "US 5.1 Cen.4/4b — lidas ficam visíveis por 30 dias; não lidas, sempre.",
@@ -5080,6 +5689,76 @@
           }
         },
         "summary": "Anexar Documento",
+        "tags": [
+          "documentos"
+        ]
+      }
+    },
+    "/processos/{processo_id}/documentos/gerar": {
+      "post": {
+        "description": "Change modelos-de-documento — gera um documento a partir de um modelo\nativo (D1/D2/D3/D6): sanitiza o HTML editado, renderiza em PDF e o anexa\npelo mesmo pipeline dos uploads (`documento_service.anexar`). A mesma\nautorização por unidade dos demais endpoints de escrita se aplica.",
+        "operationId": "gerar_documento_processos__processo_id__documentos_gerar_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "processo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Processo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GerarDocumentoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Gerar Documento",
         "tags": [
           "documentos"
         ]

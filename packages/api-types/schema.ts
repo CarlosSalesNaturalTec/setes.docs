@@ -488,6 +488,82 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/modelos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Modelos
+         * @description Catálogo de modelos — leitura aberta a qualquer usuário autenticado
+         *     (Servidor/Gestor precisam escolher modelo na abertura de processo).
+         *     `ativo=true` filtra só os selecionáveis; omitido lista todos (tela
+         *     administrativa).
+         */
+        get: operations["listar_modelos_modelos_get"];
+        put?: never;
+        /** Criar Modelo */
+        post: operations["criar_modelo_modelos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/modelos/{modelo_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Obter Modelo */
+        get: operations["obter_modelo_modelos__modelo_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Editar Modelo */
+        patch: operations["editar_modelo_modelos__modelo_id__patch"];
+        trace?: never;
+    };
+    "/modelos/{modelo_id}/desativar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Desativar Modelo */
+        post: operations["desativar_modelo_modelos__modelo_id__desativar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/modelos/{modelo_id}/reativar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reativar Modelo */
+        post: operations["reativar_modelo_modelos__modelo_id__reativar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/notificacoes": {
         parameters: {
             query?: never;
@@ -695,6 +771,29 @@ export interface paths {
          * @description US 3.1 Cen.1/2/2b/5 — anexa um documento ao processo.
          */
         post: operations["anexar_documento_processos__processo_id__documentos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/processos/{processo_id}/documentos/gerar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Gerar Documento
+         * @description Change modelos-de-documento — gera um documento a partir de um modelo
+         *     ativo (D1/D2/D3/D6): sanitiza o HTML editado, renderiza em PDF e o anexa
+         *     pelo mesmo pipeline dos uploads (`documento_service.anexar`). A mesma
+         *     autorização por unidade dos demais endpoints de escrita se aplica.
+         */
+        post: operations["gerar_documento_processos__processo_id__documentos_gerar_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1552,6 +1651,22 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** CriarModeloRequest */
+        CriarModeloRequest: {
+            /** Categoria */
+            categoria: string;
+            /** Conteudo */
+            conteudo: string;
+            /** Descricao */
+            descricao?: string | null;
+            /** Nome */
+            nome: string;
+            /**
+             * Tipo
+             * @enum {string}
+             */
+            tipo: "requerimento" | "oficio" | "memorando" | "despacho" | "parecer" | "nota_tecnica" | "relatorio" | "ata" | "contrato" | "outro";
+        };
         /** CriarProcessoRequest */
         CriarProcessoRequest: {
             /** Assunto */
@@ -1665,6 +1780,8 @@ export interface components {
             anexado_por_id: string;
             /** Id */
             id: string;
+            /** Modelo Id */
+            modelo_id?: string | null;
             /** Nome Exibicao */
             nome_exibicao: string;
             /** Processo Id */
@@ -1683,6 +1800,19 @@ export interface components {
         DocumentosRemovidosListResponse: {
             /** Items */
             items?: components["schemas"]["DocumentoRemovidoResponse"][];
+        };
+        /** EditarModeloRequest */
+        EditarModeloRequest: {
+            /** Categoria */
+            categoria?: string | null;
+            /** Conteudo */
+            conteudo?: string | null;
+            /** Descricao */
+            descricao?: string | null;
+            /** Nome */
+            nome?: string | null;
+            /** Tipo */
+            tipo?: ("requerimento" | "oficio" | "memorando" | "despacho" | "parecer" | "nota_tecnica" | "relatorio" | "ata" | "contrato" | "outro") | null;
         };
         /** EditarSetorRequest */
         EditarSetorRequest: {
@@ -1764,6 +1894,18 @@ export interface components {
             unidade_destino_id: string | null;
             /** Unidade Origem Id */
             unidade_origem_id: string | null;
+        };
+        /**
+         * GerarDocumentoRequest
+         * @description Change modelos-de-documento — geração de documento a partir de um
+         *     modelo do catálogo; `conteudo` é o HTML editado pelo servidor (lacunas já
+         *     substituídas ou não, D4), sanitizado de novo no backend antes do render.
+         */
+        GerarDocumentoRequest: {
+            /** Conteudo */
+            conteudo: string;
+            /** Modelo Id */
+            modelo_id: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -1949,6 +2091,33 @@ export interface components {
             /** Unidade Nome */
             unidade_nome?: string | null;
             usuario: components["schemas"]["UsuarioResponse"];
+        };
+        /** ModeloResponse */
+        ModeloResponse: {
+            /** Ativo */
+            ativo: boolean;
+            /** Categoria */
+            categoria: string;
+            /** Conteudo */
+            conteudo: string;
+            /**
+             * Criado Em
+             * Format: date-time
+             */
+            criado_em: string;
+            /** Criado Por Id */
+            criado_por_id: string;
+            /** Descricao */
+            descricao: string | null;
+            /** Id */
+            id: string;
+            /** Nome */
+            nome: string;
+            /**
+             * Tipo
+             * @enum {string}
+             */
+            tipo: "requerimento" | "oficio" | "memorando" | "despacho" | "parecer" | "nota_tecnica" | "relatorio" | "ata" | "contrato" | "outro";
         };
         /** MovimentacaoPublicaResponse */
         MovimentacaoPublicaResponse: {
@@ -3240,6 +3409,210 @@ export interface operations {
             };
         };
     };
+    listar_modelos_modelos_get: {
+        parameters: {
+            query?: {
+                ativo?: boolean | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    criar_modelo_modelos_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarModeloRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    obter_modelo_modelos__modelo_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                modelo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    editar_modelo_modelos__modelo_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                modelo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditarModeloRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    desativar_modelo_modelos__modelo_id__desativar_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                modelo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reativar_modelo_modelos__modelo_id__reativar_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                modelo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModeloResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listar_notificacoes_notificacoes_get: {
         parameters: {
             query?: never;
@@ -3631,6 +4004,43 @@ export interface operations {
         requestBody: {
             content: {
                 "multipart/form-data": components["schemas"]["Body_anexar_documento_processos__processo_id__documentos_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    gerar_documento_processos__processo_id__documentos_gerar_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GerarDocumentoRequest"];
             };
         };
         responses: {

@@ -7,6 +7,15 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
+class GerarDocumentoRequest(BaseModel):
+    """Change modelos-de-documento — geração de documento a partir de um
+    modelo do catálogo; `conteudo` é o HTML editado pelo servidor (lacunas já
+    substituídas ou não, D4), sanitizado de novo no backend antes do render."""
+
+    modelo_id: str
+    conteudo: str = Field(min_length=1)
+
+
 class DocumentoResponse(BaseModel):
     id: str
     processo_id: str
@@ -15,6 +24,10 @@ class DocumentoResponse(BaseModel):
     tamanho_bytes: int
     anexado_por_id: str
     anexado_em: datetime
+    # Change modelos-de-documento (design.md D6) — nulo para anexos enviados
+    # por upload, preenchido para documentos gerados a partir de modelo
+    # (proveniência auditável).
+    modelo_id: str | None = None
 
     @classmethod
     def de(cls, documento) -> "DocumentoResponse":
@@ -26,6 +39,7 @@ class DocumentoResponse(BaseModel):
             tamanho_bytes=documento.tamanho_bytes,
             anexado_por_id=str(documento.anexado_por_id),
             anexado_em=documento.anexado_em,
+            modelo_id=str(documento.modelo_id) if documento.modelo_id else None,
         )
 
 

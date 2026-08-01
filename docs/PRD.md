@@ -272,6 +272,26 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
   * **Definição do campo "Interessados":** O campo "interessados" aceita um ou mais nomes de pessoas físicas ou jurídicas, com os seguintes subcampos: nome completo (obrigatório, texto livre), CPF ou CNPJ (opcional, validado por algoritmo de dígito verificador) e tipo de participação (opcional, seleção entre: Requerente, Representado, Terceiro).
   * **Nota (change tramitacao-manual):** a tramitação automática entre unidades conforme o tipo de processo (roteiro) deixou de existir — o cliente rejeitou esse modelo na avaliação da primeira entrega. O tipo de processo permanece apenas como classificação (filtro de Kanban, dashboard, prazo de anonimização LGPD); a criação não exige nenhuma configuração de fluxo.
 
+* **US 2.1b:** Como Servidor, eu quero escolher um modelo de documento pré-formatado ao abrir um processo e completar apenas as lacunas, para evitar redigitar textos repetitivos (requerimento, ofício, memorando, etc.) — pedido do cliente na avaliação da primeira entrega (change `modelos-de-documento`).
+  * **Critérios de Aceitação:**
+    * *Cenário 1: Abertura de processo com modelo escolhido*
+      * **Dado** que estou criando um processo e escolho o modelo "Requerimento padrão" do catálogo de modelos ativos
+      * **Quando** substituo as lacunas do texto pelas informações reais do caso e salvo o processo
+      * **Então** o processo é criado normalmente e um documento em PDF com o texto editado é gerado e anexado a ele, aparecendo na lista de documentos com nome de exibição próprio e disponível para download — sujeito às mesmas regras de formato, armazenamento, remoção, retenção e purga dos demais anexos (US 3.1, US 3.2)
+    * *Cenário 2: Criação de processo sem modelo continua disponível*
+      * **Dado** que estou criando um processo
+      * **Quando** opto por digitar apenas o assunto, sem escolher nenhum modelo
+      * **Então** o processo é criado normalmente, sem nenhum documento gerado — o uso de modelo é opcional e não altera o fluxo de criação existente
+    * *Cenário 3: Lacunas não preenchidas não bloqueiam a geração*
+      * **Dado** que escolhi um modelo e deixei uma lacuna (ex.: "[NOME DO SOLICITANTE]") sem substituir
+      * **Quando** salvo o processo
+      * **Então** o texto é destacado visualmente como lembrete durante a edição, mas a geração do documento é concluída normalmente, com a lacuna tal como está no texto — o sistema não valida o preenchimento de lacunas, que são convenção textual, não campos estruturados
+    * *Cenário 4: Catálogo de modelos é mantido pelo Administrador*
+      * **Dado** que sou Administrador
+      * **Quando** cadastro, edito ou desativo um modelo (nome, categoria, tipo, descrição, conteúdo formatado em negrito/itálico/sublinhado/alinhamento/listas)
+      * **Então** o catálogo é atualizado; um modelo desativado sai da lista de escolha na abertura de processo, mas os documentos já gerados a partir dele permanecem intactos — modelos nunca são excluídos fisicamente, apenas desativados
+  * **Nota:** o modelo em si é um catálogo reutilizável e **não deve conter dados pessoais reais** — apenas marcações de lacuna; a tela de cadastro adverte sobre isso. Não há placeholder estruturado, parser de variáveis nem formulário dinâmico — as lacunas são preenchidas digitando, por decisão do cliente.
+
 * **US 2.2:** Como Servidor responsável por um processo, eu quero enviá-lo escolhendo explicitamente a unidade, o setor e o servidor de destino, para encaminhá-lo a quem deve tratá-lo.
   * **Critérios de Aceitação:**
     * *Cenário 1: Envio com destino válido*
@@ -508,6 +528,10 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
 	      * **Dado** que um processo já possui um documento anexado chamado "parecer.pdf"
 	      * **Quando** tento anexar outro arquivo com o mesmo nome "parecer.pdf"
 	      * **Então** o sistema aceita o upload e renomeia automaticamente o novo arquivo para "parecer (1).pdf". O documento original não é sobrescrito. Ambos os arquivos aparecem na lista de documentos do processo, preservando a integridade de cada um.
+	    * *Cenário 6: Documento gerado a partir de modelo (change `modelos-de-documento`)*
+	      * **Dado** que um documento foi gerado a partir de um modelo escolhido na abertura do processo (US 2.1b), em vez de enviado por upload
+	      * **Quando** ele é submetido ao pipeline de anexos
+	      * **Então** é tratado como um documento de pleno direito do acervo, sujeito **exatamente** às mesmas regras de validação de formato, armazenamento, listagem, download, remoção por soft-delete, bloqueio de remoção após despacho, retenção e purga física dos Cenários 1 a 5 — nenhuma exceção é criada para ele, e a whitelist de formatos não é ampliada por sua causa. O documento gerado é imutável após salvo: corrigir um erro de digitação significa remover o documento e gerar um novo a partir do modelo, não editá-lo. Ele registra o modelo que o originou, permitindo auditar quais modelos estão em uso, e — como qualquer anexo — seu conteúdo não é exibido nem disponibilizado na consulta pública (Épico 7)
 
 * **US 3.2:** Como Servidor, eu quero visualizar ou baixar documentos anexados a um processo para analisar o conteúdo.
   * **Critérios de Aceitação:**

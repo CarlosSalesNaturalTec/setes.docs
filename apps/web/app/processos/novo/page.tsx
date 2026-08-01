@@ -3,11 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { EditorFormatado } from "@/components/editor-formatado";
 import { ProtectedShell } from "@/components/protected-shell";
 import { ApiError, api, type Schemas } from "@/lib/api";
 
 type TipoProcesso = Schemas["TipoProcessoResponse"];
 type Interessado = Schemas["InteressadoInput"];
+type Modelo = Schemas["ModeloResponse"];
 
 // Máscara leve de CPF/CNPJ conforme o tipo escolhido (validação real é no backend).
 function mascarar(valor: string, tipo: "cpf" | "cnpj"): string {
@@ -92,6 +94,9 @@ function NovoProcessoConteudo() {
   const [tipoId, setTipoId] = useState("");
   const [prazoDias, setPrazoDias] = useState("");
   const [interessados, setInteressados] = useState<Interessado[]>([]);
+  const [modelos, setModelos] = useState<Modelo[]>([]);
+  const [modeloId, setModeloId] = useState("");
+  const [conteudoModelo, setConteudoModelo] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [erroCampos, setErroCampos] = useState<{ assunto?: string; tipo?: string; prazo?: string }>({});
   const [enviando, setEnviando] = useState(false);
@@ -104,7 +109,21 @@ function NovoProcessoConteudo() {
         setErro(err instanceof ApiError ? err.detail : "Não foi possível carregar os tipos.");
       }
     })();
+    void (async () => {
+      try {
+        setModelos(await api.listarModelos(true));
+      } catch {
+        // Catálogo de modelos é opcional na criação do processo — falha ao
+        // carregar não deve bloquear o fluxo sem modelo.
+      }
+    })();
   }, []);
+
+  function selecionarModelo(id: string) {
+    setModeloId(id);
+    const modelo = modelos.find((m) => m.id === id);
+    setConteudoModelo(modelo ? modelo.conteudo : "");
+  }
 
   function validar(): boolean {
     const e: typeof erroCampos = {};
@@ -127,6 +146,17 @@ function NovoProcessoConteudo() {
         prazo_dias: Number(prazoDias),
         interessados: interessados.filter((i) => i.nome.trim()),
       });
+      if (modeloId) {
+        try {
+          await api.gerarDocumento(proc.id, { modelo_id: modeloId, conteudo: conteudoModelo });
+        } catch (err) {
+          setErro(
+            err instanceof ApiError
+              ? `Processo criado, mas o documento não pôde ser gerado: ${err.detail}`
+              : "Processo criado, mas o documento não pôde ser gerado.",
+          );
+        }
+      }
       router.push(`/processos/${proc.id}`);
     } catch (err) {
       setErro(err instanceof ApiError ? err.detail : "Não foi possível criar o processo.");
@@ -188,6 +218,35 @@ function NovoProcessoConteudo() {
             className="mt-1 w-40 rounded border px-3 py-2 text-sm"
           />
           {erroCampos.prazo && <p className="mt-1 text-sm text-red-600">{erroCampos.prazo}</p>}
+        </div>
+
+        <div>
+          <label htmlFor="modelo" className="block text-sm">
+            Modelo de documento (opcional)
+          </label>
+          <select
+            id="modelo"
+            value={modeloId}
+            onChange={(e) => selecionarModelo(e.target.value)}
+            className="mt-1 w-full rounded border px-3 py-2 text-sm"
+          >
+            <option value="">Nenhum — começar do zero</option>
+            {modelos.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.nome}
+              </option>
+            ))}
+          </select>
+          {modeloId && (
+            <div className="mt-2">
+              <EditorFormatado
+                key={modeloId}
+                valorInicial={conteudoModelo}
+                onChange={setConteudoModelo}
+                ariaLabel="Conteúdo do documento a gerar"
+              />
+            </div>
+          )}
         </div>
 
         <div>
