@@ -67,23 +67,30 @@ base — assim o sistema não revela quem tem cadastro.
 
 ### 4. Trocar a senha (quando já está logado)
 
-Em "Meu Perfil", você pode alterar a senha informando a **senha atual** e uma
-**nova senha**. A nova senha precisa atender às regras de complexidade e **não
-pode repetir** a senha atual nem as **6 últimas** que você já usou.
+Na aba **"Trocar senha"** de "Meu Perfil", você pode alterar a senha
+informando a **senha atual** e uma **nova senha**. A nova senha precisa
+atender às regras de complexidade e **não pode repetir** a senha atual nem as
+**6 últimas** que você já usou.
 
 ### 5. Meu Perfil
 
-A tela **"Meu Perfil"** mostra:
+A tela **"Meu Perfil"** é organizada em quatro abas, navegáveis também pelo
+teclado (setas esquerda/direita):
 
-- Seus dados de cadastro — nome, e-mail, perfil, situação e, quando
-  preenchidos, **unidade, setor, cargo, telefone e chefia direta** (campos em
-  branco simplesmente não aparecem);
-- A **lista de processos em que você atuou** (número, assunto, data e tipo de
-  ação);
-- A **lista de documentos que você assinou** digitalmente.
+- **Meu perfil** — seus dados de cadastro: nome, e-mail, perfil, situação e,
+  quando preenchidos, **unidade, setor, cargo, telefone e chefia direta**
+  (campos em branco simplesmente não aparecem). É aqui também que você edita
+  o seu nome;
+- **Trocar senha** — o formulário de troca de senha descrito acima;
+- **Processos em que atuei** — a lista de processos em que você atuou
+  (número, assunto, data e tipo de ação). Se você acabou de ser cadastrado e
+  ainda não atuou em nada, a lista aparece vazia com um aviso — é o esperado;
+- **Documentos assinados** — mostra um aviso de que a assinatura digital de
+  documentos será disponibilizada em uma fase futura do produto; por enquanto
+  não há nenhuma ação de assinatura disponível.
 
-Se você acabou de ser cadastrado e ainda não atuou em nada, essas listas
-aparecem vazias com um aviso — é o esperado.
+A aba escolhida fica registrada no endereço da página: recarregar ou
+compartilhar o link mantém a mesma aba aberta.
 
 ### 6. Notificações
 

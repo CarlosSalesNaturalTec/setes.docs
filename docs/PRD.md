@@ -165,11 +165,16 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
     * *Cenário 1: Visualização do perfil com histórico*
       * **Dado** que estou autenticado no sistema
       * **Quando** acesso a tela "Meu Perfil"
-      * **Então** visualizo meus dados cadastrais — incluindo unidade, setor, cargo, telefone e chefia direta, com os campos vazios omitidos —, a lista de processos em que atuei (com número, assunto, data da ação e tipo de ação realizada) e a lista de documentos que assinei digitalmente (com nome do documento, processo vinculado e data da assinatura)
+      * **Então** vejo a tela organizada em quatro abas — **Meu perfil**, **Trocar senha**, **Processos em que atuei** e **Documentos assinados** —, com "Meu perfil" ativa por padrão exibindo meus dados cadastrais (incluindo unidade, setor, cargo, telefone e chefia direta, com os campos vazios omitidos); a aba "Processos em que atuei" lista os processos em que atuei (número, assunto, data da ação e tipo de ação realizada)
     * *Cenário 2: Perfil de usuário recém-cadastrado sem histórico*
       * **Dado** que sou um usuário recém-cadastrado que nunca atuou em nenhum processo
-      * **Quando** acesso a tela "Meu Perfil"
-      * **Então** visualizo meus dados cadastrais e as seções de histórico exibem a mensagem "Nenhum processo registrado" e "Nenhum documento assinado"
+      * **Quando** acesso a aba "Processos em que atuei"
+      * **Então** vejo a mensagem "Nenhum processo registrado"
+    * *Cenário 3: Aba "Documentos assinados" como marcador de fase futura*
+      * **Dado** que acesso a aba "Documentos assinados"
+      * **Quando** a aba é exibida
+      * **Então** vejo uma mensagem informando que a assinatura digital de documentos será disponibilizada em fase futura do produto (Épico 4, Fase 2), sem botão "Assinar", campo de certificado digital ou qualquer elemento que sugira funcionalidade disponível
+  * **Nota (change perfil-em-abas):** a tela "Meu Perfil" passa a ser organizada em abas em vez de empilhada verticalmente; a aba ativa é refletida na URL (`?aba=perfil|senha|processos|assinados`, restaurada na recarga) e a navegação entre abas é acessível por teclado. "Documentos assinados" continua o placeholder da Fase 2 já registrado no Épico 4 — este change reorganiza a interface e não retoma a assinatura digital.
 
 * **US 1.6:** Como Usuário recém-cadastrado, eu quero realizar o primeiro acesso e criar minha senha para ativar minha conta no sistema.
   * **Critérios de Aceitação:**

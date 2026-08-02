@@ -4,10 +4,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "@/lib/api";
 
-const { meuPerfil, atualizarMeuPerfil, recarregar } = vi.hoisted(() => ({
+const { meuPerfil, atualizarMeuPerfil, recarregar, push } = vi.hoisted(() => ({
   meuPerfil: vi.fn(),
   atualizarMeuPerfil: vi.fn(),
   recarregar: vi.fn(),
+  push: vi.fn(),
+}));
+
+let searchParams = new URLSearchParams();
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push }),
+  useSearchParams: () => searchParams,
 }));
 
 vi.mock("@/components/protected-shell", () => ({
@@ -46,6 +54,7 @@ const PERFIL = {
 
 describe("PerfilPage — editar o próprio nome (US 1.5)", () => {
   beforeEach(() => {
+    searchParams = new URLSearchParams();
     meuPerfil.mockReset().mockResolvedValue(PERFIL);
     atualizarMeuPerfil.mockReset();
     recarregar.mockReset();
@@ -86,6 +95,7 @@ describe("PerfilPage — editar o próprio nome (US 1.5)", () => {
       ],
     });
 
+    searchParams = new URLSearchParams("aba=processos");
     render(<PerfilPage />);
 
     expect(await screen.findByText("2026/000042")).toBeInTheDocument();
