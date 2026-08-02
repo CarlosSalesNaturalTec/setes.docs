@@ -11,8 +11,8 @@ variable "org_id" {
 
 variable "region" {
   type        = string
-  description = "Região única de todos os recursos regionais (residência de dados no Brasil)."
-  default     = "southamerica-east1"
+  description = "Região única de todos os recursos regionais — escolhida por custo; transferência internacional documentada sob a LGPD (D4, docs/lgpd-transferencia-internacional-us-central1.md)."
+  default     = "us-central1"
 }
 
 variable "github_repository" {

@@ -36,6 +36,9 @@ resource "google_cloud_run_v2_service" "api" {
   name     = "api"
   location = var.region
 
+  # Descarte integral autorizado para a migração de região (D1/D5).
+  deletion_protection = false
+
   # Browser do usuário chama a api diretamente; autorização real fica na aplicação
   # (JWT próprio) -- ver google_cloud_run_v2_service_iam_member.api_public abaixo.
   ingress = "INGRESS_TRAFFIC_ALL"
@@ -199,6 +202,9 @@ resource "google_cloud_run_v2_service_iam_member" "api_public" {
 resource "google_cloud_run_v2_service" "web" {
   name     = "web"
   location = var.region
+
+  # Descarte integral autorizado para a migração de região (D1/D5).
+  deletion_protection = false
 
   ingress = "INGRESS_TRAFFIC_ALL"
 

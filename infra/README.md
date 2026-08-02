@@ -1,6 +1,9 @@
 # infra/ — Terraform do SETES.DOCS
 
-Provisiona toda a topologia GCP do bootstrap em `southamerica-east1` (residência de dados no Brasil).
+Provisiona toda a topologia GCP em região única (`var.region`, atualmente `us-central1`) —
+escolha de custo, não de residência; a transferência internacional de dados está
+documentada em `docs/lgpd-transferencia-internacional-us-central1.md` (change
+`migracao-regiao-us-central1`, D4).
 
 ## Pré-requisitos
 
@@ -42,7 +45,7 @@ começa como placeholder público e é substituída pelo pipeline (`ignore_chang
 `api_max_instances × api_pool_size < db_max_connections`
 Padrão: `10 × 5 = 50 < 100`. O app respeita `pool_size=5, max_overflow=0` (ver `apps/api/app/db/session.py`).
 
-## Notas de verificação (residência / segurança)
+## Notas de verificação (segurança)
 
 - ~~`constraints/gcp.resourceLocations`~~ / ~~`constraints/iam.disableServiceAccountKeyCreation`~~ — **não aplicáveis no MVP**: exigem `roles/orgpolicy.policyAdmin`, vinculável só em Organização/Pasta GCP; `setes-docs` não tem Organização por trás. Ver `org_policies.tf` e `openspec/changes/bootstrap-infraestrutura/design.md` (D7).
 - Secret Manager com replicação user-managed fixada na região.

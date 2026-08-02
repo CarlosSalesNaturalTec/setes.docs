@@ -1,6 +1,7 @@
-# Secret Manager — 3 segredos com replicação user-managed fixada no Brasil (task 4.2).
-# replication.user_managed em southamerica-east1 garante residência (D4/D7); o
-# padrão "automatic" replicaria globalmente.
+# Secret Manager — 3 segredos com replicação user-managed fixada em var.region (task 4.2).
+# replication.user_managed restringe a replicação a uma única região explícita (D4/D7),
+# hoje us-central1 — escolha de custo, não requisito de residência; o padrão
+# "automatic" replicaria globalmente.
 
 locals {
   secret_ids = ["db-password", "jwt-signing-key", "sendgrid-api-key"]

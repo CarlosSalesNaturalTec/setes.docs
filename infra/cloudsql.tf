@@ -4,8 +4,9 @@ resource "google_sql_database_instance" "postgres" {
   database_version = "POSTGRES_16"
   region           = var.region
 
-  # Não recriar por engano.
-  deletion_protection = true
+  # Descarte integral autorizado para a migração de região (D1/D5,
+  # docs/lgpd-transferencia-internacional-us-central1.md) — reativar após o apply em us-central1.
+  deletion_protection = false
 
   depends_on = [google_service_networking_connection.psa]
 

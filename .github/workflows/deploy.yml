@@ -11,7 +11,7 @@ permissions:
 
 env:
   PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-  REGION: southamerica-east1
+  REGION: us-central1
   AR: ${{ vars.GCP_PROJECT_ID }}/setes-images
 
 jobs:

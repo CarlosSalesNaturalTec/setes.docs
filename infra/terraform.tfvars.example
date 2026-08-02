@@ -1,7 +1,7 @@
 # Copie para terraform.tfvars e ajuste.
 project_id        = "setes-docs-prod"
 org_id            = "000000000000"
-region            = "southamerica-east1"
+region            = "us-central1"
 github_repository = "sua-org/processos_gestor"
 
 # Teto de conexões: api_max_instances * api_pool_size deve ficar < db_max_connections.

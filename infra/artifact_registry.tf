@@ -1,4 +1,4 @@
-# Artifact Registry para as imagens web/api (task 6.1). Regional (Brasil).
+# Artifact Registry para as imagens web/api (task 6.1). Regional (var.region).
 resource "google_artifact_registry_repository" "images" {
   location      = var.region
   repository_id = "setes-images"
