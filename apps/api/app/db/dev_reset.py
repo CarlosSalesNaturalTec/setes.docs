@@ -27,6 +27,10 @@ TABELAS_NEGOCIO = (
     "setor",
     "unidade",
     "sistema_config",
+    # Change modelos-de-documento (design.md D6) — `documento.modelo_id`
+    # referencia esta tabela; TRUNCATE ... CASCADE resolve a ordem de
+    # dependência automaticamente, então a posição na tupla é só organizativa.
+    "modelo_documento",
 )
 
 

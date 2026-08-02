@@ -117,11 +117,15 @@ def anexar(
     storage: Storage,
     nome_arquivo: str,
     conteudo: bytes,
+    modelo_id: uuid.UUID | None = None,
 ) -> Documento:
     """Anexa um documento ao processo (US 3.1 Cen.1/2/2b/5).
 
     A anexação NÃO gera evento de tramitação (D6) — a autoria vive em
-    `anexado_por_id`/`anexado_em`.
+    `anexado_por_id`/`anexado_em`. `modelo_id` (change modelos-de-documento,
+    design.md D1/D6) é o único ponto de diferença entre um upload e um
+    documento gerado a partir de modelo: mesma validação, mesmo sniffing,
+    mesmo hash, mesmo storage — o gerado é indistinguível de um anexo enviado.
     """
     tipo_conteudo = _validar_formato_e_tamanho(nome_arquivo, conteudo)
 
@@ -140,6 +144,7 @@ def anexar(
         tamanho_bytes=len(conteudo),
         hash_sha256=hash_sha256,
         anexado_por_id=usuario.id,
+        modelo_id=modelo_id,
     )
     db.add(documento)
     db.commit()

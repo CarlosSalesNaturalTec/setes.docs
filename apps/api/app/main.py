@@ -31,6 +31,7 @@ from app.routers import (
     documentos,
     documentos_removidos,
     lgpd,
+    modelos,
     notificacoes,
     processos,
     setup,
@@ -85,6 +86,7 @@ app.include_router(usuarios.router)
 app.include_router(unidades.router)
 app.include_router(unidades.router_setores)
 app.include_router(tipos_processo.router)
+app.include_router(modelos.router)
 app.include_router(processos.router)
 app.include_router(documentos.router)
 app.include_router(documentos_removidos.router)

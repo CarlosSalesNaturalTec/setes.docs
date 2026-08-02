@@ -69,6 +69,12 @@ const ITENS_MENU: ItemMenu[] = [
     visivel: (u) => u.perfil === "administrador",
   },
   {
+    href: "/admin/modelos",
+    label: "Modelos de Documento",
+    Icon: IconDocumentos,
+    visivel: (u) => u.perfil === "administrador",
+  },
+  {
     href: "/admin/usuarios",
     label: "Usuários",
     Icon: IconUsuarios,

@@ -277,6 +277,35 @@ export const api = {
       { auth: true },
     ),
 
+  // Catálogo de modelos de documento (change modelos-de-documento) — CRUD
+  // admin-only; leitura aberta (Servidor/Gestor precisam escolher modelo).
+  listarModelos: (ativo?: boolean) =>
+    get<Schemas["ModeloResponse"][]>("/modelos", { auth: true, query: { ativo } }),
+  obterModelo: (modeloId: string) =>
+    get<Schemas["ModeloResponse"]>(`/modelos/${modeloId}`, { auth: true }),
+  criarModelo: (body: Schemas["CriarModeloRequest"]) =>
+    post<Schemas["CriarModeloRequest"], Schemas["ModeloResponse"]>("/modelos", body, {
+      auth: true,
+    }),
+  editarModelo: (modeloId: string, body: Schemas["EditarModeloRequest"]) =>
+    patch<Schemas["EditarModeloRequest"], Schemas["ModeloResponse"]>(`/modelos/${modeloId}`, body, {
+      auth: true,
+    }),
+  desativarModelo: (modeloId: string) =>
+    post<undefined, Schemas["ModeloResponse"]>(`/modelos/${modeloId}/desativar`, undefined, {
+      auth: true,
+    }),
+  reativarModelo: (modeloId: string) =>
+    post<undefined, Schemas["ModeloResponse"]>(`/modelos/${modeloId}/reativar`, undefined, {
+      auth: true,
+    }),
+  gerarDocumento: (processoId: string, body: Schemas["GerarDocumentoRequest"]) =>
+    post<Schemas["GerarDocumentoRequest"], Schemas["DocumentoResponse"]>(
+      `/processos/${processoId}/documentos/gerar`,
+      body,
+      { auth: true },
+    ),
+
   // Apoio à cascata unidade→setor→servidor da tela de Tramitação.
   listarServidoresAtivosPorSetor: (setorId: string) =>
     get<Schemas["UsuarioResumoResponse"][]>("/usuarios/ativos-por-setor", {

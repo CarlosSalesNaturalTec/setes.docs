@@ -20,6 +20,7 @@ dependencies = [
     "google-cloud-storage>=2.18",
     "slowapi>=0.1.9",
     "python-multipart>=0.0.9",
+    "fpdf2>=2.7",
 ]
 
 [project.optional-dependencies]

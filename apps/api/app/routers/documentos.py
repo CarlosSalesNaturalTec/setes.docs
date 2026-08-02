@@ -10,6 +10,7 @@ de auditoria é somente leitura e não concede escrita. Toda rejeição grava
 
 from __future__ import annotations
 
+import unicodedata
 import uuid
 from typing import Annotated
 from urllib.parse import quote
@@ -26,9 +27,10 @@ from app.routers.processos import (
     _exigir_acesso_ao_processo,
     _exigir_leitura_ao_processo,
 )
-from app.schemas.documento import DocumentoResponse, DocumentosListResponse
+from app.schemas.documento import DocumentoResponse, DocumentosListResponse, GerarDocumentoRequest
 from app.security.autorizacao import get_current_user
 from app.services import documento as documento_service
+from app.services import modelo_documento as modelo_documento_service
 from app.services.storage import get_storage
 
 router = APIRouter(prefix="/processos/{processo_id}/documentos", tags=["documentos"])
@@ -38,10 +40,23 @@ router = APIRouter(prefix="/processos/{processo_id}/documentos", tags=["document
 _MIME_INLINE = {"application/pdf", "image/jpeg", "image/png"}
 
 
+def _nome_ascii_seguro(nome: str) -> str:
+    """`filename=` (sem `*`) precisa ser ASCII-legal no header HTTP — bytes
+    UTF-8 crus (acentuação PT-BR, comum em nome de modelo gerado, change
+    modelos-de-documento) quebram a codificação do header. Remove os acentos
+    (NFKD + descarte de combinantes); o nome completo continua exato em
+    `filename*` (RFC 5987) para os navegadores que o leem."""
+    sem_acentos = unicodedata.normalize("NFKD", nome).encode("ascii", "ignore").decode("ascii")
+    return sem_acentos or "arquivo"
+
+
 def _content_disposition(disposicao: str, nome: str) -> str:
     """Nome de arquivo com acentuação (PT-BR) — RFC 5987 (`filename*`) além do
     `filename` simples, para navegadores que não decodificam o primeiro."""
-    return f'{disposicao}; filename="{nome}"; filename*=UTF-8\'\'{quote(nome)}'
+    return (
+        f'{disposicao}; filename="{_nome_ascii_seguro(nome)}"; '
+        f"filename*=UTF-8''{quote(nome)}"
+    )
 
 
 @router.post("", response_model=DocumentoResponse, status_code=status.HTTP_201_CREATED)
@@ -64,6 +79,38 @@ async def anexar_documento(
         storage=get_storage(settings),
         nome_arquivo=arquivo.filename or "arquivo",
         conteudo=conteudo,
+    )
+    return DocumentoResponse.de(documento)
+
+
+@router.post("/gerar", response_model=DocumentoResponse, status_code=status.HTTP_201_CREATED)
+def gerar_documento(
+    processo_id: uuid.UUID,
+    payload: GerarDocumentoRequest,
+    request: Request,
+    usuario: Annotated[Usuario, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> DocumentoResponse:
+    """Change modelos-de-documento — gera um documento a partir de um modelo
+    ativo (D1/D2/D3/D6): sanitiza o HTML editado, renderiza em PDF e o anexa
+    pelo mesmo pipeline dos uploads (`documento_service.anexar`). A mesma
+    autorização por unidade dos demais endpoints de escrita se aplica."""
+    processo = _carregar_processo(db, processo_id)
+    _exigir_acesso_ao_processo(db, usuario=usuario, processo=processo, request=request)
+    modelo = modelo_documento_service.obter_ativo(db, uuid.UUID(payload.modelo_id))
+
+    html_sanitizado = modelo_documento_service.sanitizar_html(payload.conteudo)
+    pdf_bytes = modelo_documento_service.renderizar_pdf(html_sanitizado)
+
+    documento = documento_service.anexar(
+        db,
+        processo=processo,
+        usuario=usuario,
+        storage=get_storage(settings),
+        nome_arquivo=f"{modelo.nome}.pdf",
+        conteudo=pdf_bytes,
+        modelo_id=modelo.id,
     )
     return DocumentoResponse.de(documento)
 
