@@ -62,7 +62,9 @@ describe("PerfilPage — editar o próprio nome (US 1.5)", () => {
 
     const campoNome = screen.getByLabelText("Nome") as HTMLInputElement;
     await userEvent.clear(campoNome);
+    await waitFor(() => expect(campoNome.value).toBe(""));
     await userEvent.type(campoNome, "Maria Souza Lima");
+    await waitFor(() => expect(campoNome.value).toBe("Maria Souza Lima"));
     await userEvent.click(screen.getByRole("button", { name: "Salvar nome" }));
 
     await waitFor(() => expect(atualizarMeuPerfil).toHaveBeenCalledWith({ nome: "Maria Souza Lima" }));
@@ -104,6 +106,7 @@ describe("PerfilPage — editar o próprio nome (US 1.5)", () => {
     await userEvent.clear(campoNome);
     await userEvent.type(campoNome, "X");
     await userEvent.clear(campoNome);
+    await waitFor(() => expect(campoNome.value).toBe(""));
     await userEvent.click(screen.getByRole("button", { name: "Salvar nome" }));
 
     expect(await screen.findByText("Nome é obrigatório")).toBeInTheDocument();
