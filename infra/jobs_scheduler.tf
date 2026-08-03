@@ -20,6 +20,9 @@ resource "google_cloud_run_v2_job" "jobs" {
   name     = each.key
   location = var.region
 
+  # Descarte integral autorizado para a migração de região (D1/D5).
+  deletion_protection = false
+
   template {
     template {
       service_account = google_service_account.sa["sa-jobs"].email

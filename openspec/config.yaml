@@ -3,7 +3,12 @@ schema: spec-driven
 context: |
   Projeto: SETES.DOCS — sistema de gestão de processos administrativos com
   workflow roteirizado, sigilo, gestão documental e consulta pública.
-  Cliente: órgão da administração pública (Bahia).
+  Cliente: instituição privada (correção registrada no change
+  migracao-regiao-us-central1, D6 — a premissa anterior de órgão público estava
+  incorreta). A LGPD (Lei 13.709/2018) permanece obrigatória integralmente; a
+  natureza privada do controlador muda apenas a análise de transferência
+  internacional de dados (ver docs/lgpd-transferencia-internacional-us-central1.md),
+  não a aplicabilidade da lei.
 
   Assinatura digital ICP-Brasil (Épico 4 do PRD) está FORA DE ESCOPO — movida para
   a Fase 2 por decisão formalizada em 2026-07-27. Não existe no produto: sem

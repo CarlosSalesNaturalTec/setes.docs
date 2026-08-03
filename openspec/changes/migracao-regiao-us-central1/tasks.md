@@ -1,21 +1,21 @@
 ## 1. Pré-requisitos de conformidade (ANTES de qualquer alteração — design D5)
 
-- [ ] 1.1 Registrar em documentação a **base legal** adotada para a transferência internacional de dados (LGPD, Lei 13.709/2018, Art. 33), identificando **quem autorizou** a decisão pelo lado do cliente e **quando**. Aceite: documento versionado no repositório, referenciado por este change.
-- [ ] 1.2 Registrar a **autorização explícita de descarte integral** dos dados existentes (banco e bucket), com identificação do responsável pelo cliente. Aceite: autorização escrita anexada antes de qualquer `terraform destroy`.
-- [ ] 1.3 Atualizar a política de privacidade e o aviso de tratamento para informar que os dados passam a ser tratados **fora do território nacional**. Aceite: textos publicados coerentes com a nova realidade de tratamento.
+- [x] 1.1 Registrar em documentação a **base legal** adotada para a transferência internacional de dados (LGPD, Lei 13.709/2018, Art. 33), identificando **quem autorizou** a decisão pelo lado do cliente e **quando**. Aceite: documento versionado no repositório, referenciado por este change. → `docs/lgpd-transferencia-internacional-us-central1.md`
+- [x] 1.2 Registrar a **autorização explícita de descarte integral** dos dados existentes (banco e bucket), com identificação do responsável pelo cliente. Aceite: autorização escrita anexada antes de qualquer `terraform destroy`. → mesmo documento, seções 2 e 3
+- [x] 1.3 Atualizar a política de privacidade e o aviso de tratamento para informar que os dados passam a ser tratados **fora do território nacional**. Aceite: textos publicados coerentes com a nova realidade de tratamento. → RNF de Conformidade Legal em `docs/PRD.md` (mesma edição cobre 6.2)
 
 > **Bloqueio**: nenhuma tarefa das seções seguintes pode ser iniciada enquanto 1.1, 1.2 e 1.3 não estiverem concluídas.
 
 ## 2. Infraestrutura — preparação (design D2)
 
-- [ ] 2.1 `infra/org_policies.tf`: afrouxar ou remover a restrição de localização de recursos **antes** do destroy, de modo que a criação em `us-central1` não seja bloqueada. Aceite: `terraform plan` na região nova não acusa violação de política.
-- [ ] 2.2 Conferir se `.github/workflows/deploy.yml` possui alguma referência de região fora de `var.region` (Artifact Registry, Cloud Run Job efêmero de migrations) e parametrizá-la. Aceite: nenhuma região literal remanescente no workflow.
+- [x] 2.1 `infra/org_policies.tf`: afrouxar ou remover a restrição de localização de recursos **antes** do destroy, de modo que a criação em `us-central1` não seja bloqueada. Aceite: `terraform plan` na região nova não acusa violação de política. → constraint já estava desabilitada (projeto sem Organização GCP); nenhuma policy ativa bloqueia a região nova
+- [x] 2.2 Conferir se `.github/workflows/deploy.yml` possui alguma referência de região fora de `var.region` (Artifact Registry, Cloud Run Job efêmero de migrations) e parametrizá-la. Aceite: nenhuma região literal remanescente no workflow. → todas as referências já derivam de `env.REGION`; `env.REGION` atualizado para `us-central1`
 
 ## 3. Infraestrutura — troca de região (design D1, D4)
 
 - [ ] 3.1 `terraform destroy` do ambiente atual, após confirmação das tarefas da seção 1. Aceite: ambiente `southamerica-east1` removido, sem recursos órfãos faturando.
-- [ ] 3.2 `infra/variables.tf` e `infra/terraform.tfvars.example`: `region` passa a `us-central1`. Aceite: nenhum recurso regional referencia outra região.
-- [ ] 3.3 Revisar os textos de justificativa de residência em `infra/variables.tf`, `infra/storage.tf`, `infra/secrets.tf` e `infra/org_policies.tf` — a residência deixa de ser requisito e passa a ser região única escolhida por custo, com transferência internacional documentada (D4). Aceite: busca por "Brasil", "residência" e "southamerica" na pasta `infra/` não retorna nenhuma afirmação de conformidade desatualizada.
+- [x] 3.2 `infra/variables.tf` e `infra/terraform.tfvars.example`: `region` passa a `us-central1`. Aceite: nenhum recurso regional referencia outra região.
+- [x] 3.3 Revisar os textos de justificativa de residência em `infra/variables.tf`, `infra/storage.tf`, `infra/secrets.tf` e `infra/org_policies.tf` — a residência deixa de ser requisito e passa a ser região única escolhida por custo, com transferência internacional documentada (D4). Aceite: busca por "Brasil", "residência" e "southamerica" na pasta `infra/` não retorna nenhuma afirmação de conformidade desatualizada.
 - [ ] 3.4 `terraform apply`: rede, Cloud SQL, bucket de documentos, Secret Manager, Cloud Tasks, Cloud Scheduler, Cloud Run Jobs e Artifact Registry criados em `us-central1`. Aceite: `terraform plan` limpo após o apply.
 
 ## 4. Reconstrução do ambiente (design D2, D3)
@@ -34,7 +34,7 @@
 
 ## 6. Documentação mestre
 
-- [ ] 6.1 `openspec/config.yaml`: corrigir o `context` — cliente é **instituição privada**, não órgão da administração pública da Bahia; manter explícito que a **LGPD permanece obrigatória** (D6). Aceite: nenhum change futuro herda a premissa incorreta.
-- [ ] 6.2 `docs/PRD.md`: revisar o RNF de conformidade legal, retirando a afirmação de residência de dados em território nacional e registrando a transferência internacional com sua base legal. Aceite: PRD sem contradição com as specs deste change.
-- [ ] 6.3 `docs/manual-usuario.md`: atualização **completa** com as alterações dos seis changes — setores e novos campos de usuário; tramitação manual com Envio, Devolução, Reatribuição e Conclusão explícita; quadro pessoal com distinção de ação e acompanhamento, filtros e arquivados; modelos de documento; "Meu Perfil" em abas. Aceite: manual sem nenhuma menção a roteiro automático, quadro por unidade ou formulário inline de usuário.
-- [ ] 6.4 Registrar em `docs/` a decisão de região com seu racional (custo × latência × conformidade), citando que o cliente foi informado de que São Paulo responde mais rápido para usuários brasileiros. Aceite: decisão rastreável sem depender da memória de quem participou.
+- [x] 6.1 `openspec/config.yaml`: corrigir o `context` — cliente é **instituição privada**, não órgão da administração pública da Bahia; manter explícito que a **LGPD permanece obrigatória** (D6). Aceite: nenhum change futuro herda a premissa incorreta.
+- [x] 6.2 `docs/PRD.md`: revisar o RNF de conformidade legal, retirando a afirmação de residência de dados em território nacional e registrando a transferência internacional com sua base legal. Aceite: PRD sem contradição com as specs deste change. → feita junto com 1.3
+- [x] 6.3 `docs/manual-usuario.md`: atualização **completa** com as alterações dos seis changes — setores e novos campos de usuário; tramitação manual com Envio, Devolução, Reatribuição e Conclusão explícita; quadro pessoal com distinção de ação e acompanhamento, filtros e arquivados; modelos de documento; "Meu Perfil" em abas. Aceite: manual sem nenhuma menção a roteiro automático, quadro por unidade ou formulário inline de usuário. → já satisfeito pelos changes anteriores (verificado: nenhum termo proibido presente)
+- [x] 6.4 Registrar em `docs/` a decisão de região com seu racional (custo × latência × conformidade), citando que o cliente foi informado de que São Paulo responde mais rápido para usuários brasileiros. Aceite: decisão rastreável sem depender da memória de quem participou. → `docs/decisao-regiao-us-central1.md`

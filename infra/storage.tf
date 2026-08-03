@@ -3,7 +3,7 @@
 # público (spec: leitura pública negada / rede de segurança).
 resource "google_storage_bucket" "documentos" {
   name     = "${var.project_id}-documentos"
-  location = var.region # regional, dentro do Brasil
+  location = var.region # região única escolhida por custo (D4) — transferência internacional documentada
   project  = var.project_id
 
   uniform_bucket_level_access = true
