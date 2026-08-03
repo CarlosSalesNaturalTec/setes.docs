@@ -8,8 +8,8 @@ cadastros iniciais obrigatórios e o que já pode/não pode ser testado.
 
 | Serviço | URL |
 |---|---|
-| **Web (o sistema, acesse por aqui)** | https://web-2j5ojmtaiq-rj.a.run.app |
-| API (uso interno do frontend, não precisa acessar direto) | https://api-2j5ojmtaiq-rj.a.run.app |
+| **Web (o sistema, acesse por aqui)** | https://web-2j5ojmtaiq-uc.a.run.app |
+| API (uso interno do frontend, não precisa acessar direto) | https://api-2j5ojmtaiq-uc.a.run.app |
 
 > **Nota de manutenção**: essas URLs são fixas hoje (`infra/cloudrun.tf:20,28`) porque o
 > Terraform não pode auto-referenciar a própria URL do serviço no momento da criação. Se
@@ -24,7 +24,7 @@ Não há domínio customizado configurado — é a URL padrão `*.run.app` do Cl
 ## 2. Inicialização do sistema (só acontece uma vez)
 
 O sistema começa "vazio": sem Administrador, sem Unidade. A primeira pessoa a acessar
-`https://web-2j5ojmtaiq-rj.a.run.app/setup` faz o bootstrap.
+`https://web-2j5ojmtaiq-uc.a.run.app/setup` faz o bootstrap.
 
 1. Acesse a URL acima. Se o sistema **ainda não foi inicializado**, o formulário de setup
    aparece; se já foi, a página redireciona direto para `/login`.

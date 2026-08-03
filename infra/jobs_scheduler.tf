@@ -20,9 +20,6 @@ resource "google_cloud_run_v2_job" "jobs" {
   name     = each.key
   location = var.region
 
-  # Descarte integral autorizado para a migração de região (D1/D5).
-  deletion_protection = false
-
   template {
     template {
       service_account = google_service_account.sa["sa-jobs"].email
@@ -40,8 +37,27 @@ resource "google_cloud_run_v2_job" "jobs" {
         image   = local.placeholder_image # substituída pelo pipeline
         command = each.value.command
 
+        # Conexão com o Cloud SQL: peças simples + senha do secret (mesmo padrão
+        # de cloudrun.tf) — DATABASE_URL sozinho não existe, o secret db-password
+        # guarda só a senha, não uma URL de conexão.
         env {
-          name = "DATABASE_URL"
+          name  = "DB_HOST"
+          value = google_sql_database_instance.postgres.private_ip_address
+        }
+        env {
+          name  = "DB_PORT"
+          value = "5432"
+        }
+        env {
+          name  = "DB_USER"
+          value = google_sql_user.app.name
+        }
+        env {
+          name  = "DB_NAME"
+          value = google_sql_database.app.name
+        }
+        env {
+          name = "DB_PASSWORD"
           value_source {
             secret_key_ref {
               secret  = google_secret_manager_secret.secrets["db-password"].secret_id
