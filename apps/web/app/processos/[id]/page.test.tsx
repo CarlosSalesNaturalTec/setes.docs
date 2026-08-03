@@ -41,16 +41,25 @@ vi.mock("@/components/protected-shell", () => ({
   ProtectedShell: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+type UsuarioMock = {
+  id: string;
+  nome: string;
+  email: string;
+  perfil: string;
+  unidade_id: string | null;
+};
+
+const USUARIO_SERVIDOR: UsuarioMock = {
+  id: "u-1",
+  nome: "Servidor",
+  email: "s@example.com",
+  perfil: "servidor",
+  unidade_id: "un-1",
+};
+let usuarioAtual: UsuarioMock = USUARIO_SERVIDOR;
+
 vi.mock("@/components/auth-provider", () => ({
-  useAuth: () => ({
-    usuario: {
-      id: "u-1",
-      nome: "Servidor",
-      email: "s@example.com",
-      perfil: "servidor",
-      unidade_id: "un-1",
-    },
-  }),
+  useAuth: () => ({ usuario: usuarioAtual }),
 }));
 
 vi.mock("@/lib/api", async () => {
@@ -106,6 +115,7 @@ const SERVIDORES_SETOR_2 = [{ id: "u-2", nome: "Maria Silva" }];
 
 describe("DetalheProcessoPage", () => {
   beforeEach(() => {
+    usuarioAtual = USUARIO_SERVIDOR;
     obterProcesso.mockReset();
     historicoProcesso.mockReset();
     listarUnidades.mockReset();
@@ -321,6 +331,48 @@ describe("DetalheProcessoPage", () => {
 
     await waitFor(() => expect(concluirProcesso).toHaveBeenCalledWith("proc-1"));
     expect(await screen.findByText("Concluído")).toBeInTheDocument();
+  });
+
+  it("Gestor vê Reatribuir e Concluir, mas não Envio/Devolução (tasks.md migracao-regiao-us-central1 6.5)", async () => {
+    usuarioAtual = {
+      id: "g-1",
+      nome: "Gestora",
+      email: "g@example.com",
+      perfil: "gestor",
+      unidade_id: null,
+    };
+    obterProcesso.mockResolvedValue(PROCESSO_BASE);
+    listarSetores.mockResolvedValue([
+      { id: "setor-3", unidade_id: "un-1", nome: "Protocolo", sigla: "PROT", ativo: true },
+    ]);
+    listarServidoresAtivosPorSetor.mockResolvedValue([{ id: "u-3", nome: "João Souza" }]);
+    reatribuirProcesso.mockResolvedValue({
+      ...PROCESSO_BASE,
+      setor_atual_id: "setor-3",
+      servidor_atual_id: "u-3",
+    });
+
+    render(<DetalheProcessoPage />);
+    expect(await screen.findByRole("button", { name: "Reatribuir" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Concluir" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Tramitar" })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Reatribuir" }));
+    const modal = await screen.findByRole("dialog", { name: "Reatribuir processo" });
+    expect(within(modal).queryByLabelText("Tipo de ação")).not.toBeInTheDocument();
+
+    await userEvent.selectOptions(within(modal).getByLabelText("Setor de destino"), "setor-3");
+    await userEvent.selectOptions(within(modal).getByLabelText("Servidor de destino"), "u-3");
+    await userEvent.type(within(modal).getByLabelText("Justificativa"), "Atribuído por engano");
+    await userEvent.click(within(modal).getByRole("button", { name: "Reatribuir" }));
+
+    await waitFor(() =>
+      expect(reatribuirProcesso).toHaveBeenCalledWith("proc-1", {
+        setor_destino_id: "setor-3",
+        servidor_destino_id: "u-3",
+        justificativa: "Atribuído por engano",
+      }),
+    );
   });
 
   it("cancelar a confirmação de conclusão não altera nada (US 2.5)", async () => {

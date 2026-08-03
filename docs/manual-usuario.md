@@ -501,11 +501,10 @@ Para não depender da equipe central a cada nova pessoa na sua equipe, você pod
   a lista, mas não esses botões.
 
 > **Nota:** o Gestor **acompanha** os processos das suas unidades. Criar,
-> enviar, devolver e marcar sigilo são ações dos **Servidores** de cada
-> unidade. As regras do sistema também autorizam o Gestor da unidade a
-> **Reatribuir** e **Concluir**, mas os botões correspondentes **ainda não
-> aparecem na tela do processo para o perfil Gestor** — na prática, hoje essas
-> ações são executadas pelo Servidor.
+> enviar, devolver e marcar sigilo são ações exclusivas dos **Servidores** de
+> cada unidade. O Gestor da unidade também pode **Reatribuir** e **Concluir**
+> um processo — os botões aparecem na tela do processo assim que ele acessa
+> um processo de uma unidade sob sua gestão.
 
 ---
 

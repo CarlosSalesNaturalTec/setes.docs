@@ -21,14 +21,18 @@ function normalizarAba(valor: string | null): IdAba {
   return (IDS_ABAS as readonly string[]).includes(valor ?? "") ? (valor as IdAba) : ABA_PADRAO;
 }
 
+// Change migracao-regiao-us-central1 (tasks.md 6.6) — alinhado a
+// TipoEventoTramitacao (db/models.py); "despacho"/"encaminhamento"/
+// "recebimento" foram extintos pelo change tramitacao-manual.
 const TIPO_ACAO_ROTULO: Record<string, string> = {
   criacao: "Criação",
-  despacho: "Despacho",
-  encaminhamento: "Encaminhamento",
-  recebimento: "Recebimento",
-  arquivamento: "Arquivamento",
-  desarquivamento: "Desarquivamento",
+  envio: "Envio",
+  devolucao: "Devolução",
+  reatribuicao: "Reatribuição",
   conclusao: "Conclusão",
+  arquivamento_automatico: "Arquivamento automático",
+  marcar_sigilo: "Marcação de sigilo",
+  remover_sigilo: "Remoção de sigilo",
 };
 
 function rotuloTipoAcao(tipo: unknown): string {

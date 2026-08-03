@@ -99,6 +99,7 @@ function useServidoresDoSetor(setorId: string | null) {
 function ModalTramitacao({
   processo,
   unidades,
+  permitirEnvioDevolucao,
   onConfirmarEnvio,
   onConfirmarDevolucao,
   onConfirmarReatribuicao,
@@ -106,12 +107,18 @@ function ModalTramitacao({
 }: {
   processo: Processo;
   unidades: Unidade[];
+  // Change migracao-regiao-us-central1 (tasks.md 6.5) — Envio e Devolução são
+  // exclusivos do Servidor no backend (`_require_servidor` em
+  // routers/processos.py); o Gestor só reatribui e conclui.
+  permitirEnvioDevolucao: boolean;
   onConfirmarEnvio: (body: Schemas["EnviarRequest"]) => Promise<void>;
   onConfirmarDevolucao: (motivo: string, justificativa: string) => Promise<void>;
   onConfirmarReatribuicao: (body: Schemas["ReatribuirRequest"]) => Promise<void>;
   onCancelar: () => void;
 }) {
-  const [tipoAcao, setTipoAcao] = useState<TipoAcaoTramitacao>("enviar");
+  const [tipoAcao, setTipoAcao] = useState<TipoAcaoTramitacao>(
+    permitirEnvioDevolucao ? "enviar" : "reatribuir",
+  );
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
@@ -195,21 +202,27 @@ function ModalTramitacao({
       className="fixed inset-0 flex items-center justify-center bg-black/30 p-4"
     >
       <div className="w-full max-w-md rounded bg-white p-4 shadow-lg">
-        <h2 className="text-sm font-medium">Tramitar processo</h2>
+        <h2 className="text-sm font-medium">
+          {permitirEnvioDevolucao ? "Tramitar processo" : "Reatribuir processo"}
+        </h2>
 
-        <label htmlFor="tipo-acao" className="mt-3 block text-sm">
-          Tipo de ação
-        </label>
-        <select
-          id="tipo-acao"
-          value={tipoAcao}
-          onChange={(e) => setTipoAcao(e.target.value as TipoAcaoTramitacao)}
-          className="mt-1 w-full rounded border px-2 py-1 text-sm"
-        >
-          <option value="enviar">Envio</option>
-          <option value="devolver">Devolução</option>
-          <option value="reatribuir">Reatribuir</option>
-        </select>
+        {permitirEnvioDevolucao && (
+          <>
+            <label htmlFor="tipo-acao" className="mt-3 block text-sm">
+              Tipo de ação
+            </label>
+            <select
+              id="tipo-acao"
+              value={tipoAcao}
+              onChange={(e) => setTipoAcao(e.target.value as TipoAcaoTramitacao)}
+              className="mt-1 w-full rounded border px-2 py-1 text-sm"
+            >
+              <option value="enviar">Envio</option>
+              <option value="devolver">Devolução</option>
+              <option value="reatribuir">Reatribuir</option>
+            </select>
+          </>
+        )}
 
         {tipoAcao === "enviar" && (
           <div className="mt-3 space-y-3">
@@ -426,6 +439,11 @@ function DetalheConteudo({ id }: { id: string }) {
   const router = useRouter();
   const { usuario } = useAuth();
   const ehServidor = usuario?.perfil === "servidor";
+  // Change migracao-regiao-us-central1 (tasks.md 6.5) — Reatribuir e Concluir
+  // também são permitidos ao Gestor da unidade (D5 do change tramitacao-manual);
+  // a checagem de qual unidade é feita pelo backend (`require_acesso_unidade`).
+  const ehGestor = usuario?.perfil === "gestor";
+  const podeTramitarOuConcluir = ehServidor || ehGestor;
   const [processo, setProcesso] = useState<Processo | null>(null);
   // Change visibilidade-processos-origem (design D2/D5) — Servidor fora da
   // unidade atual do processo (acompanhamento por origem, sem sigilo) vê o
@@ -577,14 +595,14 @@ function DetalheConteudo({ id }: { id: string }) {
           <p className="text-sm text-gray-600">{processo.assunto}</p>
         </div>
         <div className="flex gap-2">
-          {ehServidor && !concluido && !somenteLeitura && (
+          {podeTramitarOuConcluir && !concluido && !somenteLeitura && (
             <>
               <button
                 type="button"
                 onClick={() => setMostrarTramitacao(true)}
                 className="rounded-card bg-navy-900 px-3 py-1 text-sm font-medium text-white"
               >
-                Tramitar
+                {ehServidor ? "Tramitar" : "Reatribuir"}
               </button>
               <button
                 type="button"
@@ -724,6 +742,7 @@ function DetalheConteudo({ id }: { id: string }) {
         <ModalTramitacao
           processo={processo}
           unidades={unidades}
+          permitirEnvioDevolucao={ehServidor}
           onConfirmarEnvio={enviar}
           onConfirmarDevolucao={devolver}
           onConfirmarReatribuicao={reatribuir}
