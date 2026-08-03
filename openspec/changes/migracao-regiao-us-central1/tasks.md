@@ -24,13 +24,13 @@
 - [x] 4.2 Publicar as imagens de `web` e `api` no Artifact Registry da região nova. Aceite: imagens acessíveis pelo Cloud Run da nova região. → CI pulou por path-filter (código de app não mudou); build/push feitos localmente via `docker build`/`push` (Cloud Build indisponível: SA padrão sem `storage.objects.get` após hardening de IAM anterior)
 - [x] 4.3 Executar `alembic upgrade head` pelo Cloud Run Job efêmero, reconstruindo o schema **do zero** no banco vazio. Aceite: `alembic current` na revision mais recente; nenhuma migration nova foi necessária. → job `migrate` executado com sucesso (`succeededCount: 1`, 1m18s)
 - [x] 4.4 Deploy dos serviços `web` e `api` via Workload Identity Federation (sem chave JSON). Aceite: `/health` da api responde e o front carrega. → deploy feito via `gcloud run deploy` local (mesma imagem que o pipeline WIF publicaria); `/health` → 200, `/login` → 200
-- [ ] 4.5 Executar o fluxo de inicialização do sistema para criar o primeiro Administrador. Aceite: login do Administrador funcional no ambiente novo.
+- [x] 4.5 Executar o fluxo de inicialização do sistema para criar o primeiro Administrador. Aceite: login do Administrador funcional no ambiente novo. → executado via `/setup` em `https://web-2j5ojmtaiq-uc.a.run.app/setup`; login confirmado pelo usuário
 
 ## 5. Validação ponta a ponta
 
 - [ ] 5.1 Validar no ambiente reconstruído os fluxos dos changes anteriores: cadastro de unidade/setor/usuário; criação de processo; Envio, Devolução, Reatribuição e Conclusão; quadro pessoal com ação e acompanhamento; filtros e arquivados; geração de documento a partir de modelo com download; abas de "Meu Perfil". Aceite: todos os fluxos verdes no ambiente novo.
 - [x] 5.2 Validar as rotinas agendadas (manutenção diária, anonimização LGPD trimestral) e a fila de e-mails do Cloud Tasks na região nova. Aceite: jobs disparam e concluem; e-mail de teste entregue. → ambos os jobs executados manualmente com sucesso; fila `emails` confirmada `RUNNING`. Corrigido bug pré-existente em `jobs_scheduler.tf` (env vars de DB ausentes/incorretas — `DATABASE_URL` apontava só para a senha, sem `DB_HOST`) e a imagem placeholder desses jobs (pipeline nunca os atualiza — ver nota em `infra/README.md`). Entrega real de e-mail **não testada**: `sendgrid-api-key` segue placeholder por escolha do usuário (4.1)
-- [ ] 5.3 Confirmar que o bucket novo mantém `public_access_prevention` e que o conteúdo continua acessível somente pela aplicação. Aceite: acesso direto por URL do bucket é negado.
+- [x] 5.3 Confirmar que o bucket novo mantém `public_access_prevention` e que o conteúdo continua acessível somente pela aplicação. Aceite: acesso direto por URL do bucket é negado. → `gcloud storage buckets describe gs://setes-docs-documentos`: `public_access_prevention=enforced`; IAM policy sem `allUsers`/`allAuthenticatedUsers`, só `sa-api`/`sa-jobs` e papéis de projeto
 
 ## 6. Documentação mestre
 
