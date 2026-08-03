@@ -17,7 +17,7 @@ locals {
   # (self-reference), então fixamos o valor observado via `terraform output
   # api_url` -- estável entre applies (hash determinístico por projeto/serviço/
   # região). Se o serviço for recriado do zero, atualizar este valor.
-  oidc_audience = "https://api-2j5ojmtaiq-rj.a.run.app"
+  oidc_audience = "https://api-2j5ojmtaiq-uc.a.run.app"
   # Origem pública do `web`, usada pela api para autorizar CORS (browser chama
   # a api diretamente -- expor-api-e-configurar-api-url-web). Mesma razão de
   # `oidc_audience` acima: referenciar `google_cloud_run_v2_service.web.uri`
@@ -25,7 +25,7 @@ locals {
   # API_BASE_URL), então fixamos o valor observado via `terraform output
   # web_url` -- estável entre applies. Se o serviço `web` for recriado do
   # zero, atualizar este valor junto com `oidc_audience`.
-  web_url = "https://web-2j5ojmtaiq-rj.a.run.app"
+  web_url = "https://web-2j5ojmtaiq-uc.a.run.app"
 }
 
 # ---------------------------------------------------------------------------
@@ -35,9 +35,6 @@ locals {
 resource "google_cloud_run_v2_service" "api" {
   name     = "api"
   location = var.region
-
-  # Descarte integral autorizado para a migração de região (D1/D5).
-  deletion_protection = false
 
   # Browser do usuário chama a api diretamente; autorização real fica na aplicação
   # (JWT próprio) -- ver google_cloud_run_v2_service_iam_member.api_public abaixo.
@@ -202,9 +199,6 @@ resource "google_cloud_run_v2_service_iam_member" "api_public" {
 resource "google_cloud_run_v2_service" "web" {
   name     = "web"
   location = var.region
-
-  # Descarte integral autorizado para a migração de região (D1/D5).
-  deletion_protection = false
 
   ingress = "INGRESS_TRAFFIC_ALL"
 
