@@ -44,6 +44,14 @@ describe("ProtectedShell — sidebar (RBAC)", () => {
     pathname = "/processos";
   });
 
+  it("topo da sidebar exibe o nome do produto e o subtítulo de cliente (change renomear-sistema-despapelize)", () => {
+    usuarioMock = usuario("servidor");
+    render(<ProtectedShell>conteúdo</ProtectedShell>);
+
+    expect(screen.getByText("Despapelize")).toBeInTheDocument();
+    expect(screen.getByText("SETES")).toBeInTheDocument();
+  });
+
   it("servidor vê apenas os itens do seu perfil", () => {
     usuarioMock = usuario("servidor");
     render(<ProtectedShell>conteúdo</ProtectedShell>);

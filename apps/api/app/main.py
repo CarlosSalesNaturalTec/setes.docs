@@ -1,4 +1,4 @@
-"""Aplicação FastAPI do SETES.DOCS.
+"""Aplicação FastAPI do Despapelize.
 
 Rotas do bootstrap:
 - GET  /health                — health check (Cloud Run / task 1.2, spec plataforma-gcp)
@@ -50,7 +50,7 @@ from app.security.oidc import require_tasks_invoker
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 logger = logging.getLogger("setes.api")
 
-app = FastAPI(title="SETES.DOCS API", version="0.0.0")
+app = FastAPI(title="Despapelize API", version="0.0.0")
 app.state.limiter = limiter
 
 

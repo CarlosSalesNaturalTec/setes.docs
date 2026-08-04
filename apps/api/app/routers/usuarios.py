@@ -23,7 +23,7 @@ from app.db.models import (
 )
 from app.db.session import get_db
 from app.email.provider import EmailMessage
-from app.email.queue import config_from_settings, enqueue_email_seguro
+from app.email.queue import PREFIXO_ASSUNTO_EMAIL, config_from_settings, enqueue_email_seguro
 from app.schemas.auth import MensagemResponse
 from app.schemas.usuarios import (
     AtualizarMeuPerfilRequest,
@@ -105,7 +105,7 @@ def resetar_senha_admin(
     enqueue_email_seguro(
         EmailMessage(
             to=alvo.email,
-            subject="SETES.DOCS — redefinição de senha solicitada pelo Administrador",
+            subject=f"{PREFIXO_ASSUNTO_EMAIL} — redefinição de senha solicitada pelo Administrador",
             body=(
                 f"Olá {alvo.nome}, o Administrador solicitou a redefinição da sua senha. "
                 f"Use o link a seguir (válido por 2 horas): {link}"
@@ -189,9 +189,9 @@ def cadastrar_usuario(
     enqueue_email_seguro(
         EmailMessage(
             to=novo.email,
-            subject="SETES.DOCS — bem-vindo(a)! Ative sua conta",
+            subject=f"{PREFIXO_ASSUNTO_EMAIL} — bem-vindo(a)! Ative sua conta",
             body=(
-                f"Olá {novo.nome}, você foi cadastrado(a) no SETES.DOCS. Ative sua conta pelo "
+                f"Olá {novo.nome}, você foi cadastrado(a) no {PREFIXO_ASSUNTO_EMAIL}. Ative sua conta pelo "
                 f"link a seguir (válido por 48 horas): {link}"
             ),
         ),

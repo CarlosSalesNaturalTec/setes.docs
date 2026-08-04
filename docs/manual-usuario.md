@@ -1,4 +1,4 @@
-# Manual do Usuário — SETES.DOCS
+# Manual do Usuário — Despapelize
 
 Guia prático de operação do sistema, organizado por tipo de perfil. Cada
 pessoa recebe um perfil ao ser cadastrada, e é o perfil que determina o que
@@ -784,6 +784,6 @@ Para evitar expectativa equivocada, estes itens **não existem** no sistema hoje
 
 ---
 
-*Este manual descreve como **operar** o SETES.DOCS conforme cada perfil de
+*Este manual descreve como **operar** o Despapelize conforme cada perfil de
 acesso. As regras de negócio detalhadas (cenários de aceite e casos de borda)
 estão no documento mestre `docs/PRD.md`.*

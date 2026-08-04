@@ -1,6 +1,6 @@
 # setes-api
 
-Backend FastAPI do SETES.DOCS. Gerenciado por `uv` (fora do workspace pnpm).
+Backend FastAPI do Despapelize (cliente: SETES). Gerenciado por `uv` (fora do workspace pnpm).
 
 ## Desenvolvimento local
 

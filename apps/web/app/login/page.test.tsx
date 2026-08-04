@@ -35,6 +35,14 @@ describe("LoginPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("exibe o nome do produto e o subtítulo de cliente (change renomear-sistema-despapelize)", () => {
+    render(<LoginPage />);
+
+    expect(screen.getByRole("heading", { name: "Despapelize" })).toBeInTheDocument();
+    expect(screen.getByText("SETES")).toBeInTheDocument();
+    expect(screen.getByText("Acesse sua conta")).toBeInTheDocument();
+  });
+
   it("renderiza o card de credenciais sem qualquer opção de SSO", () => {
     render(<LoginPage />);
 

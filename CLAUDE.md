@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Projeto
 
-SETES.DOCS — sistema de gestão de processos administrativos (tramitação manual,
+Despapelize (cliente: SETES) — sistema de gestão de processos administrativos (tramitação manual,
 sigilo, consulta pública, LGPD) para uma **instituição privada** (a premissa
 anterior de órgão público estava incorreta — change `migracao-regiao-us-central1`
 D6; a LGPD permanece obrigatória integralmente).

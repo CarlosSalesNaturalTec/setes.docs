@@ -1,4 +1,4 @@
-# infra/ — Terraform do SETES.DOCS
+# infra/ — Terraform do Despapelize
 
 Provisiona toda a topologia GCP em região única (`var.region`, atualmente `us-central1`) —
 escolha de custo, não de residência; a transferência internacional de dados está

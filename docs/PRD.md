@@ -1,10 +1,10 @@
-# Product Requirements Document (PRD) — SETES.DOCS
+# Product Requirements Document (PRD) — Despapelize
 
 ## 1. Visão Geral e Problema
 
 Órgãos da administração pública sofrem com a falta de visibilidade e controle sobre o ciclo de vida de processos administrativos. Atualmente, os processos tramitam de forma manual ou semiaparelhada (papel, e-mail, planilhas), gerando: (a) incapacidade de identificar gargalos antes que causem prejuízo; (b) ausência de métricas consolidadas sobre tempo de tramitação e produtividade por unidade; (c) dificuldade de auditoria e transparência, tanto interna quanto para o cidadão.
 
-O **SETES.DOCS** é um sistema de gestão de processos administrativos com workflow roteirizado, assinatura digital com validade jurídica e consulta pública. Seu objetivo é digitalizar, automatizar e dar transparência ao trâmite de processos entre unidades administrativas, eliminando o papel, reduzindo o tempo de tramitação e fornecendo métricas de eficiência operacional para gestores.
+O **Despapelize** é um sistema de gestão de processos administrativos com workflow roteirizado, assinatura digital com validade jurídica e consulta pública, desenvolvido para a **SETES**, instituição privada cliente do produto. Seu objetivo é digitalizar, automatizar e dar transparência ao trâmite de processos entre unidades administrativas, eliminando o papel, reduzindo o tempo de tramitação e fornecendo métricas de eficiência operacional para gestores.
 
 ## 2. Personas
 
@@ -17,7 +17,7 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
 ## 3. Escopo do MVP
 
 * **Dentro do Escopo:**
-  * Autenticação própria do SETES.DOCS com login e senha
+  * Autenticação própria do Despapelize com login e senha
   * Cadastro e gestão de usuários, unidades, setores e tipos de processo
   * Controle de acesso baseado em perfis (Administrador, Gestor, Servidor) com visibilidade restrita por unidade
   * Criação de processos com metadados (número, assunto, tipo, data, prazo, unidade de origem, interessados)
@@ -61,7 +61,7 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
       * **Quando** informo um setor que pertence a outra unidade (ex.: AJUR)
       * **Então** o sistema rejeita a operação informando que o setor não pertence à unidade do usuário — a mesma validação vale para toda edição, inclusive a transferência de unidade (US 8.6)
     * *Cenário 8: Chefia direta externa ao sistema*
-      * **Dado** que a chefia direta do servidor não possui conta no SETES.DOCS
+      * **Dado** que a chefia direta do servidor não possui conta no Despapelize
       * **Quando** informo o nome dessa chefia no campo "Chefia Direta"
       * **Então** o valor é aceito e persistido como texto livre, sem exigir que a pessoa exista como usuário
     * *Cenário 9: Filtro por nome na listagem de usuários*
@@ -107,7 +107,7 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
 * **US 1.3:** Como Usuário, eu quero fazer login no sistema com minhas credenciais para acessar minhas funcionalidades conforme meu perfil.
   * **Critérios de Aceitação:**
     * *Cenário 1: Login com credenciais válidas*
-      * **Dado** que possuo login e senha ativos no SETES.DOCS
+      * **Dado** que possuo login e senha ativos no Despapelize
       * **Quando** informo minhas credenciais corretas na tela de login
       * **Então** sou autenticado e direcionado ao painel principal correspondente ao meu perfil
     * *Cenário 2: Senha incorreta*
@@ -960,7 +960,7 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
 
 ## 5. Requisitos Funcionais
 
-1. O sistema deve permitir autenticação por login e senha próprios do SETES.DOCS
+1. O sistema deve permitir autenticação por login e senha próprios do Despapelize
 2. O sistema deve suportar três perfis de acesso: Administrador, Gestor e Servidor
 3. Cada Servidor deve pertencer a exatamente uma unidade administrativa. Gestores e Administradores podem estar vinculados a uma ou mais unidades
 4. Servidores só podem visualizar e movimentar processos de suas próprias unidades
@@ -1018,7 +1018,7 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
 
 ## 7. Métricas de Sucesso
 
-As seguintes métricas serão acompanhadas após o lançamento do MVP para avaliar se o SETES.DOCS está entregando valor ao negócio:
+As seguintes métricas serão acompanhadas após o lançamento do MVP para avaliar se o Despapelize está entregando valor ao negócio:
 
 * **Adoção do Sistema:** 80% dos servidores das unidades cadastradas utilizando o sistema ativamente (realizando ao menos uma ação por semana) em até 3 meses após o lançamento
 * **Redução do Tempo de Tramitação:** Redução de pelo menos 30% no tempo médio entre a criação e a conclusão de um processo, comparado ao método anterior (papel/e-mail), medido após 6 meses de operação

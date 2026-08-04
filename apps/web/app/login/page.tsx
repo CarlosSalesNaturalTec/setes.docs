@@ -7,6 +7,7 @@ import { Suspense, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { IconCadeado, IconEnvelope, IconMarca } from "@/components/icons";
 import { ApiError } from "@/lib/api";
+import { NOME_PRODUTO, SUBTITULO_CLIENTE } from "@/lib/marca";
 import { rotaInicial } from "@/lib/rota-inicial";
 
 const MENSAGENS_MOTIVO: Record<string, string> = {
@@ -47,7 +48,8 @@ function LoginForm() {
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-navy-900 text-lg font-semibold text-white">
             <IconMarca className="h-7 w-7" />
           </div>
-          <h1 className="mt-3 text-2xl font-semibold text-navy-900">SETES.DOCS</h1>
+          <h1 className="mt-3 text-2xl font-semibold text-navy-900">{NOME_PRODUTO}</h1>
+          <p className="mt-1 text-xs uppercase tracking-wide text-gray-500">{SUBTITULO_CLIENTE}</p>
           <p className="mt-1 text-sm text-gray-600">Acesse sua conta</p>
         </div>
 
