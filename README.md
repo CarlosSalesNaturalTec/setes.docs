@@ -24,7 +24,9 @@ Monorepo poliglota:
   todo trabalho de domínio passa por um change em `openspec/changes/`
   (regras em `openspec/config.yaml`).
 - **[`CLAUDE.md`](CLAUDE.md)** — guia de arquitetura e comandos para agentes de código.
-- **[`docs/manual-usuario.md`](docs/manual-usuario.md)** — manual do usuário final.
+- **[`docs/manual/`](docs/manual/)** — manual do usuário final, publicado como site
+  (MkDocs) no GitHub Pages pelo workflow
+  [`publicar-manual.yml`](.github/workflows/publicar-manual.yml).
 
 ## Desenvolvimento local
 

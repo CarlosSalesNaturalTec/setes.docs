@@ -1,0 +1,52 @@
+name: Publicar manual (GitHub Pages)
+
+# Disparado só por mudança no manual ou na configuração do site (D5,
+# design.md do change manual-mkdocs) — path filter no mesmo padrão de
+# ci.yml/deploy.yml. Um commit que só toca apps/api ou apps/web não deve
+# disparar build de documentação.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/manual/**'
+      - 'mkdocs.yml'
+      - 'requirements-docs.txt'
+      - '.github/workflows/publicar-manual.yml'
+  workflow_dispatch:
+
+# Permissões mínimas para publicar via artefato (sem branch gh-pages, D5).
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Instalar dependências do MkDocs
+        run: pip install -r requirements-docs.txt
+      - name: Build (--strict)
+        run: mkdocs build --strict
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy no GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
