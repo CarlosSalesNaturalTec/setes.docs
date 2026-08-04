@@ -30,7 +30,7 @@ test("Servidor cria processo e conclui diretamente, com registro no histórico",
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_PROCESSO.nome);
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
-  await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
+  await expect(page.getByRole("cell", { name: TIPO_PROCESSO.nome, exact: true })).toBeVisible();
 
   // Servidor vinculado à nova unidade.
   await cadastrarSetor(page, UNIDADE_PROCESSO.nome, SETOR_PADRAO);
@@ -133,7 +133,7 @@ test("Servidor A envia, B devolve, A reenvia, B reatribui para C e C conclui —
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_PROCESSO_TRAMITACAO.nome);
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
-  await expect(page.getByRole("heading", { name: TIPO_PROCESSO_TRAMITACAO.nome })).toBeVisible();
+  await expect(page.getByRole("cell", { name: TIPO_PROCESSO_TRAMITACAO.nome, exact: true })).toBeVisible();
 
   await cadastrarSetor(page, UNIDADE_ORIGEM.nome, SETOR_PADRAO);
   await cadastrarUsuario(page, {

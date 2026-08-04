@@ -76,7 +76,7 @@ test("Auditor autorizado acessa processo sigiloso de outra unidade; usuário sem
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_PROCESSO.nome);
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
-  await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
+  await expect(page.getByRole("cell", { name: TIPO_PROCESSO.nome, exact: true })).toBeVisible();
 
   await login(page, ADMIN_ROOT.email, ADMIN_ROOT.senha);
   await cadastrarEAtivarServidor(page, DONO, UNIDADE_A);

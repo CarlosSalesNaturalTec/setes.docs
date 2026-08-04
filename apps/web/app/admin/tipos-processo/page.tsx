@@ -55,7 +55,12 @@ function CadastroTipoProcessoForm({ onCriado }: { onCriado: () => void }) {
   );
 }
 
-function PrazoAnonimizacaoLgpd({ tipo, onAtualizado }: { tipo: TipoProcesso; onAtualizado: () => void }) {
+// Linha de tipo de processo (change ajustes-ui-admin, design D4): estado de
+// edição, salvamento e erro do prazo de anonimização são isolados por linha
+// — salvar uma linha não altera nem revalida as demais. A única ação da
+// linha é salvar o prazo; relayout puro, sem edição de nome, desativação ou
+// exclusão, que não existem hoje.
+function LinhaTipoProcesso({ tipo, onAtualizado }: { tipo: TipoProcesso; onAtualizado: () => void }) {
   const [valor, setValor] = useState(String(tipo.prazo_anonimizacao_anos));
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -79,10 +84,11 @@ function PrazoAnonimizacaoLgpd({ tipo, onAtualizado }: { tipo: TipoProcesso; onA
   }
 
   return (
-    <div className="mt-3 flex items-end gap-2 text-sm">
-      <div>
-        <label htmlFor={`prazo-${tipo.id}`} className="block text-gray-600">
-          Prazo de anonimização LGPD (anos)
+    <tr className="border-t align-top odd:bg-white even:bg-gray-50/50">
+      <td className="px-3 py-2">{tipo.nome}</td>
+      <td className="px-3 py-2">
+        <label htmlFor={`prazo-${tipo.id}`} className="sr-only">
+          Prazo de anonimização LGPD (anos) — {tipo.nome}
         </label>
         <input
           id={`prazo-${tipo.id}`}
@@ -90,14 +96,18 @@ function PrazoAnonimizacaoLgpd({ tipo, onAtualizado }: { tipo: TipoProcesso; onA
           min={1}
           value={valor}
           onChange={(e) => setValor(e.target.value)}
-          className="mt-1 w-24 rounded border px-2 py-1"
+          className="w-24 rounded border px-2 py-1 text-sm"
         />
-      </div>
-      <button type="button" onClick={() => void salvar()} disabled={salvando} className="text-navy-600">
-        {salvando ? "Salvando…" : "Salvar"}
-      </button>
-      {erro && <span className="text-red-600">{erro}</span>}
-    </div>
+      </td>
+      <td className="px-3 py-2">
+        <div className="flex items-center gap-2 text-sm">
+          <button type="button" onClick={() => void salvar()} disabled={salvando} className="text-navy-600">
+            {salvando ? "Salvando…" : "Salvar"}
+          </button>
+          {erro && <span className="text-red-600">{erro}</span>}
+        </div>
+      </td>
+    </tr>
   );
 }
 
@@ -131,14 +141,28 @@ function AdminTiposProcessoConteudo() {
       {erro && <p className="mt-4 text-sm text-red-600">{erro}</p>}
       {carregando && <p className="mt-4 text-sm text-gray-500">Carregando…</p>}
 
-      <ul className="mt-6 space-y-4">
-        {tipos.map((tipo) => (
-          <li key={tipo.id} className="rounded-card border border-navy-50 bg-superficie-card p-4 shadow-card">
-            <h2 className="font-medium">{tipo.nome}</h2>
-            <PrazoAnonimizacaoLgpd tipo={tipo} onAtualizado={carregar} />
-          </li>
-        ))}
-      </ul>
+      {!carregando && tipos.length === 0 && (
+        <p className="mt-6 text-sm text-gray-500">Nenhum tipo de processo cadastrado.</p>
+      )}
+
+      {tipos.length > 0 && (
+        <div className="mt-6 overflow-x-auto rounded-card border border-navy-50 bg-superficie-card shadow-card">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+                <th className="px-3 py-2">Nome</th>
+                <th className="px-3 py-2">Prazo de anonimização LGPD (anos)</th>
+                <th className="px-3 py-2">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tipos.map((tipo) => (
+                <LinhaTipoProcesso key={tipo.id} tipo={tipo} onAtualizado={carregar} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

@@ -67,7 +67,7 @@ test("Envio entre unidades incrementa o sino do destinatário; marcar como lida 
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_PROCESSO.nome);
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
-  await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
+  await expect(page.getByRole("cell", { name: TIPO_PROCESSO.nome, exact: true })).toBeVisible();
 
   await cadastrarEAtivar(page, SERVIDOR_ORIGEM, UNIDADE_ORIGEM.nome);
   await logout(page);

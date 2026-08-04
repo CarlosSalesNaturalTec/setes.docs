@@ -33,7 +33,11 @@ test("Administrador cadastra modelo com lacuna; Servidor gera documento na abert
   await login(page, ADMIN_ROOT.email, ADMIN_ROOT.senha);
 
   // Administrador cadastra o modelo com uma lacuna (US: Cadastro de modelo).
+  // A tela de modelos abre na aba "Modelos cadastrados" por padrão (change
+  // ajustes-ui-admin, design D2) — é preciso selecionar "Novo modelo" antes
+  // de interagir com a ficha de cadastro.
   await page.goto("/admin/modelos");
+  await page.getByRole("tab", { name: "Novo modelo" }).click();
   await page.getByLabel("Nome", { exact: true }).fill(MODELO.nome);
   await page.getByLabel("Categoria").fill(MODELO.categoria);
   await page.getByLabel("Tipo", { exact: true }).selectOption("requerimento");
@@ -57,7 +61,9 @@ test("Administrador cadastra modelo com lacuna; Servidor gera documento na abert
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_PROCESSO.nome);
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
-  await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
+  // Change ajustes-ui-admin: tipos de processo passam a ser listados em
+  // tabela, uma linha por tipo, em vez de cards com título em heading.
+  await expect(page.getByRole("cell", { name: TIPO_PROCESSO.nome, exact: true })).toBeVisible();
 
   const link = await obterUltimoLink(SERVIDOR_MODELOS.email);
   await page.goto(link);

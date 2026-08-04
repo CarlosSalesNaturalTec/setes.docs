@@ -38,7 +38,7 @@ test("Servidor anexa, visualiza inline, baixa e remove um documento; remoção �
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_PROCESSO.nome);
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
-  await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
+  await expect(page.getByRole("cell", { name: TIPO_PROCESSO.nome, exact: true })).toBeVisible();
 
   await cadastrarSetor(page, UNIDADE_DOCUMENTOS.nome, SETOR_PADRAO);
   await cadastrarUsuario(page, {

@@ -33,7 +33,7 @@ test("Administrador não vê controles de ação em Processos nem no detalhe de 
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_PROCESSO_ADMIN_RO.nome);
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
-  await expect(page.getByRole("heading", { name: TIPO_PROCESSO_ADMIN_RO.nome })).toBeVisible();
+  await expect(page.getByRole("cell", { name: TIPO_PROCESSO_ADMIN_RO.nome, exact: true })).toBeVisible();
 
   await cadastrarSetor(page, UNIDADE_ADMIN_RO.nome, SETOR_PADRAO);
   await cadastrarUsuario(page, {

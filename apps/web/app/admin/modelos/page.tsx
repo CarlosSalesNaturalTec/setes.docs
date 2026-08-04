@@ -1,15 +1,31 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { EditorFormatado } from "@/components/editor-formatado";
 import { IconButton } from "@/components/icon-button";
 import { IconEdit, IconPowerOff, IconPowerOn } from "@/components/icons";
 import { ProtectedShell } from "@/components/protected-shell";
+import { Tabs } from "@/components/tabs";
 import { ApiError, api, type Schemas } from "@/lib/api";
 
 type Modelo = Schemas["ModeloResponse"];
 type TipoModelo = Modelo["tipo"];
+
+// Abas de "Modelos de documento" (change ajustes-ui-admin, design D1/D2): a
+// aba ativa vive na query string `?aba=`, mesmo padrão de `perfil-em-abas`;
+// valor ausente ou desconhecido cai na aba padrão. A aba padrão é a
+// listagem, não o cadastro (D2) — consultar o catálogo é o uso dominante da
+// tela, e abrir na ficha reproduziria o problema que a proposta pediu para
+// resolver.
+const ABA_PADRAO = "lista";
+const IDS_ABAS = ["novo", "lista"] as const;
+type IdAba = (typeof IDS_ABAS)[number];
+
+function normalizarAba(valor: string | null): IdAba {
+  return (IDS_ABAS as readonly string[]).includes(valor ?? "") ? (valor as IdAba) : ABA_PADRAO;
+}
 
 const TIPOS: { valor: TipoModelo; label: string }[] = [
   { valor: "requerimento", label: "Requerimento" },
@@ -33,7 +49,7 @@ const AVISO_DADOS_PESSOAIS =
   "endereço). Use marcações de lacuna, como [NOME DO SOLICITANTE], para o servidor preencher " +
   "na abertura do processo.";
 
-function CadastroModeloForm({ onCriado }: { onCriado: () => void }) {
+function CadastroModeloForm({ onCriado }: { onCriado: () => Promise<void> }) {
   const [nome, setNome] = useState("");
   const [categoria, setCategoria] = useState("");
   const [tipo, setTipo] = useState<TipoModelo>("requerimento");
@@ -54,7 +70,11 @@ function CadastroModeloForm({ onCriado }: { onCriado: () => void }) {
       setDescricao("");
       setConteudo("");
       setResetKey((k) => k + 1);
-      onCriado();
+      // Só troca de aba depois que a listagem recarregada confirma que o
+      // modelo consta no catálogo (change ajustes-ui-admin, design D3); em
+      // caso de erro, o catch abaixo não chama onCriado e a ficha preenchida
+      // permanece na aba de cadastro.
+      await onCriado();
     } catch (err) {
       setErro(err instanceof ApiError ? err.detail : "Não foi possível cadastrar o modelo.");
     } finally {
@@ -263,26 +283,19 @@ function CartaoModelo({ modelo, onAlterado }: { modelo: Modelo; onAlterado: () =
   );
 }
 
-function AdminModelosConteudo() {
-  const [modelos, setModelos] = useState<Modelo[]>([]);
-  const [erro, setErro] = useState<string | null>(null);
-  const [carregando, setCarregando] = useState(true);
+function ListaModelosAba({
+  modelos,
+  erro,
+  carregando,
+  onAlterado,
+}: {
+  modelos: Modelo[];
+  erro: string | null;
+  carregando: boolean;
+  onAlterado: () => void;
+}) {
   const [filtroTipo, setFiltroTipo] = useState<TipoModelo | "">("");
   const [filtroSituacao, setFiltroSituacao] = useState<"todos" | "ativos" | "inativos">("todos");
-
-  async function carregar() {
-    try {
-      setModelos(await api.listarModelos());
-    } catch (err) {
-      setErro(err instanceof ApiError ? err.detail : "Não foi possível carregar os modelos.");
-    } finally {
-      setCarregando(false);
-    }
-  }
-
-  useEffect(() => {
-    void carregar();
-  }, []);
 
   const modelosFiltrados = useMemo(
     () =>
@@ -297,13 +310,7 @@ function AdminModelosConteudo() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Modelos de documento</h1>
-
-      <div className="mt-4">
-        <CadastroModeloForm onCriado={carregar} />
-      </div>
-
-      <div className="mt-6 flex flex-wrap items-end gap-3">
+      <div className="flex flex-wrap items-end gap-3">
         <div>
           <label htmlFor="filtro-tipo" className="block text-sm">
             Filtrar por tipo
@@ -347,9 +354,72 @@ function AdminModelosConteudo() {
 
       <ul className="mt-4 space-y-4">
         {modelosFiltrados.map((modelo) => (
-          <CartaoModelo key={modelo.id} modelo={modelo} onAlterado={carregar} />
+          <CartaoModelo key={modelo.id} modelo={modelo} onAlterado={onAlterado} />
         ))}
       </ul>
+    </div>
+  );
+}
+
+function AdminModelosConteudo() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [modelos, setModelos] = useState<Modelo[]>([]);
+  const [erro, setErro] = useState<string | null>(null);
+  const [carregando, setCarregando] = useState(true);
+
+  const carregar = useCallback(async () => {
+    try {
+      setModelos(await api.listarModelos());
+      setErro(null);
+    } catch (err) {
+      setErro(err instanceof ApiError ? err.detail : "Não foi possível carregar os modelos.");
+    } finally {
+      setCarregando(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void carregar();
+  }, [carregar]);
+
+  const abaAtiva = normalizarAba(searchParams.get("aba"));
+
+  const selecionarAba = useCallback(
+    (id: string) => {
+      const params = new URLSearchParams(searchParams);
+      params.set("aba", id);
+      router.push(`/admin/modelos?${params.toString()}`, { scroll: false });
+    },
+    [router, searchParams],
+  );
+
+  const aoCadastrar = useCallback(async () => {
+    await carregar();
+    selecionarAba("lista");
+  }, [carregar, selecionarAba]);
+
+  return (
+    <div>
+      <h1 className="text-2xl font-semibold">Modelos de documento</h1>
+
+      <div className="mt-4">
+        <Tabs
+          aria-label="Modelos de documento"
+          abaAtiva={abaAtiva}
+          onSelecionar={selecionarAba}
+          abas={[
+            { id: "novo", rotulo: "Novo modelo", conteudo: <CadastroModeloForm onCriado={aoCadastrar} /> },
+            {
+              id: "lista",
+              rotulo: "Modelos cadastrados",
+              conteudo: (
+                <ListaModelosAba modelos={modelos} erro={erro} carregando={carregando} onAlterado={carregar} />
+              ),
+            },
+          ]}
+        />
+      </div>
     </div>
   );
 }
@@ -357,7 +427,9 @@ function AdminModelosConteudo() {
 export default function AdminModelosPage() {
   return (
     <ProtectedShell perfisPermitidos={["administrador"]}>
-      <AdminModelosConteudo />
+      <Suspense fallback={<p className="p-4 text-sm text-gray-500">Carregando…</p>}>
+        <AdminModelosConteudo />
+      </Suspense>
     </ProtectedShell>
   );
 }

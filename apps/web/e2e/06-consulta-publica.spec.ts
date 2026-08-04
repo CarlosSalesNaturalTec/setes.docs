@@ -36,7 +36,7 @@ test("cidadão consulta processo por número, sigiloso é indistinguível de ine
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_CONSULTA.nome);
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
-  await expect(page.getByRole("heading", { name: TIPO_CONSULTA.nome })).toBeVisible();
+  await expect(page.getByRole("cell", { name: TIPO_CONSULTA.nome, exact: true })).toBeVisible();
 
   await cadastrarSetor(page, UNIDADE_CONSULTA.nome, SETOR_PADRAO);
   await cadastrarUsuario(page, {

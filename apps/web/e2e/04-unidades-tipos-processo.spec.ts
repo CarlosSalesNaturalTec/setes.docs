@@ -30,7 +30,9 @@ test("Administrador cadastra unidade/tipo de processo; Gestor recebe acesso nega
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_PROCESSO.nome);
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
-  await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
+  // Change ajustes-ui-admin: tipos de processo passam a ser listados em
+  // tabela, uma linha por tipo, em vez de cards com título em heading.
+  await expect(page.getByRole("cell", { name: TIPO_PROCESSO.nome, exact: true })).toBeVisible();
 
   // Administrador cadastra uma Gestora e ativa a conta (para o teste de acesso negado abaixo).
   // Gestor não exige setor (D2) — a obrigatoriedade é exclusiva do Servidor.
