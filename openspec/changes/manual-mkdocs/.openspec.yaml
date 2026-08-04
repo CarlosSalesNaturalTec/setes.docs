@@ -1,0 +1,7 @@
+schema: spec-driven
+created: 2026-08-04
+# Nenhum comportamento do sistema muda: o change produz documentação de usuário e
+# a infraestrutura para publicá-la. As três seções novas do manual descrevem
+# requisitos já especificados em `arquivamento-automatico`, `rotinas-agendadas`,
+# `consulta-publica`, `sigilo-processo`, `anonimizacao-lgpd` e `solicitacao-lgpd`.
+skip_specs: true
