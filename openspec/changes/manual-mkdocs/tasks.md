@@ -3,7 +3,7 @@
 - [x] 1.1 Confirmar que `renomear-sistema-despapelize` e `ajustes-ui-admin` estão
   concluídos e arquivados. **Aceite**: ambos aparecem em `openspec/changes/archive/`.
   Sem isso o manual nasce descrevendo o nome e as telas antigos.
-- [ ] 1.2 Habilitar GitHub Pages no repositório com origem **"GitHub Actions"**
+- [x] 1.2 Habilitar GitHub Pages no repositório com origem **"GitHub Actions"**
   (Settings › Pages). **Aceite**: a origem está configurada. É clique na interface do
   GitHub — não automatizável pelo código, e o workflow falha com erro explícito até que
   seja feito.
