@@ -21,7 +21,7 @@ from app.config import Settings, get_settings
 from app.db.models import SenhaHistorico, StatusUsuario, TipoTokenAutenticacao, Usuario
 from app.db.session import get_db
 from app.email.provider import EmailMessage
-from app.email.queue import config_from_settings, enqueue_email_seguro
+from app.email.queue import PREFIXO_ASSUNTO_EMAIL, config_from_settings, enqueue_email_seguro
 from app.rate_limit import RATE_LIMIT_AUTH_PUBLICO, limiter
 from app.schemas.auth import (
     LoginRequest,
@@ -92,7 +92,7 @@ def login(
             enqueue_email_seguro(
                 EmailMessage(
                     to=usuario.email,
-                    subject="SETES.DOCS — alerta de tentativas de login",
+                    subject=f"{PREFIXO_ASSUNTO_EMAIL} — alerta de tentativas de login",
                     body=(
                         f"Olá {usuario.nome}, detectamos 3 tentativas de login incorretas na sua "
                         "conta. Ela foi bloqueada temporariamente por 30 minutos."
@@ -197,7 +197,7 @@ def recuperar_senha(
         enqueue_email_seguro(
             EmailMessage(
                 to=usuario.email,
-                subject="SETES.DOCS — recuperação de senha",
+                subject=f"{PREFIXO_ASSUNTO_EMAIL} — recuperação de senha",
                 body=(
                     f"Olá {usuario.nome}, use o link a seguir para redefinir sua senha "
                     f"(válido por 2 horas): {link}"

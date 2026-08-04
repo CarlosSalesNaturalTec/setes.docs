@@ -21,6 +21,10 @@ from app.email.provider import EmailMessage
 
 logger = logging.getLogger("setes.api")
 
+# Prefixo dos assuntos de e-mail transacional (change renomear-sistema-despapelize,
+# design.md D2) — ponto único que define o nome do produto nas notificações.
+PREFIXO_ASSUNTO_EMAIL = "Despapelize"
+
 
 @dataclass(frozen=True)
 class EnqueueConfig:

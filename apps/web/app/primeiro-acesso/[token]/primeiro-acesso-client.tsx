@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
 import { DefinirSenhaForm } from "@/components/definir-senha-form";
 import { api } from "@/lib/api";
+import { NOME_PRODUTO } from "@/lib/marca";
 
 export function PrimeiroAcessoClient({ token }: { token: string }) {
   const router = useRouter();
@@ -20,7 +21,7 @@ export function PrimeiroAcessoClient({ token }: { token: string }) {
   return (
     <DefinirSenhaForm
       titulo="Ativar sua conta"
-      descricao="Defina sua senha para concluir o primeiro acesso ao SETES.DOCS."
+      descricao={`Defina sua senha para concluir o primeiro acesso ao ${NOME_PRODUTO}.`}
       textoBotao="Ativar conta"
       onSubmit={ativarConta}
     />

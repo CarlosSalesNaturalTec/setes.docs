@@ -18,7 +18,7 @@ from app.config import Settings, get_settings
 from app.db.models import PerfilUsuario, StatusUsuario, Unidade, Usuario
 from app.db.session import get_db
 from app.email.provider import EmailMessage
-from app.email.queue import config_from_settings, enqueue_email_seguro
+from app.email.queue import PREFIXO_ASSUNTO_EMAIL, config_from_settings, enqueue_email_seguro
 from app.schemas.setup import SetupRequest, SetupResponse, SetupStatusResponse
 from app.security.senha import MENSAGEM_COMPLEXIDADE, hash_senha, senha_atende_complexidade
 
@@ -69,7 +69,7 @@ def inicializar_sistema(
     enqueue_email_seguro(
         EmailMessage(
             to=admin.email,
-            subject="SETES.DOCS — sistema inicializado",
+            subject=f"{PREFIXO_ASSUNTO_EMAIL} — sistema inicializado",
             body=f"Olá {admin.nome}, o sistema foi inicializado com sucesso. Você já pode fazer login.",
         ),
         event_id=f"setup-confirmacao:{admin_id}",

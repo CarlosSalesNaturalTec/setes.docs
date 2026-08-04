@@ -1,4 +1,4 @@
-# SETES.DOCS
+# Despapelize
 
 Sistema de gestão de processos administrativos para um órgão da administração pública
 da Bahia: workflow roteirizado de tramitação entre unidades, quadro Kanban, gestão

@@ -1,6 +1,6 @@
 variable "project_id" {
   type        = string
-  description = "ID do projeto GCP único de produção do SETES.DOCS."
+  description = "ID do projeto GCP único de produção do Despapelize."
 }
 
 variable "org_id" {

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/components/auth-provider";
 import { api } from "@/lib/api";
+import { NOME_PRODUTO } from "@/lib/marca";
 import { rotaInicial } from "@/lib/rota-inicial";
 
 export default function Home() {
@@ -29,7 +30,7 @@ export default function Home() {
 
   return (
     <main className="mx-auto max-w-2xl p-8">
-      <h1 className="text-2xl font-semibold">SETES.DOCS</h1>
+      <h1 className="text-2xl font-semibold">{NOME_PRODUTO}</h1>
       <p className="mt-2 text-gray-600">Carregando…</p>
     </main>
   );

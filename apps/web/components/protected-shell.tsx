@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { type Schemas } from "@/lib/api";
+import { NOME_PRODUTO, SUBTITULO_CLIENTE } from "@/lib/marca";
 
 import { useAuth } from "./auth-provider";
 import {
@@ -162,10 +163,10 @@ export function ProtectedShell({
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm font-semibold text-navy-900">
                 <IconMarca className="h-5 w-5" />
               </div>
-              <span className="text-sm font-semibold">SETES.DOCS</span>
+              <span className="text-sm font-semibold">{NOME_PRODUTO}</span>
             </div>
             <p className="mt-1 text-[10px] uppercase tracking-wide text-navy-50/70">
-              Sistema Eletrônico
+              {SUBTITULO_CLIENTE}
             </p>
           </div>
           <button

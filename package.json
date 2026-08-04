@@ -2,7 +2,7 @@
   "name": "setes-docs",
   "version": "0.0.0",
   "private": true,
-  "description": "SETES.DOCS — monorepo poliglota (Next.js web + FastAPI api + infra Terraform)",
+  "description": "Despapelize — monorepo poliglota (Next.js web + FastAPI api + infra Terraform)",
   "packageManager": "pnpm@11.11.0",
   "scripts": {
     "dev": "pnpm --filter @setes/web dev",

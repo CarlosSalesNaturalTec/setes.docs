@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { ApiError, api } from "@/lib/api";
+import { NOME_PRODUTO } from "@/lib/marca";
 import { MENSAGEM_COMPLEXIDADE_SENHA, senhaAtendeComplexidade } from "@/lib/validacao";
 
 export default function SetupPage() {
@@ -65,7 +66,7 @@ export default function SetupPage() {
 
   return (
     <main className="mx-auto max-w-md p-8">
-      <h1 className="text-2xl font-semibold">Inicialização do SETES.DOCS</h1>
+      <h1 className="text-2xl font-semibold">Inicialização do {NOME_PRODUTO}</h1>
       <p className="mt-2 text-sm text-gray-600">
         Este formulário só fica disponível antes do primeiro uso do sistema. Crie o Administrador
         root e a primeira unidade administrativa.

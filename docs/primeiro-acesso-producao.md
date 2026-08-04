@@ -1,4 +1,4 @@
-# Primeiro acesso em produção — SETES.DOCS
+# Primeiro acesso em produção — Despapelize
 
 Guia para o primeiro acesso ao ambiente de produção, **antes do Discovery Técnico de
 assinaturas digitais (Épico 4)**. Cobre: link do sistema, inicialização (bootstrap),

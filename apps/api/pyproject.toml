@@ -1,7 +1,7 @@
 [project]
 name = "setes-api"
 version = "0.0.0"
-description = "SETES.DOCS — backend FastAPI"
+description = "Despapelize — backend FastAPI"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
