@@ -173,8 +173,9 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
     * *Cenário 3: Aba "Documentos assinados" como marcador de fase futura*
       * **Dado** que acesso a aba "Documentos assinados"
       * **Quando** a aba é exibida
-      * **Então** vejo uma mensagem informando que a assinatura digital de documentos será disponibilizada em fase futura do produto (Épico 4, Fase 2), sem botão "Assinar", campo de certificado digital ou qualquer elemento que sugira funcionalidade disponível
+      * **Então** vejo uma mensagem informando que a assinatura digital de documentos será disponibilizada em fase futura do produto (Épico 4, Fase 2) e orientando a solicitar o Certificado Digital ICP-Brasil junto a uma Autoridade Certificadora como preparação externa ao sistema, sem botão "Assinar", campo de certificado digital, formulário de solicitação ou qualquer elemento que sugira funcionalidade disponível
   * **Nota (change perfil-em-abas):** a tela "Meu Perfil" passa a ser organizada em abas em vez de empilhada verticalmente; a aba ativa é refletida na URL (`?aba=perfil|senha|processos|assinados`, restaurada na recarga) e a navegação entre abas é acessível por teclado. "Documentos assinados" continua o placeholder da Fase 2 já registrado no Épico 4 — este change reorganiza a interface e não retoma a assinatura digital.
+  * **Nota (change ajustes-ui-admin):** a mensagem da aba "Documentos assinados" passa a orientar a solicitação prévia do Certificado Digital ICP-Brasil — pedido do cliente na avaliação da primeira entrega — mantendo a proibição de qualquer controle de assinatura na aba; o Épico 4 permanece fora do escopo.
 
 * **US 1.6:** Como Usuário recém-cadastrado, eu quero realizar o primeiro acesso e criar minha senha para ativar minha conta no sistema.
   * **Critérios de Aceitação:**
@@ -296,6 +297,7 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
       * **Quando** cadastro, edito ou desativo um modelo (nome, categoria, tipo, descrição, conteúdo formatado em negrito/itálico/sublinhado/alinhamento/listas)
       * **Então** o catálogo é atualizado; um modelo desativado sai da lista de escolha na abertura de processo, mas os documentos já gerados a partir dele permanecem intactos — modelos nunca são excluídos fisicamente, apenas desativados
   * **Nota:** o modelo em si é um catálogo reutilizável e **não deve conter dados pessoais reais** — apenas marcações de lacuna; a tela de cadastro adverte sobre isso. Não há placeholder estruturado, parser de variáveis nem formulário dinâmico — as lacunas são preenchidas digitando, por decisão do cliente.
+  * **Nota (change ajustes-ui-admin):** a tela de administração do catálogo (Cenário 4) passa a ser organizada em duas abas — "Novo modelo" (ficha de cadastro) e "Modelos cadastrados" (filtros e listagem), aba ativa refletida na URL, aba padrão a listagem. Após um cadastro aceito, a interface alterna para a listagem, onde o modelo recém-criado já consta. Reorganização exclusivamente de apresentação — campos, validações, filtros e ações por modelo permanecem os mesmos.
 
 * **US 2.2:** Como Servidor responsável por um processo, eu quero enviá-lo escolhendo explicitamente a unidade, o setor e o servidor de destino, para encaminhá-lo a quem deve tratá-lo.
   * **Critérios de Aceitação:**
@@ -781,6 +783,7 @@ O **SETES.DOCS** é um sistema de gestão de processos administrativos com workf
       * **Quando** tento criar outro tipo de processo com o mesmo nome "Licitação"
       * **Então** o sistema exibe "Já existe um tipo de processo com este nome" e não conclui a criação
   * **Nota (change tramitacao-manual):** o tipo de processo deixou de determinar o fluxo de tramitação — não há mais roteiro (sequência predefinida de unidades) para definir, alterar ou validar. O destino de cada tramitação é escolhido explicitamente pelo servidor a cada ação (Envio, Devolução, Reatribuição — US 2.2, 2.2b, 2.2c).
+  * **Nota (change ajustes-ui-admin):** os tipos já cadastrados passam a ser apresentados em **tabela** (nome, prazo de anonimização LGPD e ação de salvar), uma linha por tipo, em vez de cards — o formulário de cadastro permanece acima, inalterado. Edição de prazo continua inline e isolada por linha. Relayout exclusivamente de apresentação — nenhuma ação nova (edição de nome, desativação, exclusão) é introduzida.
 
 * **US 8.3:** Como Administrador, eu quero conceder e revogar permissão de auditoria a usuários específicos para que auditores autorizados possam acessar processos sigilosos conforme as regras de auditoria.
   * **Critérios de Aceitação:**

@@ -205,13 +205,17 @@ function ProcessosAtuadosAba({ perfil }: { perfil: Schemas["MeuPerfilResponse"] 
   );
 }
 
-// Aba "Documentos assinados" (change perfil-em-abas, design D3): a assinatura
-// digital (Épico 4) está fora do MVP. A aba explica isso em vez de mostrar uma
-// lista vazia silenciosa, e não oferece nenhum controle de assinatura.
+// Aba "Documentos assinados" (change perfil-em-abas, design D3; change
+// ajustes-ui-admin, design D5): a assinatura digital (Épico 4) está fora do
+// MVP. A aba explica isso em vez de mostrar uma lista vazia silenciosa, e
+// orienta a solicitação do Certificado Digital ICP-Brasil como providência
+// externa ao sistema — sem oferecer nenhum controle de assinatura.
 function DocumentosAssinadosAba() {
   return (
     <p className="text-sm text-gray-500">
-      A assinatura digital de documentos será disponibilizada em uma fase futura do produto.
+      A assinatura digital de documentos será disponibilizada em uma fase futura do produto. Para
+      se preparar, solicite seu Certificado Digital ICP-Brasil junto a uma Autoridade
+      Certificadora.
     </p>
   );
 }

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -121,14 +121,26 @@ describe("PerfilPage — abas (change perfil-em-abas)", () => {
     expect(push).toHaveBeenCalledWith("/perfil?aba=senha", { scroll: false });
   });
 
-  it("aba 'Documentos assinados' mostra o aviso de fase futura, sem nenhum controle de assinatura", async () => {
+  it("aba 'Documentos assinados' mostra o aviso de fase futura e orienta a solicitação do Certificado Digital ICP-Brasil, sem nenhum controle de assinatura", async () => {
     searchParams = new URLSearchParams("aba=assinados");
 
     render(<PerfilPage />);
 
-    expect(
-      await screen.findByText(/assinatura digital de documentos será disponibilizada em uma fase futura/i),
-    ).toBeInTheDocument();
+    const aviso = await screen.findByText(
+      /assinatura digital de documentos será disponibilizada em uma fase futura/i,
+    );
+    expect(aviso).toBeInTheDocument();
+    // Change ajustes-ui-admin (design D5): a orientação para solicitar o
+    // certificado fora do sistema precisa estar no texto, não só o aviso de
+    // fase futura — senão o requisito novo fica sem cobertura de teste.
+    expect(aviso.textContent).toMatch(
+      /solicite seu certificado digital icp-brasil junto a uma autoridade certificadora/i,
+    );
+
+    const painel = screen.getByRole("tabpanel", { name: "Documentos assinados" });
+    expect(within(painel).queryAllByRole("button")).toHaveLength(0);
+    expect(within(painel).queryAllByRole("link")).toHaveLength(0);
+    expect(within(painel).queryAllByRole("textbox")).toHaveLength(0);
     expect(screen.queryByRole("button", { name: /assinar/i })).toBeNull();
     expect(screen.queryByLabelText(/certificado/i)).toBeNull();
   });

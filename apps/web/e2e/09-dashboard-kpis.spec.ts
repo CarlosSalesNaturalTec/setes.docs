@@ -39,7 +39,7 @@ test("Gestora vê os KPIs das unidades geridas, filtra por unidade e aciona o dr
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_PROCESSO.nome);
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
-  await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
+  await expect(page.getByRole("cell", { name: TIPO_PROCESSO.nome, exact: true })).toBeVisible();
 
   // Servidor vinculado à unidade — cria o processo ativo usado pelos KPIs.
   await cadastrarSetor(page, UNIDADE_DASHBOARD.nome, SETOR_PADRAO);

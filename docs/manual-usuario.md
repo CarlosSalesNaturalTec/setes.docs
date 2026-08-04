@@ -116,8 +116,10 @@ teclado (setas esquerda/direita):
   depois de uma transferência de unidade. Se você acabou de ser cadastrado e
   ainda não atuou em nada, a lista aparece vazia com um aviso — é o esperado;
 - **Documentos assinados** — mostra um aviso de que a assinatura digital de
-  documentos será disponibilizada em uma fase futura do produto; por enquanto
-  não há nenhuma ação de assinatura disponível (veja
+  documentos será disponibilizada em uma fase futura do produto e orienta a
+  solicitar desde já seu Certificado Digital ICP-Brasil junto a uma
+  Autoridade Certificadora, como preparação **fora do sistema**; por enquanto
+  não há nenhuma ação de assinatura disponível na tela (veja
   [Fora do escopo desta versão](#fora-do-escopo-desta-versão)).
 
 A aba escolhida fica registrada no endereço da página: recarregar ou
@@ -580,32 +582,40 @@ O tipo de processo **não define um caminho fixo de tramitação** — cada envi
 devolução ou reatribuição tem seu destino escolhido explicitamente pelo
 Servidor no momento da ação.
 
-Na linha de cada tipo você também configura o **prazo de anonimização LGPD**
-(em anos), usado pela rotina automática de anonimização. A alteração **não é
-retroativa**: vale a partir da próxima avaliação da rotina.
+Os tipos já cadastrados aparecem em uma **tabela**, uma linha por tipo, com o
+nome e o **prazo de anonimização LGPD** (em anos). O prazo é editado
+diretamente na linha — altere o valor e acione **"Salvar"**; erro e
+salvamento afetam só aquela linha, sem alterar as demais. A alteração **não é
+retroativa**: vale a partir da próxima avaliação da rotina automática de
+anonimização. O formulário de cadastro de novo tipo fica acima da tabela.
 
 ### Cadastrar modelos de documento
 
 Em **"Modelos de Documento"**, mantenha o catálogo de modelos que o Servidor
 pode escolher ao abrir um processo (veja "Abrir um processo a partir de um
-modelo"):
+modelo"). A tela é organizada em duas abas — **"Novo modelo"**, com a ficha
+de cadastro, e **"Modelos cadastrados"**, com os filtros e a listagem, aberta
+por padrão. Ao cadastrar um modelo com sucesso, a tela alterna
+automaticamente para "Modelos cadastrados", onde o modelo recém-criado já
+aparece na lista.
 
-- **Cadastrar/editar:** informe nome, categoria (texto livre), tipo
-  (Requerimento, Ofício, Memorando, Despacho, Parecer, Nota técnica,
-  Relatório, Ata, Contrato ou Outro), descrição opcional e o conteúdo, escrito
-  no editor com a barra de formatação restrita a **negrito, itálico,
-  sublinhado, alinhamento e listas**. Use marcações de lacuna no texto (ex.:
-  "[NOME DO SOLICITANTE]", "____________") para indicar onde o servidor deve
-  substituir pelas informações reais.
+- **Cadastrar/editar:** na aba "Novo modelo", informe nome, categoria (texto
+  livre), tipo (Requerimento, Ofício, Memorando, Despacho, Parecer, Nota
+  técnica, Relatório, Ata, Contrato ou Outro), descrição opcional e o
+  conteúdo, escrito no editor com a barra de formatação restrita a
+  **negrito, itálico, sublinhado, alinhamento e listas**. Use marcações de
+  lacuna no texto (ex.: "[NOME DO SOLICITANTE]", "____________") para indicar
+  onde o servidor deve substituir pelas informações reais.
 - **Não inclua dados pessoais reais no modelo** — nome, CPF, endereço ou
   qualquer dado de uma pessoa específica não devem aparecer no modelo, só
   marcações de lacuna. A tela adverte sobre isso a cada cadastro.
-- **Desativar/reativar:** um modelo desativado some da lista de escolha do
-  Servidor, mas os documentos já gerados a partir dele **permanecem intactos**
-  na lista de anexos dos respectivos processos. **Não existe exclusão** de
-  modelo — apenas desativação, como acontece também com unidades e setores.
-- Use os filtros por **tipo** e por **situação** (Todos / Ativos / Inativos)
-  para localizar um modelo no catálogo.
+- **Desativar/reativar:** na aba "Modelos cadastrados", um modelo desativado
+  some da lista de escolha do Servidor, mas os documentos já gerados a partir
+  dele **permanecem intactos** na lista de anexos dos respectivos processos.
+  **Não existe exclusão** de modelo — apenas desativação, como acontece
+  também com unidades e setores.
+- Use os filtros por **tipo** e por **situação** (Todos / Ativos / Inativos),
+  na aba "Modelos cadastrados", para localizar um modelo no catálogo.
 
 ### Conceder permissão de Auditoria
 

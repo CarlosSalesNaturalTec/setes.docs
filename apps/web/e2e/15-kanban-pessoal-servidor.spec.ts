@@ -66,7 +66,7 @@ test("quadro pessoal do Servidor: ação, acompanhamento, acesso por unidade pre
   await page.goto("/admin/tipos-processo");
   await page.getByLabel("Nome do tipo de processo").fill(TIPO_PROCESSO.nome);
   await page.getByRole("button", { name: "Cadastrar tipo de processo" }).click();
-  await expect(page.getByRole("heading", { name: TIPO_PROCESSO.nome })).toBeVisible();
+  await expect(page.getByRole("cell", { name: TIPO_PROCESSO.nome, exact: true })).toBeVisible();
 
   // A e C na mesma unidade; B em outra.
   await cadastrarSetor(page, UNIDADE_A.nome, SETOR_PADRAO);
