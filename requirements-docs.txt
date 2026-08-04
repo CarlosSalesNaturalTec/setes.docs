@@ -1,0 +1,13 @@
+# Dependências do site de documentação (MkDocs), separadas do `uv` de
+# apps/api — MkDocs é ferramenta de documentação, não dependência da API
+# (proposal manual-mkdocs, design.md D4). Versões fixadas com `==`: um build
+# de documentação não deve quebrar sozinho quando uma dependência transitiva
+# publica versão nova.
+#
+# Uso:
+#   pip install -r requirements-docs.txt
+#   mkdocs build --strict
+#   mkdocs serve
+
+mkdocs==1.6.1
+mkdocs-material==9.5.44

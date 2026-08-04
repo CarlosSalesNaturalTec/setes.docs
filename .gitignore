@@ -19,6 +19,9 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 
+# MkDocs build output (change manual-mkdocs)
+site/
+
 # Terraform
 infra/.terraform/
 *.tfstate

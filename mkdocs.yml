@@ -1,0 +1,104 @@
+# Configuração do site de documentação do manual do usuário (change
+# manual-mkdocs). Publicado no GitHub Pages pelo workflow em
+# .github/workflows/publicar-manual.yml.
+#
+# ATENÇÃO — NÃO altere `docs_dir` para `docs` (D1, design.md do change
+# manual-mkdocs). Isto não é preferência de organização, é controle de
+# segurança: o MkDocs constrói TODO arquivo dentro do `docs_dir`, esteja ou
+# não listado no `nav` abaixo — ficar fora do `nav` apenas produz um aviso de
+# build, a página continua sendo gerada e fica acessível por URL direta. E o
+# site do GitHub Pages é PÚBLICO, mesmo servido a partir deste repositório
+# privado (Pages privado exige plano Enterprise, que não temos).
+#
+# `docs/` (fora de `docs/manual/`) hoje contém, e provavelmente continuará
+# contendo, documentos internos que NUNCA devem ser publicados:
+#   - docs/PRD.md                                  — especificação interna completa
+#   - docs/primeiro-acesso-producao.md              — URLs de produção e bootstrap
+#   - docs/emailConfig.md                           — identificação de conta do provedor de e-mail
+#   - docs/decisao-regiao-us-central1.md            — decisão interna de arquitetura
+#   - docs/lgpd-transferencia-internacional-us-central1.md — análise interna de conformidade
+#   - docs/Ajustes SETES DOCS.pdf                   — documento comercial do cliente
+#   - docs/history/**                               — demanda original, rascunhos, reviews
+#
+# Com `docs_dir: docs/manual`, nenhum desses arquivos entra no build — por
+# construção, sem depender de um denylist que alguém precise lembrar de
+# manter atualizado. Se você está pensando em apontar `docs_dir` para `docs`
+# para "simplificar", pare: isso publicaria toda a lista acima.
+docs_dir: docs/manual
+
+site_name: Manual do Usuário — Despapelize
+site_description: Guia prático de operação do sistema Despapelize, organizado por perfil de acesso.
+
+theme:
+  name: material
+  language: pt-BR
+  palette:
+    primary: indigo
+  features:
+    - navigation.tabs
+    - navigation.top
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+
+plugins:
+  - search:
+      lang: pt
+
+# `nav` é declarado explicitamente (D2) — controla a ordem pedagógica
+# (comum → perfil → cidadão → como funciona → glossário), não a ordem
+# alfabética do sistema de arquivos.
+nav:
+  - Início: index.md
+  - Para todos os perfis:
+      - Primeiro acesso: comum/primeiro-acesso.md
+      - Entrar no sistema (login): comum/login.md
+      - Esqueci minha senha: comum/esqueci-senha.md
+      - Trocar a senha: comum/trocar-senha.md
+      - Menu lateral: comum/menu-lateral.md
+      - Meu Perfil: comum/meu-perfil.md
+      - Notificações: comum/notificacoes.md
+      - Sair e sessão automática: comum/sair-sessao.md
+  - Perfil Servidor:
+      - Kanban e lista de processos: servidor/kanban-lista.md
+      - Filtrar o quadro: servidor/filtros.md
+      - Criar um novo processo: servidor/criar-processo.md
+      - Abrir a partir de um modelo: servidor/modelo-documento.md
+      - A tela de um processo: servidor/tela-processo.md
+      - Tramitar - Enviar, Devolver ou Reatribuir: servidor/tramitar.md
+      - Concluir um processo: servidor/concluir.md
+      - Histórico de tramitação: servidor/historico.md
+      - Documentos do processo: servidor/documentos.md
+      - Marcar sigilo: servidor/sigilo.md
+  - Perfil Gestor:
+      - Painel de Indicadores (KPIs): gestor/kpis.md
+      - Quadro consolidado das unidades: gestor/quadro-consolidado.md
+      - Cadastrar usuários da unidade: gestor/cadastro-usuarios.md
+  - Perfil Administrador:
+      - Gerenciar usuários: administrador/usuarios.md
+      - Unidades administrativas: administrador/unidades.md
+      - Setores: administrador/setores.md
+      - Tipos de processo: administrador/tipos-processo.md
+      - Modelos de documento: administrador/modelos-documento.md
+      - Permissão de Auditoria: administrador/auditoria.md
+      - Acompanhar processos (somente leitura): administrador/acompanhar-processos.md
+      - Restaurar documentos removidos: administrador/documentos-removidos.md
+      - Solicitações LGPD: administrador/solicitacoes-lgpd.md
+      - Parâmetros operacionais: administrador/parametros.md
+  - Para o cidadão (sem login):
+      - Consulta pública de processos: cidadao/consulta-publica.md
+      - Solicitação de privacidade (LGPD): cidadao/solicitacao-lgpd.md
+  - Como funciona:
+      - Arquivamento automático: como-funciona/arquivamento.md
+      - Consulta pública: como-funciona/consulta-publica.md
+      - LGPD: como-funciona/lgpd.md
+  - Fora do escopo desta versão: fora-do-escopo.md
+  - Glossário: glossario.md
+
+markdown_extensions:
+  - tables
+  - toc:
+      permalink: true
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
