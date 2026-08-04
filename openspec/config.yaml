@@ -2,13 +2,30 @@ schema: spec-driven
 
 context: |
   Projeto: SETES.DOCS — sistema de gestão de processos administrativos com
-  workflow roteirizado, sigilo, gestão documental e consulta pública.
+  tramitação manual, sigilo, gestão documental e consulta pública.
   Cliente: instituição privada (correção registrada no change
   migracao-regiao-us-central1, D6 — a premissa anterior de órgão público estava
   incorreta). A LGPD (Lei 13.709/2018) permanece obrigatória integralmente; a
   natureza privada do controlador muda apenas a análise de transferência
   internacional de dados (ver docs/lgpd-transferencia-internacional-us-central1.md),
   não a aplicabilidade da lei.
+
+  Ajustes pós-avaliação do cliente (docs/Ajustes SETES DOCS.pdf) — seis changes
+  arquivados entre 2026-07-31 e 2026-08-03. Removido do produto, NÃO reintroduzir
+  sem decisão explícita:
+    - Roteiro / tramitação automática por tipo de processo (change tramitacao-manual,
+      migration 0024_remover_roteiro). Tramitação é manual: o servidor escolhe
+      unidade, setor, servidor de destino e mensagem a cada passo. Os eventos são
+      envio (ex-`despacho`), reatribuicao, devolucao e conclusao.
+    - Kanban por unidade inteira (change kanban-por-servidor): o quadro do Servidor é
+      pessoal (criados por ele ou direcionados a ele); Gestor vê as unidades sob sua
+      gestão. Arquivados ocultos por padrão, exibidos por checkbox.
+    - Formulário inline de cadastro de usuário no index (change
+      setores-e-cadastro-usuario): virou modal; o espaço virou filtro por nome.
+  Acrescentado: Setor (2º nível da estrutura, 1:N com Unidade — NÃO é fronteira de
+  permissão, o escopo de acesso continua sendo a Unidade); campos de usuário
+  telefone/cargo/chefia_direta/setor_id; catálogo de ModeloDocumento com lacunas
+  preenchidas na abertura do processo; "Meu Perfil" em abas.
 
   Assinatura digital ICP-Brasil (Épico 4 do PRD) está FORA DE ESCOPO — movida para
   a Fase 2 por decisão formalizada em 2026-07-27. Não existe no produto: sem
@@ -21,7 +38,10 @@ context: |
     Frontend: Next.js 15 (TypeScript, App Router), Tailwind
     Backend: Python 3.12, FastAPI, SQLAlchemy 2.x + Alembic (migrations)
     Banco: PostgreSQL (Cloud SQL)
-    Infra: GCP — Cloud Run (front e back), Cloud Storage (documentos anexados),
+    Infra: GCP em região única us-central1 (escolha de custo pedida pelo cliente,
+      não residência de dados — change migracao-regiao-us-central1; nenhum recurso
+      deve fixar região literal, sempre var.region) —
+      Cloud Run (front e back), Cloud Storage (documentos anexados),
       Secret Manager (db-password, jwt-signing-key, sendgrid-api-key), Cloud
       Scheduler + Cloud Run Jobs (arquivamento automático, manutenção diária,
       anonimização LGPD trimestral), Cloud Tasks (fila `emails`, envio assíncrono)
@@ -30,7 +50,7 @@ context: |
       via openapi-typescript em packages/api-types (commitados; CI falha em drift)
 
   Linguagem de código: português brasileiro para nomes de entidades e regras
-  de negócio (Processo, Unidade, Tramitação, Despacho, Roteiro), inglês para
+  de negócio (Processo, Unidade, Setor, Tramitação, Modelo de Documento), inglês para
   termos técnicos genéricos de infraestrutura (Repository, Service, Router).
   Comentários e docstrings em português.
 
@@ -40,7 +60,7 @@ context: |
   Testes: pytest (FastAPI — contra Postgres real, sem mocks/sqlite; a fixture `db`
     trunca o banco após cada teste, então a suíte não é paralelizável), Vitest +
     React Testing Library (Next.js, testes colocados junto ao código), Playwright
-    para fluxos críticos (login, despacho, documentos, consulta pública)
+    para fluxos críticos (login, tramitação, documentos, consulta pública)
 
   Decisões de design são numeradas (D1, D2, …) no design.md de cada change e
   citadas em comentários/docstrings do código — a numeração é local ao change.
@@ -85,7 +105,7 @@ rules:
     - Separar tarefas de migration/schema das tarefas de endpoint/UI
     - Toda tarefa que toque histórico de tramitação ou dados pessoais deve
       incluir tarefa de teste automatizado correspondente (não é opcional)
-    - Toda tarefa que implemente ou altere login, despacho, documentos ou
+    - Toda tarefa que implemente ou altere login, tramitação, documentos ou
       consulta pública deve incluir tarefa de teste E2E via Playwright
       correspondente (não é opcional)
     - Toda tarefa que mude rota ou schema do FastAPI deve incluir tarefa de

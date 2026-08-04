@@ -4,13 +4,41 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Projeto
 
-SETES.DOCS — sistema de gestão de processos administrativos (workflow roteirizado,
-sigilo, consulta pública, LGPD) para um órgão da administração pública da Bahia.
+SETES.DOCS — sistema de gestão de processos administrativos (tramitação manual,
+sigilo, consulta pública, LGPD) para uma **instituição privada** (a premissa
+anterior de órgão público estava incorreta — change `migracao-regiao-us-central1`
+D6; a LGPD permanece obrigatória integralmente).
 Monorepo poliglota: **Next.js (web) + FastAPI (api) + Terraform (infra)** em GCP.
 
 Linguagem de código: **português brasileiro** para entidades e regras de negócio
-(Processo, Unidade, Tramitação, Despacho, Roteiro); inglês só para termos técnicos
-de infra (Repository, Service, Router). Comentários e docstrings em português.
+(Processo, Unidade, Setor, Tramitação, Modelo de Documento); inglês só para termos
+técnicos de infra (Repository, Service, Router). Comentários e docstrings em português.
+
+### Ajustes pós-avaliação — o que **não** existe mais
+
+Seis changes (`docs/Ajustes SETES DOCS.pdf`, arquivados entre 2026-07-31 e
+2026-08-03) reescreveram partes centrais do domínio. O que foi **removido** e não
+deve ser reintroduzido sem decisão explícita:
+
+- **Roteiro / tramitação automática por tipo de processo**: eliminado
+  (`tramitacao-manual`, migration `0024_remover_roteiro`). O servidor escolhe
+  destino a cada passo — unidade, setor, servidor e mensagem. `TipoEventoTramitacao`
+  passou a ser `envio` (ex-`despacho`), `reatribuicao`, `devolucao`, `conclusao`.
+- **Kanban por unidade inteira**: o quadro do Servidor é **pessoal** (criados por ele
+  ou direcionados a ele); Gestor vê as unidades sob sua gestão. Arquivados ficam
+  ocultos por padrão (`kanban-por-servidor`).
+- **Formulário inline de cadastro de usuário no index**: virou modal próprio; o
+  espaço no index passou a ser filtro por nome (`setores-e-cadastro-usuario`).
+
+O que foi **acrescentado**: `Setor` (2º nível da estrutura, 1:N com Unidade — não é
+fronteira de permissão, o escopo de acesso continua sendo a Unidade); campos de
+usuário `telefone`/`cargo`/`chefia_direta`/`setor_id`; catálogo de
+`ModeloDocumento` com lacunas preenchidas na abertura do processo
+(`modelos-de-documento`); "Meu Perfil" em abas (`perfil-em-abas`).
+
+**Assinatura digital ICP-Brasil (Épico 4 do PRD) está FORA DE ESCOPO** — movida para
+a Fase 2 em 2026-07-27. A aba "Documentos assinados" do perfil é placeholder vazio;
+não há capability, spec Playwright nem código de assinatura.
 
 ## Documento mestre: `docs/PRD.md`
 
@@ -32,7 +60,7 @@ Todo trabalho de domínio passa por um *change* em `openspec/changes/`. As regra
 - Toda regra de visibilidade por unidade/perfil precisa de cenário de **"acesso
   negado" explícito**, não só o caminho feliz.
 - Features que tocam dados pessoais (CPF/CNPJ, nome de interessado) ou histórico de
-  tramitação **exigem** teste automatizado correspondente; login/despacho/assinatura/
+  tramitação **exigem** teste automatizado correspondente; login/tramitação/documentos/
   consulta pública exigem **teste E2E Playwright** (não opcional).
 - Conformidade LGPD (Lei 13.709/2018) obrigatória ao tocar dados pessoais/documentos.
 
@@ -125,9 +153,11 @@ rejeição grava `log_seguranca` (`acesso_negado`).
 
 ### Backend `apps/api/app`
 - `routers/` — endpoints FastAPI, um por área de domínio (auth, processos, documentos,
-  lgpd, consulta_publica, auditoria, dashboard, …). Montados em `main.py`.
+  modelos, unidades — que também expõe `/setores` —, usuarios, lgpd, consulta_publica,
+  auditoria, dashboard, …). Montados em `main.py`.
 - `services/` — regras de negócio (processo_estado = máquina de estados, arquivamento,
-  anonimizacao_lgpd, numero_processo, sigilo, …). Routers finos, lógica no service.
+  modelo_documento, anonimizacao_lgpd, numero_processo, sigilo, …). Routers finos,
+  lógica no service.
 - `db/models.py` — SQLAlchemy 2.x; enums de domínio (`StatusProcesso`,
   `PerfilUsuario`, `TipoEventoTramitacao`, …) no topo. `migrations/` é Alembic.
 - `schemas/` — modelos Pydantic de request/response, um arquivo por área (espelha
@@ -148,14 +178,20 @@ descrição + o change/decisão que a originou (`Change <nome> (design.md D7)`).
 quebra a convenção e a cadeia fica ilegível. Toda migration passa pelo `ruff check`.
 
 ### Frontend `apps/web` (Next.js App Router)
-Rotas em `app/` espelham o domínio (`/processos`, `/admin/*`, `/consulta-publica`,
-`/lgpd`, `/auditoria`, `/setup`, `/primeiro-acesso/[token]`). `lib/` = client HTTP,
+Rotas em `app/` espelham o domínio (`/processos`, `/admin/*` — inclui
+`/admin/modelos` e `/admin/unidades`, que administra setores —, `/perfil` (abas),
+`/consulta-publica`, `/lgpd`, `/auditoria`, `/setup`,
+`/primeiro-acesso/[token]`). `lib/` = client HTTP,
 session-store, validação, rota-inicial (redirect por perfil). `components/` = shell
 protegido, auth-provider, session-watcher, sino de notificações. Testes Vitest ficam
 **colocados** junto ao código (`lib/api.test.ts`, `components/*.test.tsx`), não em
 diretório separado.
 
 ### Infra `infra/` (Terraform, GCP)
+Região única **`us-central1`** (`var.region`) — escolha de custo pedida pelo cliente,
+não residência de dados; a transferência internacional está documentada em
+`docs/lgpd-transferencia-internacional-us-central1.md` (change
+`migracao-regiao-us-central1`). Nenhum recurso deve fixar região literal.
 Cloud Run (web + api), Cloud SQL (Postgres, IP privado), Cloud Storage (documentos),
 Secret Manager (`db-password`, `jwt-signing-key`, `sendgrid-api-key`), Cloud Tasks
 (fila `emails` assíncrona), Cloud Scheduler + Cloud Run Jobs (manutenção/LGPD). Deploy

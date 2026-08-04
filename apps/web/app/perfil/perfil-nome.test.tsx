@@ -90,7 +90,7 @@ describe("PerfilPage — editar o próprio nome (US 1.5)", () => {
           numero: "2026/000042",
           assunto: "Solicitação de férias",
           data_acao: "2026-07-10T12:00:00Z",
-          tipo_acao: "despacho",
+          tipo_acao: "envio",
         },
       ],
     });
@@ -100,7 +100,7 @@ describe("PerfilPage — editar o próprio nome (US 1.5)", () => {
 
     expect(await screen.findByText("2026/000042")).toBeInTheDocument();
     expect(screen.getByText(/Solicitação de férias/)).toBeInTheDocument();
-    expect(screen.getByText(/Despacho/)).toBeInTheDocument();
+    expect(screen.getByText(/Envio/)).toBeInTheDocument();
     expect(screen.getByText(/10\/07\/2026/)).toBeInTheDocument();
     // Não deve renderizar o objeto serializado.
     expect(screen.queryByText(/"processo_id"/)).toBeNull();
