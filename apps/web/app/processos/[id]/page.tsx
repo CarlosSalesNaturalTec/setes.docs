@@ -198,7 +198,7 @@ function ModalTramitacao({
   return (
     <div
       role="dialog"
-      aria-label="Tramitar processo"
+      aria-label={permitirEnvioDevolucao ? "Tramitar processo" : "Reatribuir processo"}
       className="fixed inset-0 flex items-center justify-center bg-black/30 p-4"
     >
       <div className="w-full max-w-md rounded bg-white p-4 shadow-lg">
