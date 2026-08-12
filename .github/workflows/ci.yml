@@ -19,6 +19,7 @@ jobs:
     outputs:
       api: ${{ steps.filter.outputs.api }}
       web: ${{ steps.filter.outputs.web }}
+      manual: ${{ steps.filter.outputs.manual }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -32,6 +33,10 @@ jobs:
             web:
               - 'apps/web/**'
               - 'packages/api-types/**'
+            manual:
+              - 'docs/manual/**'
+              - 'mkdocs.yml'
+              - 'requirements-docs.txt'
 
   api:
     needs: changes
@@ -113,3 +118,21 @@ jobs:
         run: uv sync
       - name: Drift check dos tipos gerados
         run: pnpm gen:types:check
+
+  manual:
+    # Antecipa a detecção de manual quebrado para antes do merge (D3, design.md
+    # do change manual-sempre-atualizado). Só valida — não publica: sem upload de
+    # artefato, sem pages:write/id-token:write. Publicação continua exclusiva de
+    # publicar-manual.yml, disparada por push em main.
+    needs: changes
+    if: needs.changes.outputs.manual == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Instalar dependências do MkDocs
+        run: pip install -r requirements-docs.txt
+      - name: Build (--strict)
+        run: mkdocs build --strict

@@ -79,6 +79,26 @@ um, localize o `design.md` correspondente em `openspec/changes/archive/` antes d
 na regra — e mantenha a citação ao editar a linha. Ao implementar um change novo, cite
 a decisão da mesma forma.
 
+### Manual do usuário (`docs/manual/`)
+
+O manual do usuário final vive em `docs/manual/` e é publicado como site MkDocs no
+GitHub Pages pelo workflow `.github/workflows/publicar-manual.yml`. A publicação só
+ocorre **após merge em `main`** (`on: push: branches: [main]` + path filter em
+`docs/manual/**`, `mkdocs.yml`, `requirements-docs.txt`) — nunca a partir de PR.
+Valide localmente antes de abrir PR com `mkdocs build --strict` (mesmo comando que
+roda em CI, ver CI/CD abaixo); ele transforma link quebrado ou página fora do `nav`
+em erro.
+
+**Nunca aponte `docs_dir` (em `mkdocs.yml`) para `docs/`** — apenas para
+`docs/manual/`. O site do Pages é público e `docs/` contém o PRD, URLs de produção,
+configuração do provedor de e-mail e o PDF comercial do cliente; simplificar o
+`docs_dir` publicaria tudo isso.
+
+Toda change que altere uma tela, um fluxo de usuário final ou o texto exibido ao
+usuário deve incluir tarefa de atualizar `docs/manual/**` — regra vinculante em
+`openspec/config.yaml` (`rules.tasks`), com o mesmo peso das regras de teste
+automatizado, E2E e `gen:types`.
+
 ## Comandos
 
 ### Raiz do monorepo (pnpm)
@@ -201,7 +221,9 @@ via **Workload Identity Federation** (sem chave JSON). `terraform.tfvars` e
 ### CI/CD
 - `.github/workflows/ci.yml` — path-filtered por app. Job **api**: Postgres service
   container real + `ruff check` + `pytest`. Job **web**: `typecheck` + `vitest`. Job
-  **types-drift**: `gen:types:check`.
+  **types-drift**: `gen:types:check`. Job **manual**: `mkdocs build --strict` em PR
+  que toque `docs/manual/**` — valida, não publica (publicação continua exclusiva de
+  `publicar-manual.yml` após merge em `main`).
 - `.github/workflows/deploy.yml` — push em `main`, path-filtered. Deploy da api roda
   **migrations num Cloud Run Job efêmero ANTES** de publicar o serviço; deploy via WIF.
 
