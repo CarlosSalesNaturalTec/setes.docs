@@ -1,0 +1,8 @@
+schema: spec-driven
+created: 2026-08-12
+# Nenhum comportamento do sistema muda: o change altera as regras do processo de
+# trabalho (openspec/config.yaml), o arquivo de instruções do projeto (CLAUDE.md) e
+# acrescenta um job de validação de documentação ao CI. Nenhum código de aplicação é
+# tocado e nenhuma capability em openspec/specs/ é alterada — as regras vivem em
+# openspec/config.yaml, que não é spec de capability.
+skip_specs: true
