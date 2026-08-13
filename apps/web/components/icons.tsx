@@ -220,6 +220,16 @@ export function IconCadeado({ className = "" }: IconProps) {
   );
 }
 
+export function IconManual({ className = "" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={`${NAV_BASE} ${className}`} aria-hidden>
+      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5H6.5A2.5 2.5 0 0 0 4 21Z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4 5.5v15.5" strokeLinecap="round" />
+      <path d="M8 8h8M8 11.5h8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function IconMenu({ className = "" }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className={`${NAV_BASE} ${className}`} aria-hidden>

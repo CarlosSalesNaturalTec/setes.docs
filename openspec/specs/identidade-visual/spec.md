@@ -122,6 +122,14 @@ usuário exatamente como na navegação anterior (servidor, gestor, administrado
 `pode_auditar`) — a renomeação é de apresentação, não de autorização. Um item cuja
 condição de visibilidade não é satisfeita NÃO SHALL aparecer na sidebar.
 
+A sidebar SHALL admitir, além dos itens de rota interna, um **item de navegação
+externo** — que aponta para uma URL absoluta fora da aplicação em vez de uma rota
+Next.js. Um item externo SHALL abrir em **nova aba** (`target="_blank"`) com
+`rel="noopener noreferrer"`, e SHALL ser **visível a todos os perfis** — não está
+sujeito às mesmas condições de RBAC dos itens internos, pois não expõe dado ou
+funcionalidade do sistema, apenas um link de saída. As regras de visibilidade por
+perfil dos itens internos permanecem inalteradas por esta extensão.
+
 #### Scenario: Servidor vê apenas os itens do seu perfil
 
 - **DADO** um usuário autenticado com perfil `servidor`
@@ -154,10 +162,36 @@ condição de visibilidade não é satisfeita NÃO SHALL aparecer na sidebar.
 - **ENTÃO** SHALL ver "Despapelize" como nome do produto e "SETES" como subtítulo
 - **E** NÃO SHALL ver "SETES.DOCS" nem "SISTEMA ELETRÔNICO"
 
+#### Scenario: Item Manual aparece para os três perfis
+
+- **DADO** um usuário autenticado, de qualquer perfil (servidor, gestor,
+  administrador)
+- **QUANDO** a sidebar é renderizada
+- **ENTÃO** o item "Manual" SHALL aparecer na navegação, independentemente do
+  perfil e das permissões do usuário
+
+#### Scenario: Item Manual abre o site do manual em nova aba
+
+- **DADO** um usuário autenticado com a sidebar renderizada
+- **QUANDO** ele aciona o item "Manual"
+- **ENTÃO** o site do manual SHALL abrir em uma **nova aba**, preservando a tela
+  atual do usuário
+- **E** o link SHALL usar `rel="noopener noreferrer"`
+
+#### Scenario: Item externo não é elegível ao destaque de item ativo (acesso negado ao destaque)
+
+- **DADO** um usuário autenticado navegando em qualquer rota interna da aplicação
+- **QUANDO** a sidebar é renderizada
+- **ENTÃO** o item "Manual" NÃO SHALL aparecer no estado ativo destacado, mesmo
+  que nenhuma outra rota corresponda à rota atual
+
 ### Requirement: Item de navegação ativo destacado
 
 A sidebar SHALL destacar visualmente o item correspondente à rota atual (fundo
 navy suave e/ou texto navy), de modo que o usuário identifique em que seção está.
+Este destaque se aplica exclusivamente a itens de rota interna: um item de
+navegação externo nunca corresponde à rota corrente do Next.js e, portanto, nunca
+SHALL ser marcado como ativo.
 
 #### Scenario: Rota atual reflete no item ativo
 

@@ -17,6 +17,10 @@ smartphone):
 | Usuários | Administrador e Gestor |
 | Relatório de Auditoria | Quem tem permissão de Auditoria |
 | Meu Perfil | Todos |
+| Manual | Todos |
+
+O item **Manual** abre este site em uma nova aba, preservando a tela em que
+você estava.
 
 No alto da tela ficam o **sino de notificações**, seu nome com o perfil e o
 botão **"Sair"**.
