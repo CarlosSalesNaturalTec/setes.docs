@@ -40,7 +40,6 @@ describe("LoginPage", () => {
 
     expect(screen.getByRole("heading", { name: "Despapelize" })).toBeInTheDocument();
     expect(screen.getByText("SETES")).toBeInTheDocument();
-    expect(screen.getByText("Acesse sua conta")).toBeInTheDocument();
   });
 
   it("renderiza o card de credenciais sem qualquer opção de SSO", () => {

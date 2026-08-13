@@ -15,6 +15,13 @@ export default {
           app: "#f5f7fa",
           card: "#ffffff",
         },
+        // Fundo do <main> do Login, tom derivado da amostra de borda de
+        // login-hero.jpg escurecido para contraste >=3:1 contra o card branco
+        // (D7, change login-logo-destaque). Exclusivo do Login — não usar em
+        // outras telas sem nova decisão de design.
+        marca: {
+          destaque: "#126ced",
+        },
         // Tokens semânticos de status do processo (D3, change
         // ajustar-visualizacao-processos) — cabeçalho de coluna do Kanban e
         // pill de status na Lista compartilham a mesma paleta.

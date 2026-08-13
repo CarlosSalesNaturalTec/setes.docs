@@ -87,37 +87,49 @@
 
 ## 7. Ajustes adicionais de destaque (adendo, mesmo dia — D6/D7/D8)
 
-- [ ] 7.1 Em `apps/web/tailwind.config.ts`, acrescentar o token
+- [x] 7.1 Em `apps/web/tailwind.config.ts`, acrescentar o token
       `colors.marca.destaque = "#126ced"` (D7). Não reaproveitar `navy-900`/
       `navy-600` — ver alternativa descartada em D7.
-- [ ] 7.2 Em `apps/web/app/login/page.tsx`, trocar `max-w-[260px]` por
+- [x] 7.2 Em `apps/web/app/login/page.tsx`, trocar `max-w-[260px]` por
       `max-w-[130px]` na classe do `next/image` (D6), mantendo `width`/`height`
       438×740 e a proporção original.
-- [ ] 7.3 Em `apps/web/app/login/page.tsx`, trocar `bg-superficie-app` por
+- [x] 7.3 Em `apps/web/app/login/page.tsx`, trocar `bg-superficie-app` por
       `bg-marca-destaque` no `<main>` (D7). Confirmar que
       `components/protected-shell.tsx` e `app/globals.css` permanecem
       inalterados — o novo token é exclusivo do Login.
-- [ ] 7.4 Em `apps/web/app/login/page.tsx`, remover o `<p>` "Acesse sua conta"
+- [x] 7.4 Em `apps/web/app/login/page.tsx`, remover o `<p>` "Acesse sua conta"
       (D8), sem substituir por outro texto.
-- [ ] 7.5 Em `apps/web/app/login/page.test.tsx`, remover a asserção
+- [x] 7.5 Em `apps/web/app/login/page.test.tsx`, remover a asserção
       `expect(screen.getByText("Acesse sua conta")).toBeInTheDocument()`;
       confirmar que os demais casos (heading "Despapelize", "SETES", campos,
       SSO ausente, login, erro, mensagem por `motivo`) continuam passando sem
       outra alteração.
-- [ ] 7.6 Rodar `pnpm --filter @setes/web test -- page.test.tsx` e confirmar
-      suíte verde após 7.5.
-- [ ] 7.7 Repetir a verificação de viewport 360px (equivalente à task 4.1) com
+- [x] 7.6 Rodar `pnpm --filter @setes/web test -- page.test.tsx` e confirmar
+      suíte verde após 7.5. Confirmado: 5/5 testes passando (suíte completa
+      176/176, incluindo `app/login/page.test.tsx`).
+- [x] 7.7 Repetir a verificação de viewport 360px (equivalente à task 4.1) com
       o hero de 130px e o novo fundo `bg-marca-destaque`: sem rolagem
       horizontal da página, e-mail/senha/"Entrar" alcançáveis por rolagem
-      vertical.
-- [ ] 7.8 Verificar visualmente (ou via Playwright) o contraste do card branco
+      vertical. Confirmado via Playwright headless em 360×640:
+      `scrollWidth === clientWidth` (360px) e os três campos com bounding box
+      válida, todos dentro dos 640px de altura.
+- [x] 7.8 Verificar visualmente (ou via Playwright) o contraste do card branco
       contra `bg-marca-destaque` — confirmar que a separação visual é nítida,
-      coerente com o contraste calculado (4.78:1) em D7.
-- [ ] 7.9 Revisar `docs/manual/comum/login.md` (e qualquer outra página do
+      coerente com o contraste calculado (4.78:1) em D7. Confirmado:
+      `background-color` computado do `<main>` é `rgb(18, 108, 237)`
+      (`#126ced`, valor exato do token), contraste calculado 4.78:1 contra
+      branco — igual ao valor de D7. Screenshot conferido visualmente.
+- [x] 7.9 Revisar `docs/manual/comum/login.md` (e qualquer outra página do
       manual que descreva a tela de Login) por menção ao tamanho do logo, ao
       fundo cinza anterior ou a "Acesse sua conta"; ajustar se houver, e rodar
-      `mkdocs build --strict`.
-- [ ] 7.10 `pnpm --filter @setes/web typecheck`.
-- [ ] 7.11 Confirmar que nenhum arquivo fora de `apps/web/app/login/page.tsx`,
+      `mkdocs build --strict`. Confirmado: `docs/manual/comum/login.md` não
+      menciona tamanho do logo, fundo ou "Acesse sua conta"; busca em
+      `docs/manual/` só encontrou falsos positivos. `mkdocs build --strict`
+      rodou limpo, sem warnings/erros.
+- [x] 7.10 `pnpm --filter @setes/web typecheck`. Confirmado: `tsc --noEmit`
+      sem erros.
+- [x] 7.11 Confirmar que nenhum arquivo fora de `apps/web/app/login/page.tsx`,
       `apps/web/app/login/page.test.tsx`, `apps/web/tailwind.config.ts` e
-      `docs/manual/**` foi alterado neste adendo.
+      `docs/manual/**` foi alterado neste adendo. Confirmado via `git status`:
+      só os três arquivos de código acima (e o próprio `tasks.md` deste
+      change) foram tocados.

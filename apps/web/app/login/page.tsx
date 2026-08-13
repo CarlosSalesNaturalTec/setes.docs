@@ -43,7 +43,7 @@ function LoginForm() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-superficie-app p-4">
+    <main className="flex min-h-screen items-center justify-center bg-marca-destaque p-4">
       <div className="w-full max-w-sm rounded-card border border-navy-50 bg-superficie-card p-8 shadow-card">
         <div className="flex flex-col items-center text-center">
           {/* Arte original do cliente (origem: docs/images/logo_despapelize.jpeg), exibida
@@ -56,11 +56,10 @@ function LoginForm() {
               width={438}
               height={740}
               priority
-              className="mx-auto w-full max-w-[260px] h-auto"
+              className="mx-auto w-full max-w-[130px] h-auto"
             />
           </h1>
           <p className="mt-1 text-xs uppercase tracking-wide text-gray-500">{SUBTITULO_CLIENTE}</p>
-          <p className="mt-1 text-sm text-gray-600">Acesse sua conta</p>
         </div>
 
         {motivo && MENSAGENS_MOTIVO[motivo] && (
