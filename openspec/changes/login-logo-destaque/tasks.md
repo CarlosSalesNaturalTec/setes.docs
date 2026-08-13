@@ -84,3 +84,40 @@
       bit-a-bit idênticos ao estado anterior. Confirmado via `git status`: só
       `apps/web/app/login/page.tsx`, `apps/web/e2e/01-setup-login.spec.ts` e o
       novo `apps/web/public/marca/login-hero.jpg` foram tocados.
+
+## 7. Ajustes adicionais de destaque (adendo, mesmo dia — D6/D7/D8)
+
+- [ ] 7.1 Em `apps/web/tailwind.config.ts`, acrescentar o token
+      `colors.marca.destaque = "#126ced"` (D7). Não reaproveitar `navy-900`/
+      `navy-600` — ver alternativa descartada em D7.
+- [ ] 7.2 Em `apps/web/app/login/page.tsx`, trocar `max-w-[260px]` por
+      `max-w-[130px]` na classe do `next/image` (D6), mantendo `width`/`height`
+      438×740 e a proporção original.
+- [ ] 7.3 Em `apps/web/app/login/page.tsx`, trocar `bg-superficie-app` por
+      `bg-marca-destaque` no `<main>` (D7). Confirmar que
+      `components/protected-shell.tsx` e `app/globals.css` permanecem
+      inalterados — o novo token é exclusivo do Login.
+- [ ] 7.4 Em `apps/web/app/login/page.tsx`, remover o `<p>` "Acesse sua conta"
+      (D8), sem substituir por outro texto.
+- [ ] 7.5 Em `apps/web/app/login/page.test.tsx`, remover a asserção
+      `expect(screen.getByText("Acesse sua conta")).toBeInTheDocument()`;
+      confirmar que os demais casos (heading "Despapelize", "SETES", campos,
+      SSO ausente, login, erro, mensagem por `motivo`) continuam passando sem
+      outra alteração.
+- [ ] 7.6 Rodar `pnpm --filter @setes/web test -- page.test.tsx` e confirmar
+      suíte verde após 7.5.
+- [ ] 7.7 Repetir a verificação de viewport 360px (equivalente à task 4.1) com
+      o hero de 130px e o novo fundo `bg-marca-destaque`: sem rolagem
+      horizontal da página, e-mail/senha/"Entrar" alcançáveis por rolagem
+      vertical.
+- [ ] 7.8 Verificar visualmente (ou via Playwright) o contraste do card branco
+      contra `bg-marca-destaque` — confirmar que a separação visual é nítida,
+      coerente com o contraste calculado (4.78:1) em D7.
+- [ ] 7.9 Revisar `docs/manual/comum/login.md` (e qualquer outra página do
+      manual que descreva a tela de Login) por menção ao tamanho do logo, ao
+      fundo cinza anterior ou a "Acesse sua conta"; ajustar se houver, e rodar
+      `mkdocs build --strict`.
+- [ ] 7.10 `pnpm --filter @setes/web typecheck`.
+- [ ] 7.11 Confirmar que nenhum arquivo fora de `apps/web/app/login/page.tsx`,
+      `apps/web/app/login/page.test.tsx`, `apps/web/tailwind.config.ts` e
+      `docs/manual/**` foi alterado neste adendo.

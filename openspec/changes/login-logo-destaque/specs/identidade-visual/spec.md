@@ -9,7 +9,7 @@ as raízes de circuito e o wordmark "Despapelize®" tal como fornecidos pelo cli
 sem recorte, remoção de fundo ou alteração de cor. A imagem NÃO SHALL ser exibida
 dentro de um chip ou container circular.
 
-A imagem SHALL ter largura máxima de 260px, preservando a proporção original do
+A imagem SHALL ter largura máxima de 130px, preservando a proporção original do
 material de origem (~0,59). A imagem SHALL levar `alt="Despapelize"` e SHALL estar
 contida em um elemento de heading (`<h1>`), servindo como o heading acessível do
 nome do produto na tela — a tela NÃO SHALL exibir, além dela, um nó de texto solto
@@ -24,7 +24,7 @@ inicial, primeiro acesso, etc.) SHALL exibi-la ou referenciá-la.
 - **QUANDO** a página carrega
 - **ENTÃO** ele SHALL ver a imagem `login-hero.jpg`, com fundo, árvore, raízes e
   wordmark do material de origem, sem chip ou container circular ao redor
-- **E** a largura da imagem SHALL ser no máximo 260px, na proporção original
+- **E** a largura da imagem SHALL ser no máximo 130px, na proporção original
 
 #### Scenario: Imagem funciona como heading acessível do nome do produto
 
@@ -41,6 +41,36 @@ inicial, primeiro acesso, etc.) SHALL exibi-la ou referenciá-la.
 - **QUANDO** são renderizados
 - **ENTÃO** NÃO SHALL referenciar nem exibir `login-hero.jpg`
 
+### Requirement: Fundo de página do Login usa tom derivado da marca
+
+O `<main>` da tela de Login SHALL usar, como cor de fundo de página, o token
+`marca.destaque` — uma cor sólida derivada do tom predominante de `login-hero.jpg`
+(azul), ajustada em luminosidade para manter contraste de pelo menos 3:1 contra a
+superfície de card branca, conforme o piso de contraste para elementos gráficos não
+textuais já adotado pela capability. A cor SHALL ser um valor sólido: a textura, o
+gradiente ou qualquer detalhe fotográfico do material de origem NÃO SHALL ser usado
+como imagem ou textura de fundo de página — apenas a cor sólida derivada dele.
+
+Este fundo é exclusivo do `<main>` da tela de Login. Nenhuma outra tela — shell
+autenticado, página inicial, primeiro acesso, consulta pública — SHALL adotar o
+token `marca.destaque`; todas as demais continuam usando `superficie.app`.
+
+#### Scenario: Login exibe fundo de página no tom da marca
+
+- **DADO** um visitante não autenticado na rota `/login`
+- **QUANDO** a página carrega
+- **ENTÃO** o `<main>` SHALL exibir o token de cor `marca.destaque` como fundo
+- **E** o card branco de credenciais SHALL permanecer com contraste de pelo menos
+  3:1 contra esse fundo
+
+#### Scenario: Fundo do Login não vaza para outras telas
+
+- **DADO** o shell autenticado, a página inicial, a tela de primeiro acesso ou a
+  consulta pública
+- **QUANDO** são renderizados
+- **ENTÃO** NÃO SHALL usar o token `marca.destaque`
+- **E** SHALL continuar usando `superficie.app` como fundo, sem alteração
+
 ## MODIFIED Requirements
 
 ### Requirement: Apresentação do Login sem SSO
@@ -48,12 +78,17 @@ inicial, primeiro acesso, etc.) SHALL exibi-la ou referenciá-la.
 A tela de Login SHALL apresentar um card centrado com borda e sombra, contendo: a
 imagem de marca em destaque que já inclui o wordmark "Despapelize" (ver requisito
 "Hero de marca do Login usa o material de origem do cliente"), subtítulo de cliente
-"SETES", subtítulo "Acesse sua conta", campo de e-mail com ícone de envelope, campo
-de senha com ícone de cadeado, botão primário navy "Entrar" e link "Esqueci minha
-senha". A tela NÃO SHALL exibir qualquer opção de login via Google ou outro SSO — o
-MVP autentica apenas por e-mail/senha (ver capability `autenticacao`). A troca da
-imagem de marca NÃO altera a lógica de autenticação, a validação dos campos nem o
-comportamento de erro existentes.
+"SETES", campo de e-mail com ícone de envelope, campo de senha com ícone de
+cadeado, botão primário navy "Entrar" e link "Esqueci minha senha". A tela NÃO
+SHALL exibir qualquer opção de login via Google ou outro SSO — o MVP autentica
+apenas por e-mail/senha (ver capability `autenticacao`). A troca da imagem de marca
+NÃO altera a lógica de autenticação, a validação dos campos nem o comportamento de
+erro existentes.
+
+**Adendo (D8):** o subtítulo "Acesse sua conta" é removido do card — a imagem de
+marca em destaque já comunica a marca e o contexto, tornando a chamada de ação
+textual redundante. Nenhum texto substitui "Acesse sua conta"; o card passa
+diretamente da identificação de marca para o formulário.
 
 #### Scenario: Login renderiza credenciais sem opção de SSO
 
@@ -69,9 +104,10 @@ comportamento de erro existentes.
 - **DADO** um visitante não autenticado na rota `/login`
 - **QUANDO** a página carrega
 - **ENTÃO** o card SHALL exibir a imagem de marca (com "Despapelize" legível nela e
-  `alt="Despapelize"` associado a um heading acessível), "SETES" como subtítulo de
-  cliente e "Acesse sua conta" como chamada de ação, nessa ordem visual
+  `alt="Despapelize"` associado a um heading acessível) e "SETES" como subtítulo de
+  cliente, nessa ordem visual, imediatamente seguidos pelo formulário
 - **E** NÃO SHALL exibir um nó de texto solto duplicando o nome do produto
+- **E** NÃO SHALL exibir o subtítulo "Acesse sua conta" (removido, ver adendo D8)
 
 #### Scenario: Login preserva o comportamento de autenticação
 
