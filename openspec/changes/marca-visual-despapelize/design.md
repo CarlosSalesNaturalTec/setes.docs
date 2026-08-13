@@ -209,3 +209,7 @@ o ícone antigo sem passo adicional.
   original vetorial da marca (AI/EPS/PDF/SVG), ele **substitui** o redesenho de D1 e
   o trabalho vira só a extração do símbolo e a simplificação para 32px — vale
   perguntar antes de desenhar.
+
+  **Resposta (2026-08-13, tarefa 1.1):** não há original vetorial disponível.
+  Confirmado com quem conduz a implementação — segue D1, redesenho à mão a partir de
+  `docs/images/logo_despapelize.jpeg`.

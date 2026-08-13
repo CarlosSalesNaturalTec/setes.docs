@@ -78,21 +78,30 @@ export function IconUserMinus({ className = "" }: IconProps) {
   );
 }
 
-// Marca institucional (US 6.2/D5) — mesmo glifo de documento do favicon
-// (`app/icon.svg`), sem o retângulo de fundo navy: o chip circular do Login e
-// da sidebar já provê o fundo, e o traço herda `currentColor` do texto do chip.
+// Marca institucional (D1/D2/D4, change marca-visual-despapelize) — símbolo da
+// árvore com raízes de circuito da Despapelize, redesenhado à mão a partir de
+// docs/images/logo_despapelize.jpeg. Monocromático em `currentColor`: o chip
+// circular do Login e da sidebar já provê o fundo, o desenho herda a cor do
+// contexto. Mesmas formas em `app/icon.svg` (favicon, D4) — ao editar um,
+// editar o outro.
 export function IconMarca({ className = "" }: IconProps) {
   return (
-    <svg
-      viewBox="0 0 32 32"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      className={`h-6 w-6 ${className}`}
-      aria-hidden
-    >
-      <path d="M9 8h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2z" />
-      <path d="M11 13h9M11 17h9M11 21h6" strokeLinecap="round" />
+    <svg viewBox="0 0 32 32" fill="currentColor" className={`h-6 w-6 ${className}`} aria-hidden>
+      <circle cx="16" cy="12" r="7.5" />
+      <path d="M14.3 19.5h3.4v3h-3.4z" />
+      <g stroke="currentColor" strokeWidth={1.3} strokeLinecap="round" strokeLinejoin="round" fill="none">
+        <path d="M16 22.5 13 24.5 10 26.5" />
+        <path d="M16 22.5 14 26.5" />
+        <path d="M16 22.5v5" />
+        <path d="M16 22.5 18 26.5" />
+        <path d="M16 22.5 19 24.5 22 26.5" />
+      </g>
+      <circle cx="16" cy="22.5" r="0.9" />
+      <circle cx="10" cy="26.5" r="1.05" />
+      <circle cx="14" cy="26.5" r="1.05" />
+      <circle cx="16" cy="27.5" r="1.05" />
+      <circle cx="18" cy="26.5" r="1.05" />
+      <circle cx="22" cy="26.5" r="1.05" />
     </svg>
   );
 }
