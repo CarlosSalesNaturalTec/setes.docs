@@ -1,7 +1,9 @@
 # Menu lateral
 
 O menu à esquerda mostra apenas o que o seu perfil pode acessar (em telas
-estreitas ele vira uma gaveta, aberta pelo botão de menu no topo):
+estreitas ele vira uma gaveta, aberta pelo botão de menu no topo — veja
+[Uso pelo celular ou tablet](celular-tablet.md) para mais detalhes de uso em
+smartphone):
 
 | Item | Quem vê |
 |------|---------|

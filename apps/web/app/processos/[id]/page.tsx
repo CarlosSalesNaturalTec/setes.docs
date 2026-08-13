@@ -29,7 +29,8 @@ function ModalConclusao({
     <div
       role="dialog"
       aria-label="Confirmar conclusão"
-      className="fixed inset-0 flex items-center justify-center bg-black/30 p-4"
+      // Mesmo contêiner rolável do modal de tramitação, pelo mesmo motivo (D3)
+      className="fixed inset-0 flex items-start justify-center overflow-y-auto bg-black/30 p-4 sm:p-8"
     >
       <div className="w-full max-w-sm rounded bg-white p-4 shadow-lg">
         <p className="text-sm">Deseja concluir este processo?</p>
@@ -199,7 +200,10 @@ function ModalTramitacao({
     <div
       role="dialog"
       aria-label={permitirEnvioDevolucao ? "Tramitar processo" : "Reatribuir processo"}
-      className="fixed inset-0 flex items-center justify-center bg-black/30 p-4"
+      // Âncora no topo com rolagem própria: em viewport estreito o conteúdo do
+      // modal (unidade, setor, servidor, mensagem) excede a altura da tela e os
+      // botões ficariam inalcançáveis com items-center (D3)
+      className="fixed inset-0 flex items-start justify-center overflow-y-auto bg-black/30 p-4 sm:p-8"
     >
       <div className="w-full max-w-md rounded bg-white p-4 shadow-lg">
         <h2 className="text-sm font-medium">
@@ -645,7 +649,9 @@ function DetalheConteudo({ id }: { id: string }) {
         </p>
       )}
 
-      <div className="mt-4 flex gap-4 border-b text-sm">
+      {/* overflow-x-auto por precaução: os três rótulos cabem em 360 px hoje,
+          mas a barra é ponto de crescimento natural (D4) */}
+      <div className="mt-4 flex gap-4 overflow-x-auto border-b text-sm">
         <button
           type="button"
           onClick={() => setAba("detalhe")}
@@ -671,7 +677,8 @@ function DetalheConteudo({ id }: { id: string }) {
 
       {aba === "detalhe" ? (
         <div className="mt-4 space-y-4">
-          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+          {/* Coluna única em viewport estreito, evitando compressão do valor (D4) */}
+          <dl className="grid grid-cols-1 gap-x-4 gap-y-2 text-sm sm:grid-cols-[auto_1fr]">
             <dt className="text-gray-500">Status</dt>
             <dd>{rotuloStatus(processo.status)}</dd>
             <dt className="text-gray-500">Unidade atual</dt>

@@ -144,53 +144,56 @@ export function SolicitacoesLgpdConteudo() {
       )}
 
       {solicitacoes.length > 0 && (
-        <table className="mt-6 w-full overflow-hidden rounded-card border border-navy-50 text-left text-sm shadow-card">
-          <thead>
-            <tr className="border-b text-gray-500">
-              <th className="py-2 pr-4 font-medium">Protocolo</th>
-              <th className="py-2 pr-4 font-medium">Data</th>
-              <th className="py-2 pr-4 font-medium">Solicitante</th>
-              <th className="py-2 pr-4 font-medium">Processo</th>
-              <th className="py-2 pr-4 font-medium">Tipo</th>
-              <th className="py-2 pr-4 font-medium">Status</th>
-              <th className="py-2 font-medium">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {solicitacoes.map((s) => (
-              <tr key={s.id} className="border-b">
-                <td className="py-2 pr-4 font-mono text-xs">{s.protocolo}</td>
-                <td className="py-2 pr-4">{formatarDataHora(s.criado_em)}</td>
-                <td className="py-2 pr-4">{s.nome_solicitante}</td>
-                <td className="py-2 pr-4">{s.processo_numero}</td>
-                <td className="py-2 pr-4">{ROTULO_TIPO[s.tipo] ?? s.tipo}</td>
-                <td className="py-2 pr-4">{ROTULO_STATUS[s.status] ?? s.status}</td>
-                <td className="py-2">
-                  {acionavel(s) && (
-                    <div className="flex gap-3">
-                      <button
-                        type="button"
-                        onClick={() => void atender(s)}
-                        disabled={processandoId === s.id}
-                        className="text-navy-600 disabled:opacity-50"
-                      >
-                        Atender
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setRejeitando(s)}
-                        disabled={processandoId === s.id}
-                        className="text-red-600 disabled:opacity-50"
-                      >
-                        Rejeitar
-                      </button>
-                    </div>
-                  )}
-                </td>
+        // Contêiner rolável: rolagem horizontal fica na caixa, não na página (D1, D2)
+        <div className="mt-6 overflow-x-auto rounded-card border border-navy-50 bg-superficie-card shadow-card">
+          <table className="w-full min-w-[840px] text-left text-sm">
+            <thead>
+              <tr className="border-b text-gray-500">
+                <th className="py-2 pr-4 font-medium">Protocolo</th>
+                <th className="py-2 pr-4 font-medium">Data</th>
+                <th className="py-2 pr-4 font-medium">Solicitante</th>
+                <th className="py-2 pr-4 font-medium">Processo</th>
+                <th className="py-2 pr-4 font-medium">Tipo</th>
+                <th className="py-2 pr-4 font-medium">Status</th>
+                <th className="py-2 font-medium">Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {solicitacoes.map((s) => (
+                <tr key={s.id} className="border-b">
+                  <td className="py-2 pr-4 font-mono text-xs">{s.protocolo}</td>
+                  <td className="py-2 pr-4">{formatarDataHora(s.criado_em)}</td>
+                  <td className="py-2 pr-4">{s.nome_solicitante}</td>
+                  <td className="py-2 pr-4">{s.processo_numero}</td>
+                  <td className="py-2 pr-4">{ROTULO_TIPO[s.tipo] ?? s.tipo}</td>
+                  <td className="py-2 pr-4">{ROTULO_STATUS[s.status] ?? s.status}</td>
+                  <td className="py-2">
+                    {acionavel(s) && (
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          onClick={() => void atender(s)}
+                          disabled={processandoId === s.id}
+                          className="text-navy-600 disabled:opacity-50"
+                        >
+                          Atender
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setRejeitando(s)}
+                          disabled={processandoId === s.id}
+                          className="text-red-600 disabled:opacity-50"
+                        >
+                          Rejeitar
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {rejeitando && (

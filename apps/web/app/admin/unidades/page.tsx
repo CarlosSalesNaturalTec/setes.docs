@@ -357,21 +357,24 @@ function SetoresDaUnidade({ unidade }: { unidade: Unidade }) {
       )}
 
       {setores.length > 0 && (
-        <table className="mt-3 w-full overflow-hidden rounded-card border border-navy-50 text-left text-sm shadow-card">
-          <thead>
-            <tr className="border-b bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
-              <th className="px-3 py-2">Nome</th>
-              <th className="px-3 py-2">Sigla</th>
-              <th className="px-3 py-2">Status</th>
-              <th className="px-3 py-2">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {setores.map((s) => (
-              <LinhaSetor key={s.id} setor={s} onAlterado={carregar} />
-            ))}
-          </tbody>
-        </table>
+        // Contêiner rolável: rolagem horizontal fica na caixa, não na página (D1, D2)
+        <div className="mt-3 overflow-x-auto rounded-card border border-navy-50 bg-superficie-card shadow-card">
+          <table className="w-full min-w-[480px] text-left text-sm">
+            <thead>
+              <tr className="border-b bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+                <th className="px-3 py-2">Nome</th>
+                <th className="px-3 py-2">Sigla</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {setores.map((s) => (
+                <LinhaSetor key={s.id} setor={s} onAlterado={carregar} />
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </section>
   );
@@ -410,27 +413,30 @@ function AdminUnidadesConteudo() {
       {erro && <p className="mt-4 text-sm text-red-600">{erro}</p>}
       {carregando && <p className="mt-4 text-sm text-gray-500">Carregando…</p>}
 
-      <table className="mt-6 w-full overflow-hidden rounded-card border border-navy-50 text-left text-sm shadow-card">
-        <thead>
-          <tr className="border-b bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
-            <th className="px-3 py-2">Nome</th>
-            <th className="px-3 py-2">Sigla</th>
-            <th className="px-3 py-2">Status</th>
-            <th className="px-3 py-2">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {unidades.map((u) => (
-            <LinhaUnidade
-              key={u.id}
-              unidade={u}
-              selecionada={u.id === unidadeSelecionadaId}
-              onSelecionar={() => setUnidadeSelecionadaId((atual) => (atual === u.id ? null : u.id))}
-              onAlterada={carregar}
-            />
-          ))}
-        </tbody>
-      </table>
+      {/* Contêiner rolável: rolagem horizontal fica na caixa, não na página (D1, D2) */}
+      <div className="mt-6 overflow-x-auto rounded-card border border-navy-50 bg-superficie-card shadow-card">
+        <table className="w-full min-w-[480px] text-left text-sm">
+          <thead>
+            <tr className="border-b bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+              <th className="px-3 py-2">Nome</th>
+              <th className="px-3 py-2">Sigla</th>
+              <th className="px-3 py-2">Status</th>
+              <th className="px-3 py-2">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {unidades.map((u) => (
+              <LinhaUnidade
+                key={u.id}
+                unidade={u}
+                selecionada={u.id === unidadeSelecionadaId}
+                onSelecionar={() => setUnidadeSelecionadaId((atual) => (atual === u.id ? null : u.id))}
+                onAlterada={carregar}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {unidadeSelecionada && <SetoresDaUnidade unidade={unidadeSelecionada} />}
     </div>

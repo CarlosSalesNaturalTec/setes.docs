@@ -375,51 +375,54 @@ function AdminUsuariosConteudo() {
       {erro && <p className="mt-4 text-sm text-red-600">{erro}</p>}
       {carregando && <p className="mt-4 text-sm text-gray-500">Carregando…</p>}
 
-      <table className="mt-6 w-full overflow-hidden rounded-card border border-navy-50 text-left text-sm shadow-card">
-        <thead>
-          <tr className="border-b bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
-            <th className="px-3 py-2">Nome</th>
-            <th className="px-3 py-2">E-mail</th>
-            <th className="px-3 py-2">Perfil</th>
-            <th className="px-3 py-2">Status</th>
-            <th className="px-3 py-2">Unidade</th>
-            <th className="px-3 py-2">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {usuarios.map((u) => (
-            <tr key={u.id} className="border-t align-top odd:bg-white even:bg-gray-50/50 hover:bg-navy-50/50">
-              <td className="px-3 py-2">{u.nome}</td>
-              <td className="px-3 py-2">{u.email}</td>
-              <td className="px-3 py-2 capitalize">{u.perfil}</td>
-              <td className="px-3 py-2 capitalize">{u.status.replaceAll("_", " ")}</td>
-              <td className="px-3 py-2">
-                {nomeUnidade(unidades, u.unidade_id)}
-                {/* Servidores anteriores ao Setor ficam sem vínculo: a tela
-                    sinaliza para regularização (design.md Risks). */}
-                {u.perfil === "servidor" && !u.setor_id && (
-                  <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
-                    sem setor
-                  </span>
-                )}
-              </td>
-              <td className="px-3 py-2">
-                <div className="flex flex-wrap items-center gap-1">
-                  {souAdministrador && u.perfil === "servidor" && (
-                    <AcaoTransferirUnidade usuario={u} unidades={unidadesAtivas} onAlterado={carregar} />
-                  )}
-                  {souAdministrador && u.perfil === "gestor" && (
-                    <AcaoUnidadesGeridas usuario={u} unidades={unidadesAtivas} />
-                  )}
-                  {souAdministrador && <AcaoResetarSenha usuario={u} />}
-                  {souAdministrador && <AcaoPermissaoAuditoria usuario={u} onAlterado={carregar} />}
-                  {souAdministrador && <AcaoDesativarUsuario usuario={u} onAlterado={carregar} />}
-                </div>
-              </td>
+      {/* Contêiner rolável: rolagem horizontal fica na caixa, não na página (D1, D2) */}
+      <div className="mt-6 overflow-x-auto rounded-card border border-navy-50 bg-superficie-card shadow-card">
+        <table className="w-full min-w-[720px] text-left text-sm">
+          <thead>
+            <tr className="border-b bg-gray-50 text-xs font-medium uppercase tracking-wide text-gray-500">
+              <th className="px-3 py-2">Nome</th>
+              <th className="px-3 py-2">E-mail</th>
+              <th className="px-3 py-2">Perfil</th>
+              <th className="px-3 py-2">Status</th>
+              <th className="px-3 py-2">Unidade</th>
+              <th className="px-3 py-2">Ações</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {usuarios.map((u) => (
+              <tr key={u.id} className="border-t align-top odd:bg-white even:bg-gray-50/50 hover:bg-navy-50/50">
+                <td className="px-3 py-2">{u.nome}</td>
+                <td className="px-3 py-2">{u.email}</td>
+                <td className="px-3 py-2 capitalize">{u.perfil}</td>
+                <td className="px-3 py-2 capitalize">{u.status.replaceAll("_", " ")}</td>
+                <td className="px-3 py-2">
+                  {nomeUnidade(unidades, u.unidade_id)}
+                  {/* Servidores anteriores ao Setor ficam sem vínculo: a tela
+                      sinaliza para regularização (design.md Risks). */}
+                  {u.perfil === "servidor" && !u.setor_id && (
+                    <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
+                      sem setor
+                    </span>
+                  )}
+                </td>
+                <td className="px-3 py-2">
+                  <div className="flex flex-wrap items-center gap-1">
+                    {souAdministrador && u.perfil === "servidor" && (
+                      <AcaoTransferirUnidade usuario={u} unidades={unidadesAtivas} onAlterado={carregar} />
+                    )}
+                    {souAdministrador && u.perfil === "gestor" && (
+                      <AcaoUnidadesGeridas usuario={u} unidades={unidadesAtivas} />
+                    )}
+                    {souAdministrador && <AcaoResetarSenha usuario={u} />}
+                    {souAdministrador && <AcaoPermissaoAuditoria usuario={u} onAlterado={carregar} />}
+                    {souAdministrador && <AcaoDesativarUsuario usuario={u} onAlterado={carregar} />}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
