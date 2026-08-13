@@ -111,3 +111,15 @@ rules:
     - Toda tarefa que mude rota ou schema do FastAPI deve incluir tarefa de
       `pnpm gen:types` + commit de packages/api-types — o CI falha no job de
       drift caso contrário
+    - >-
+      Toda change que altere uma tela, um fluxo de usuário final ou o texto
+      exibido ao usuário deve incluir tarefa de atualizar `docs/manual/**`
+      (não é opcional). Dispara em: tela nova ou removida, passo a passo
+      alterado, campo/botão/menu alterado, texto exibido ao usuário, regra de
+      negócio que muda o que o usuário pode fazer, perfil que ganha ou perde
+      acesso. NÃO dispara em: refatoração sem efeito visível, correção de bug
+      que restaura comportamento já documentado, migration/schema interno,
+      infraestrutura, CI, Terraform, mudança de teste, performance sem
+      mudança de UI. O critério de aceite da tarefa é a execução de
+      `mkdocs build --strict` local — não basta afirmar que o manual foi
+      atualizado
