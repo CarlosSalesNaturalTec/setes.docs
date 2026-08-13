@@ -21,6 +21,10 @@ test("setup inicial e login do Administrador root", async ({ page }) => {
     page.getByText("Sistema inicializado com sucesso. Faça login para continuar."),
   ).toBeVisible();
 
+  // Change login-logo-destaque: hero de marca original do cliente, sem chip.
+  await expect(page.getByRole("heading", { name: "Despapelize" })).toBeVisible();
+  await expect(page.getByAltText("Despapelize")).toBeVisible();
+
   await page.getByLabel("E-mail").fill(ADMIN_ROOT.email);
   await page.getByLabel("Senha", { exact: true }).fill(ADMIN_ROOT.senha);
   await page.getByRole("button", { name: "Entrar" }).click();
