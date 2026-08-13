@@ -111,7 +111,8 @@ rules:
     - Toda tarefa que mude rota ou schema do FastAPI deve incluir tarefa de
       `pnpm gen:types` + commit de packages/api-types — o CI falha no job de
       drift caso contrário
-    - Toda change que altere uma tela, um fluxo de usuário final ou o texto
+    - >-
+      Toda change que altere uma tela, um fluxo de usuário final ou o texto
       exibido ao usuário deve incluir tarefa de atualizar `docs/manual/**`
       (não é opcional). Dispara em: tela nova ou removida, passo a passo
       alterado, campo/botão/menu alterado, texto exibido ao usuário, regra de
