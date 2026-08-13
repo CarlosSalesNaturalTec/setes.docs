@@ -1,13 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
 import { useAuth } from "@/components/auth-provider";
-import { IconCadeado, IconEnvelope, IconMarca } from "@/components/icons";
+import { IconCadeado, IconEnvelope } from "@/components/icons";
 import { ApiError } from "@/lib/api";
-import { NOME_PRODUTO, SUBTITULO_CLIENTE } from "@/lib/marca";
+import { SUBTITULO_CLIENTE } from "@/lib/marca";
 import { rotaInicial } from "@/lib/rota-inicial";
 
 const MENSAGENS_MOTIVO: Record<string, string> = {
@@ -45,10 +46,19 @@ function LoginForm() {
     <main className="flex min-h-screen items-center justify-center bg-superficie-app p-4">
       <div className="w-full max-w-sm rounded-card border border-navy-50 bg-superficie-card p-8 shadow-card">
         <div className="flex flex-col items-center text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-navy-900 text-lg font-semibold text-white">
-            <IconMarca className="h-7 w-7" />
-          </div>
-          <h1 className="mt-3 text-2xl font-semibold text-navy-900">{NOME_PRODUTO}</h1>
+          {/* Arte original do cliente (origem: docs/images/logo_despapelize.jpeg), exibida
+              sem recorte, sem chip e sem alteração de cor — exceção escopada ao Login
+              (change login-logo-destaque). */}
+          <h1>
+            <Image
+              src="/marca/login-hero.jpg"
+              alt="Despapelize"
+              width={438}
+              height={740}
+              priority
+              className="mx-auto w-full max-w-[260px] h-auto"
+            />
+          </h1>
           <p className="mt-1 text-xs uppercase tracking-wide text-gray-500">{SUBTITULO_CLIENTE}</p>
           <p className="mt-1 text-sm text-gray-600">Acesse sua conta</p>
         </div>
