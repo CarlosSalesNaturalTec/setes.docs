@@ -126,42 +126,45 @@ export function DocumentosRemovidosConteudo() {
       )}
 
       {documentos.length > 0 && (
-        <table className="mt-6 w-full overflow-hidden rounded-card border border-navy-50 text-left text-sm shadow-card">
-          <thead>
-            <tr className="border-b text-gray-500">
-              <th className="py-2 pr-4 font-medium">Documento</th>
-              <th className="py-2 pr-4 font-medium">Processo</th>
-              <th className="py-2 pr-4 font-medium">Removido em</th>
-              <th className="py-2 pr-4 font-medium">Removido por</th>
-              <th className="py-2 font-medium">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {documentos.map((doc) => (
-              <tr key={doc.id} className="border-b">
-                <td className="py-2 pr-4">{doc.nome_exibicao}</td>
-                <td className="py-2 pr-4">
-                  <span className="font-medium">{doc.processo_numero}</span>
-                  <span className="text-gray-500"> — {doc.processo_assunto}</span>
-                </td>
-                <td className="py-2 pr-4">{formatarDataHora(doc.removido_em)}</td>
-                <td className="py-2 pr-4">{doc.removido_por_id}</td>
-                <td className="py-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAviso(null);
-                      setConfirmando(doc);
-                    }}
-                    className="text-navy-600"
-                  >
-                    Restaurar
-                  </button>
-                </td>
+        // Contêiner rolável: rolagem horizontal fica na caixa, não na página (D1, D2)
+        <div className="mt-6 overflow-x-auto rounded-card border border-navy-50 bg-superficie-card shadow-card">
+          <table className="w-full min-w-[600px] text-left text-sm">
+            <thead>
+              <tr className="border-b text-gray-500">
+                <th className="py-2 pr-4 font-medium">Documento</th>
+                <th className="py-2 pr-4 font-medium">Processo</th>
+                <th className="py-2 pr-4 font-medium">Removido em</th>
+                <th className="py-2 pr-4 font-medium">Removido por</th>
+                <th className="py-2 font-medium">Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {documentos.map((doc) => (
+                <tr key={doc.id} className="border-b">
+                  <td className="py-2 pr-4">{doc.nome_exibicao}</td>
+                  <td className="py-2 pr-4">
+                    <span className="font-medium">{doc.processo_numero}</span>
+                    <span className="text-gray-500"> — {doc.processo_assunto}</span>
+                  </td>
+                  <td className="py-2 pr-4">{formatarDataHora(doc.removido_em)}</td>
+                  <td className="py-2 pr-4">{doc.removido_por_id}</td>
+                  <td className="py-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAviso(null);
+                        setConfirmando(doc);
+                      }}
+                      className="text-navy-600"
+                    >
+                      Restaurar
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       <p className="mt-8 border-t pt-4 text-xs text-gray-500">{RODAPE_PURGA}</p>

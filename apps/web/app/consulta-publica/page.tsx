@@ -15,7 +15,8 @@ function ResultadoProcesso({ processo }: { processo: ProcessoPublico }) {
     <div className="mt-6 rounded border p-4 text-sm">
       <p className="font-mono text-xs text-gray-500">{processo.numero}</p>
       <h2 className="mt-1 text-lg font-semibold">{processo.assunto}</h2>
-      <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
+      {/* Coluna única em viewport estreito, evitando compressão do valor (D4) */}
+      <dl className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
         <dt className="text-gray-500">Tipo de processo</dt>
         <dd>{processo.tipo_processo}</dd>
         <dt className="text-gray-500">Status</dt>

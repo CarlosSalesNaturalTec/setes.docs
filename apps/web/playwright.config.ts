@@ -38,7 +38,26 @@ export default defineConfig({
     baseURL: "http://localhost:3000",
     trace: "retain-on-failure",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  // O par testMatch/testIgnore é necessário nos dois sentidos: a suíte é
+  // serial, com o banco zerado uma única vez pelo globalSetup e estado
+  // encadeado entre specs (01-16). Sem o testIgnore no chromium, o desktop
+  // também rodaria os specs .mobile.spec.ts, em viewport largo, onde eles não
+  // testam nada; sem o testMatch no mobile, o projeto móvel repetiria os 16
+  // specs desktop contra um banco já povoado, falhando em toda asserção de
+  // criação. O projeto mobile roda depois do chromium, sobre o banco já
+  // populado — seus specs criam o próprio estado com nomes distintos (D5).
+  projects: [
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+      testIgnore: /.*\.mobile\.spec\.ts/,
+    },
+    {
+      name: "mobile",
+      use: { ...devices["Pixel 5"] },
+      testMatch: /.*\.mobile\.spec\.ts/,
+    },
+  ],
   webServer: [
     {
       command: `${uvicornBin} app.main:app --port 8000`,
