@@ -33,6 +33,23 @@ o restante da identidade visual já consolidada no change `marca-visual-despapel
 - Ajuste do teste `apps/web/app/login/page.test.tsx` para localizar o heading
   "Despapelize" pela imagem (via `alt`) em vez de por texto puro.
 
+## Adendo (2026-08-13, mesmo dia) — três ajustes adicionais de destaque
+
+Depois da primeira implementação (tasks 1–6, já commitadas em `9a30abc`), o
+cliente pediu três ajustes adicionais na mesma tela, capturados aqui porque este
+change ainda não foi arquivado (ver `design.md` D6–D8 para o raciocínio completo):
+
+- **Logo 50% menor**: `login-hero.jpg` passa de `max-w-[260px]` (D2) para
+  `max-w-[130px]` — metade do teto fixado em D2, mesma proporção original.
+- **Fundo de página azul, no tom da imagem**: o `<main>` do Login troca
+  `bg-superficie-app` (cinza claro, compartilhado com o resto da aplicação) por um
+  novo token de marca (`marca.destaque`, `#126ced`) derivado do tom predominante de
+  `login-hero.jpg` e escurecido o suficiente para manter contraste adequado contra
+  o card branco (D7). Escopado exclusivamente ao `<main>` do Login — o restante da
+  aplicação (shell autenticado, `globals.css`) continua em `bg-superficie-app`.
+- **Remoção de "Acesse sua conta"**: o subtítulo de chamada de ação some do card —
+  a imagem em destaque já comunica a marca, tornando o texto redundante.
+
 ## Capabilities
 
 ### New Capabilities
@@ -46,14 +63,21 @@ o restante da identidade visual já consolidada no change `marca-visual-despapel
   cliente" e "Material de origem não é consumido pela aplicação" ganham exceção
   explícita e escopada ao Login — chip circular, ausência de fundo texturizado e
   não-consumo do material de origem continuam valendo para a sidebar e o favicon,
-  mas não mais para o hero do Login.
+  mas não mais para o hero do Login. O adendo (D6–D8) reduz o teto de largura do
+  hero para 130px, remove "Acesse sua conta" do requisito "Apresentação do Login
+  sem SSO" e acrescenta o requisito "Fundo de página do Login usa tom derivado da
+  marca".
 
 ## Impact
 
 - **Código afetado**: `apps/web/app/login/page.tsx` (troca do chip+`IconMarca`+`h1`
-  pela nova imagem), `apps/web/app/login/page.test.tsx` (ajuste de matcher do
-  heading). Nenhum outro arquivo de `apps/web` é tocado — `components/icons.tsx`,
-  `components/protected-shell.tsx` e `app/icon.svg` permanecem inalterados.
+  pela nova imagem; adendo: `max-w-[130px]`, novo `bg-marca-destaque` no `<main>`,
+  remoção do `<p>` "Acesse sua conta"), `apps/web/app/login/page.test.tsx` (ajuste
+  de matcher do heading; adendo: remoção da asserção de "Acesse sua conta"),
+  `apps/web/tailwind.config.ts` (adendo: novo token `colors.marca.destaque`).
+  Nenhum outro arquivo de `apps/web` é tocado — `components/icons.tsx`,
+  `components/protected-shell.tsx`, `app/globals.css` e `app/icon.svg` permanecem
+  inalterados.
 - **Novo asset estático**: `apps/web/public/marca/login-hero.jpg` (cópia de
   `docs/images/logo_despapelize.jpeg`, comentário apontando a origem).
   `docs/images/logo_despapelize.jpeg` continua intocado como material de origem.
