@@ -1,6 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { URL_MANUAL } from "@/lib/manual";
+
 import { ProtectedShell } from "./protected-shell";
 
 const replace = vi.fn();
@@ -58,6 +60,7 @@ describe("ProtectedShell — sidebar (RBAC)", () => {
 
     expect(screen.getByRole("link", { name: "Meu Perfil" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Processos" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Manual" })).toBeInTheDocument();
 
     expect(screen.queryByRole("link", { name: "Dashboard" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Relatório de Auditoria" })).not.toBeInTheDocument();
@@ -67,6 +70,19 @@ describe("ProtectedShell — sidebar (RBAC)", () => {
     expect(screen.queryByRole("link", { name: "Solicitações LGPD" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Documentos Removidos" })).not.toBeInTheDocument();
   });
+
+  it.each([["servidor"], ["gestor"], ["administrador"]] as const)(
+    "item Manual aparece para o perfil %s, abrindo em nova aba com rel=noopener noreferrer",
+    (perfil) => {
+      usuarioMock = usuario(perfil);
+      render(<ProtectedShell>conteúdo</ProtectedShell>);
+
+      const link = screen.getByRole("link", { name: "Manual" });
+      expect(link).toHaveAttribute("href", URL_MANUAL);
+      expect(link).toHaveAttribute("target", "_blank");
+      expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    },
+  );
 
   it("item de auditoria fica oculto sem a permissão pode_auditar", () => {
     usuarioMock = usuario("servidor", false);
@@ -99,5 +115,13 @@ describe("ProtectedShell — sidebar (RBAC)", () => {
 
     expect(screen.getByRole("link", { name: "Processos" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: "Meu Perfil" })).not.toHaveAttribute("aria-current");
+  });
+
+  it("item Manual nunca recebe o destaque de item ativo, independentemente da rota corrente", () => {
+    pathname = "/processos";
+    usuarioMock = usuario("servidor");
+    render(<ProtectedShell>conteúdo</ProtectedShell>);
+
+    expect(screen.getByRole("link", { name: "Manual" })).not.toHaveAttribute("aria-current");
   });
 });

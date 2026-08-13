@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { type Schemas } from "@/lib/api";
 import { NOME_PRODUTO, SUBTITULO_CLIENTE } from "@/lib/marca";
+import { URL_MANUAL } from "@/lib/manual";
 
 import { useAuth } from "./auth-provider";
 import {
@@ -13,6 +14,7 @@ import {
   IconDocumentos,
   IconFechar,
   IconLgpd,
+  IconManual,
   IconMarca,
   IconMenu,
   IconPainel,
@@ -30,6 +32,11 @@ type Usuario = Schemas["UsuarioResumo"];
 
 type ItemMenu = {
   href: string;
+  /** Quando presente, o item aponta para fora da aplicação (design.md D1 do
+   * change link-manual-no-menu): renderiza `<a target="_blank">` em vez de
+   * `<Link>`, e `href` deixa de ser navegado — serve só de `key` estável e
+   * nunca casa com `itemAtivo()`. */
+  hrefExterno?: string;
   label: string;
   Icon: (props: { className?: string }) => React.ReactNode;
   visivel: (usuario: Usuario) => boolean;
@@ -88,6 +95,13 @@ const ITENS_MENU: ItemMenu[] = [
     visivel: (u) => u.pode_auditar,
   },
   { href: "/perfil", label: "Meu Perfil", Icon: IconPerfil, visivel: () => true },
+  {
+    href: "manual-externo",
+    hrefExterno: URL_MANUAL,
+    label: "Manual",
+    Icon: IconManual,
+    visivel: () => true,
+  },
 ];
 
 function itemAtivo(pathname: string, href: string): boolean {
@@ -180,7 +194,22 @@ export function ProtectedShell({
         </div>
 
         <nav className="mt-2 flex-1 space-y-1 overflow-y-auto px-2 pb-4 text-sm">
-          {itensVisiveis.map(({ href, label, Icon }) => {
+          {itensVisiveis.map(({ href, hrefExterno, label, Icon }) => {
+            if (hrefExterno != null) {
+              return (
+                <a
+                  key={href}
+                  href={hrefExterno}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 rounded-card px-3 py-2 text-white hover:bg-navy-700"
+                >
+                  <Icon className="h-5 w-5 shrink-0" />
+                  {label}
+                </a>
+              );
+            }
+
             const ativo = itemAtivo(pathname, href);
             return (
               <Link
