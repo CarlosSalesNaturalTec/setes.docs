@@ -24,8 +24,15 @@ todo o contexto necessário para gerar as changes.
 |---|---|---|
 | `README.md` | Este índice + o que fazer quando as respostas chegarem | — |
 | `questionario-cliente.md` | 33 perguntas em linguagem não técnica, enviadas à SETES | ✅ enviado em 2026-10-08 |
+| `questionario-fornecedores.md` | Perguntas técnicas aos PSC (público integrador, jargão esperado) | ⬜ **enviar só se o caminho for o qualificado** |
 | `estudo-tecnico.md` | O estudo completo: normas, arquitetura, colisões com o código atual, infra GCP, fatiamento | ✅ consolidado |
 | `respostas-cliente.md` | Onde colar as respostas quando voltarem | ⬜ **vazio — aguardando** |
+
+As quatro perguntas aos fornecedores que mudam nossa arquitetura — e que valem ser
+comparadas antes de qualquer negociação comercial: **1.1** (modelo de autorização →
+define o frontend), **2.4** (formato de saída da assinatura), **3.1** (certificado SSL
+exigido → prazo mais longo do cronograma) e **4.1** (allowlist de IP → define se
+precisamos de Cloud NAT).
 
 ---
 
