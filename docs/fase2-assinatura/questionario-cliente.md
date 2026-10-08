@@ -285,9 +285,12 @@ definitivamente.
 
 ### 🔴 C1. As pessoas que vão assinar têm **celular com aplicativo** (smartphone)?
 
-Com o certificado em nuvem, assinar exige autorizar pelo **aplicativo do fornecedor
-do certificado no celular** — com biometria ou senha. Não há alternativa: é assim que
-o certificado funciona sem pendrive.
+Com o certificado em nuvem, assinar exige autorizar por um **aplicativo do fornecedor
+do certificado** — Bird ID, VIDaaS, SafeID, conforme o fornecedor escolhido — com
+biometria ou um código de uso único. Hoje **todos** os fornecedores do mercado fazem
+isso por aplicativo de celular. (Em teoria, o código poderia vir de um chaveirinho
+eletrônico em vez do celular; vamos confirmar com os fornecedores se algum oferece
+essa opção — mas **não conte com isso** ao responder.)
 
 - [ ] **Sim, todas têm.**
 - [ ] **A maioria tem**, algumas não. → quantas não têm, aproximadamente? _______

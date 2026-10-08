@@ -243,15 +243,51 @@ porque a emissão para pessoa jurídica tem **semanas de lead time** e bloqueia 
 Não é detalhe de redação — é a marca de que o Épico 4 foi escrito presumindo acesso
 do navegador ao smart card.
 
-O **DOC-ICP-17.01** é taxativo: *"As aplicações não deverão coletar fatores de
-autenticação do usuário"* — o PSC se comunica direto com o equipamento do titular.
-Nosso sistema **nunca pode ver o PIN**.
+A regra geral do **DOC-ICP-17.01**: *"As aplicações não deverão coletar fatores de
+autenticação do titular"* + *"os PSC deverão se comunicar diretamente com equipamento
+do titular, previamente identificado e cadastrado junto ao PSC de forma segura"*.
+
+⚠️ **Mas há uma exceção explícita na norma, e ela importa:**
+
+> *"Excetua-se desta regra o Serviço 'Autorização com Credenciais do Titular'"* —
+> serviço que obtém do titular a autorização de uso da chave privada **solicitando
+> fatores de autenticação**, com os valores concatenados e enviados no parâmetro
+> `password`, sendo que **no mínimo um fator deve ser válido para uma única
+> solicitação (OTP)**.
+
+Ou seja: existe um caminho normativo em que o **nosso** formulário coleta o fator. O
+que **não** existe é coletar um *PIN estático de certificado* — o fator é um **código
+de uso único**, gerado no dispositivo cadastrado do titular.
+
+Tipos de fator aceitos (da Declaração de Práticas da Certisign, não da norma em si):
+**OTP conforme RFC 6238 (TOTP), RFC 6287 e RFC 4226 (HOTP)**, biometria, certificado
+de atributo e push notification.
 
 | US | Como está no PRD | Por que não fecha | Como reescrever |
 |---|---|---|---|
-| 4.1 Cen.1 (`:575`) | "insiro o PIN do certificado" | proibido pela norma | "autorizo a assinatura no app do meu provedor" |
-| 4.1 Cen.3 (`:582`) | "PIN incorreto 3× → bloqueio 30min + e-mail" | o bloqueio é do PSC; não sabemos *por que* falhou | nossa camada antiabuso sobre *autorizações negadas* — viável, já existem `tentativas_login_falhas`/`bloqueado_ate` e slowapi |
-| 4.1 Cen.5 (`:589`) | "token/smart card não conectado" | não existe token no fluxo nuvem | "nenhum certificado em nuvem vinculado à sua conta" |
+| 4.1 Cen.1 (`:575`) | "insiro o PIN do certificado" | não é PIN estático: é **OTP de uso único** gerado no app do titular. Via "Autorização com Credenciais do Titular", nosso formulário **pode** coletá-lo | "informo o código de uso único do aplicativo do meu provedor de certificado" |
+| 4.1 Cen.3 (`:582`) | "PIN incorreto 3× → bloqueio 30min + e-mail" | o bloqueio da credencial é do PSC; nós só vemos "autorização negada", sem saber o motivo | nossa camada antiabuso sobre *autorizações negadas* — viável, já existem `tentativas_login_falhas`/`bloqueado_ate` e slowapi |
+| 4.1 Cen.5 (`:589`) | "token/smart card não conectado" | não existe token no fluxo em nuvem | "nenhum certificado em nuvem vinculado à sua conta" |
+
+### Por que celular, e se há alternativa
+
+A norma diz **"equipamento"**, não "celular". O requisito real é um dispositivo
+**cadastrado previamente** no PSC, por canal seguro, com ao menos um fator de uso
+único. O celular é **prática de mercado, não imposição legal** — é como todos os
+fornecedores implementam hoje:
+
+- **Bird ID** (Soluti): o OTP nasce no aplicativo; **mesmo a versão para computador
+  usa o código gerado no app**.
+- **VIDaaS** (Valid): a aprovação acontece no aplicativo no smartphone.
+- **SafeID** (Safeweb): funciona por aplicativo no celular; sistemas não integrados
+  usam o SafeID Desktop, que não dispensa o cadastro do aparelho.
+
+Como o fator é da família TOTP/HOTP, um **token OTP de hardware** seria tecnicamente
+concebível — mas **nenhum provedor pesquisado oferece**. → ver §9, item 7: é pergunta
+para o fornecedor, não para o cliente.
+
+O aplicativo é sempre **do fornecedor do certificado**, nunca o nosso: o Despapelize
+pede a assinatura ao PSC; o PSC chama o titular no aplicativo dele.
 
 E um quarto, mais sutil — **US 4.2 Cen.3** (`:604-607`): *"Certificado expirado em
 [data], mas válido na data da assinatura"*. Provar isso exige carimbo de tempo
@@ -487,6 +523,17 @@ obrigatório**.
 6. **Baixa confiança:** apareceu menção a migração da ICP-Brasil para nova
    arquitetura de certificados até 2029. Não confirmado. Checar com o ITI se afeta
    decisão de longo prazo.
+7. **Fator de autorização sem smartphone.** O fator é da família TOTP/HOTP, então um
+   token OTP de hardware seria concebível, mas nenhum provedor pesquisado oferece —
+   em todos (Bird ID, VIDaaS, SafeID) o código nasce no aplicativo de celular.
+   **Pergunta para o fornecedor, não para o cliente:** *"vocês suportam algum fator de
+   autorização que não dependa de smartphone — token OTP de hardware, por exemplo?"*
+   Importa porque a resposta de C1 pode revelar que parte do quadro não tem celular.
+8. **Qual serviço de autorização cada PSC expõe.** Confirmar se o provedor implementa
+   o "Autorização com Credenciais do Titular" (fator coletado no nosso formulário,
+   sem redirect) ou só o fluxo de redirect/push. Define se o frontend precisa de um
+   fluxo de saída e retorno — que hoje não existe no projeto — ou de um simples campo
+   de código. É a diferença entre uma mudança grande e uma pequena no `apps/web`.
 
 ---
 
