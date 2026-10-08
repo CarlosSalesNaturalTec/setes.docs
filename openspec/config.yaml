@@ -32,7 +32,10 @@ context: |
   capability em openspec/specs/, sem spec Playwright, e `documentos_assinados` no
   perfil é placeholder vazio. Não proponha changes de assinatura sem decisão explícita
   de retomada do épico; MP 2.200-2/2001 e normas ICP-Brasil só voltam a ser
-  conformidade obrigatória nesse caso.
+  conformidade obrigatória nesse caso. O estudo de viabilidade da Fase 2 (2026-10-08)
+  está em docs/fase2-assinatura/ — leia o README.md de lá antes de qualquer trabalho
+  de assinatura; ele mantém esta proibição em vigor e descreve o que a retomada
+  exigiria.
 
   Stack:
     Frontend: Next.js 15 (TypeScript, App Router), Tailwind
