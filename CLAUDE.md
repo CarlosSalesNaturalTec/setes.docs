@@ -40,6 +40,14 @@ usuário `telefone`/`cargo`/`chefia_direta`/`setor_id`; catálogo de
 a Fase 2 em 2026-07-27. A aba "Documentos assinados" do perfil é placeholder vazio;
 não há capability, spec Playwright nem código de assinatura.
 
+O estudo de viabilidade da Fase 2 está em **`docs/fase2-assinatura/`** (estudo
+técnico, questionário enviado ao cliente e o arquivo onde as respostas serão
+registradas). **Leia o `README.md` de lá antes de qualquer trabalho de assinatura** —
+ele documenta os dois portões que bloqueiam a implementação: a retomada formal do
+épico ainda não foi decidida, e três critérios de aceite do Épico 4 descrevem um
+fluxo tecnicamente impossível que precisa ser reescrito. O estudo **não** retoma o
+épico nem autoriza implementação.
+
 ## Documento mestre: `docs/PRD.md`
 
 `docs/PRD.md` é o documento mestre — define personas, escopo do
