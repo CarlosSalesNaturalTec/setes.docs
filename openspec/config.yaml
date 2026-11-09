@@ -27,15 +27,43 @@ context: |
   telefone/cargo/chefia_direta/setor_id; catálogo de ModeloDocumento com lacunas
   preenchidas na abertura do processo; "Meu Perfil" em abas.
 
-  Assinatura digital ICP-Brasil (Épico 4 do PRD) está FORA DE ESCOPO — movida para
-  a Fase 2 por decisão formalizada em 2026-07-27. Não existe no produto: sem
-  capability em openspec/specs/, sem spec Playwright, e `documentos_assinados` no
-  perfil é placeholder vazio. Não proponha changes de assinatura sem decisão explícita
-  de retomada do épico; MP 2.200-2/2001 e normas ICP-Brasil só voltam a ser
-  conformidade obrigatória nesse caso. O estudo de viabilidade da Fase 2 (2026-10-08)
-  está em docs/fase2-assinatura/ — leia o README.md de lá antes de qualquer trabalho
-  de assinatura; ele mantém esta proibição em vigor e descreve o que a retomada
-  exigiria.
+  Assinatura digital (Épico 4 do PRD) foi RETOMADA na Fase 2 — decisão formalizada
+  em 2026-11-09 (change retomada-epico-assinatura), aprovada por Ademilton Leal
+  Coutinho, Diretor Presidente (resposta A5). Fonte: respostas da SETES de 2026-10-13
+  e devolutiva, transcritas em docs/fase2-assinatura/respostas-cliente.md. Caminho
+  determinado: QUALIFICADO (ICP-Brasil, certificado em nuvem autorizado no aplicativo
+  do PSC — nunca token/smart card, nunca PIN coletado pelo sistema), por força de A1.
+  MP 2.200-2/2001 e as normas ICP-Brasil (incl. DOC-ICP-15 e DOC-ICP-17.01) são
+  conformidade obrigatória em toda change de assinatura. Leia o README.md de
+  docs/fase2-assinatura/ antes de qualquer trabalho de assinatura.
+  Escopo recortado pelo cliente (PRD, Épico 4): só documentos gerados por
+  ModeloDocumento, em PDF (B1); só pessoa física, sem e-CNPJ (B5); só assina quem
+  está com o processo (B6); consulta pública sem documentos nem assinaturas (G1);
+  sem assinatura retroativa (H3); documentos de registro público ficam fora do
+  Despapelize (A3 + devolutiva). Carimbo de tempo: SIM (devolutiva) — alvo PAdES AD-RT.
+  Retomar o épico NÃO libera todas as changes. Bloqueios por change (cada um aponta
+  para docs/fase2-assinatura/respostas-cliente.md, "Pendências"; ao arquivar uma
+  change de assinatura, retire daqui a linha dela):
+    - assinatura-verificacao-fundacao: LIBERADA (pode ser proposta e implementada).
+    - assinatura-qualificada-psc: BLOQUEADA até (a) contratação da Soluti concluída
+      com credencial/certificado SSL da instituição emitidos (D4, pendência 8);
+      (b) tabela de prazos de guarda recebida (F2, pendência 5); (c) F1 ratificada
+      pelo DPO ou declarada competência da diretoria (pendência 4); (d) plano para
+      quem não tiver certificado (D2, pendência 6) e política interna (H4,
+      pendência 7).
+    - assinatura-coassinatura (B3) e assinatura-perfil-assinados: dependem de
+      assinatura-qualificada-psc arquivada.
+    - assinatura-carimbo-tempo: decisão tomada (sim); depende de
+      assinatura-qualificada-psc e da contratação da Autoridade de Carimbo do Tempo.
+    - assinatura-avancada (modelo misto, A4): NÃO PLANEJADA — recomendação técnica,
+      não decisão do cliente: com B4 ≈ 10 signatários (devolutiva) o modelo misto não
+      economiza certificados e exigiria um segundo caminho de assinatura no código.
+      Não proponha sem nova decisão da SETES.
+  Enquanto nenhuma change de assinatura for arquivada, nada disso existe no produto:
+  sem capability em openspec/specs/, sem spec Playwright, e `documentos_assinados` no
+  perfil é placeholder vazio.
+  Nome da instituição para contrato e texto exibido ao usuário: INSTITUTO SETES
+  (devolutiva, 4c).
 
   Stack:
     Frontend: Next.js 15 (TypeScript, App Router), Tailwind

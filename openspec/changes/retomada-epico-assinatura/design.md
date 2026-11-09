@@ -219,6 +219,40 @@ A capability `assinatura-documentos` nascerá na primeira change de implementaç
 
 ---
 
+## Atualização 2026-11-09 — efeitos da devolutiva respondida
+
+A devolutiva voltou com A5 nomeado e com **duas das pendências que este design
+supunha abertas já resolvidas**. Nenhuma decisão muda de natureza; três mudam de
+conteúdo.
+
+```
+A5          ✅ Ademilton Leal Coutinho — Diretor Presidente → condição de apply OK
+A2 × A3     ✅ registro público FORA do Despapelize        → D1 perde um bloqueio; D5 ganha um recorte
+D5 × E1     ✅ carimbo de tempo SIM                         → D4 invertida; D1 perde um bloqueio
+B4          ~10 pessoas (era "até 5")                      → D6 reavaliada e mantida
+F2, F1/DPO  ⚠️ sem resposta                                → continuam bloqueando qualificada-psc
+```
+
+- **D1** — a lista de bloqueios do `config.yaml` fica: `assinatura-verificacao-fundacao`
+  liberada; `assinatura-qualificada-psc` bloqueada por procurement (D4/Soluti), tabela
+  F2, ratificação de F1, plano para quem não tiver certificado (D2) e política interna
+  (H4); `assinatura-carimbo-tempo` com decisão tomada, dependente de
+  `assinatura-qualificada-psc` e da contratação da ACT. O escopo de registro público
+  e o conflito D5 × E1 **saem da lista**.
+- **D4 — substituída.** A nota de condicionalidade não é mais verdadeira: o cliente
+  decidiu. US 4.2 Cen.3 continua **intacto** (o texto era o certo) e recebe, em vez da
+  nota condicional, uma nota de **confirmação** citando E1 e a devolutiva, Pergunta 3,
+  com o alvo técnico (PAdES AD-RT, `estudo-tecnico.md` §4). O texto condicional
+  original de D4 fica preservado acima como histórico de raciocínio.
+- **D5** — um sexto recorte: documentos que vão a registro público (atas, estatutos,
+  regulamentos, políticas) são tratados **fora** do Despapelize (A3 + devolutiva,
+  Pergunta 2). Entra no bloco de status do Épico 4. Consequência registrada junto: o
+  caminho qualificado passa a se fundar **só em A1** — continua determinado, mas como
+  escolha, não como obrigação legal.
+- **D6** — B4 ≈ 10. A recomendação é mantida pela mesma razão (o custo do caminho
+  paralelo de código não escala com o número de signatários; e por D2 a economia de
+  certificados nem seria da SETES). Continua **recomendação**, não decisão.
+
 ## Ordem de aplicação e por que ela importa
 
 Os três arquivos precisam mudar **na mesma change** — é o que o `README.md` do

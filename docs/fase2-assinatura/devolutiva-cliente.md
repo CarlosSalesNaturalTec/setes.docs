@@ -1,5 +1,9 @@
 # Despapelize — Fase 2: Assinatura de Documentos
 
+> **✅ RESPONDIDA** — respostas registradas em 2026-11-09 em `respostas-cliente.md`,
+> seção "Devolutiva"; PDF preenchido em `devolutiva-respondida.pdf`. Perguntas 1, 2,
+> 3, 4a e 4c respondidas; 4b (tabela F2), 5 (DPO), 6 e 7 sem resposta.
+
 ## Devolutiva do questionário
 
 **Para:** Ana Morais — Diretora de Serviços Compartilhados

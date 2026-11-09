@@ -102,7 +102,9 @@ padrão `**Nota (change ...)**` já usado em `PRD.md:177-178`:
 
 - **Não** propõe nem desenha `assinatura-verificacao-fundacao`,
   `assinatura-qualificada-psc` ou qualquer outra change de implementação.
-- **Não** decide o carimbo de tempo (conflito D5 × E1, aberto).
+- **Não** decide o carimbo de tempo (conflito D5 × E1, aberto). *(Superado: a
+  devolutiva decidiu pelo carimbo — o change registra a decisão do cliente, não a
+  toma.)*
 - **Não** planeja `assinatura-avancada` (D6) — com B4 = até 5 pessoas, o modelo
   misto de A4 não economiza certificados e custaria um caminho de código paralelo.
   Fica registrado como recomendação de abandono, pendente de confirmação.
@@ -132,7 +134,16 @@ padrão `**Nota (change ...)**` já usado em `PRD.md:177-178`:
   agente que leia `config.yaml` e `CLAUDE.md` deixa de ser obrigado a recusar
   changes de assinatura, e passa a verificar as pendências nomeadas em D1.
 
-## ⛔ Condição de apply
+## ✅ Condição de apply — satisfeita em 2026-11-09
+
+A devolutiva (`docs/fase2-assinatura/devolutiva-cliente.md`, respondida e registrada
+em `respostas-cliente.md`, seção "Devolutiva") nomeou o aprovador: **Ademilton Leal
+Coutinho — Diretor Presidente**. Na mesma devolutiva, a SETES resolveu duas das
+pendências que este change previa manter abertas — documentos de registro público
+**fora** do Despapelize (A2 × A3) e carimbo de tempo **sim** (D5 × E1). Os efeitos
+sobre D1, D4 e D5 estão em `design.md`, "Atualização 2026-11-09".
+
+Texto original da condição, preservado:
 
 **Este change pode ser proposto e revisado agora, mas NÃO deve ser aplicado enquanto
 a resposta A5 estiver sem nome.**
