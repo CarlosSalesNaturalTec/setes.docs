@@ -383,4 +383,4 @@ branco) e E1 (contradiz D5).
 
 > Próximo passo: a devolutiva ao cliente está redigida em
 > `docs/fase2-assinatura/devolutiva-cliente.md`; a change de retomada está em
-> `openspec/changes/retomada-epico-assinatura/`.
+> `openspec/changes/archive/2026-11-09-retomada-epico-assinatura/`.
