@@ -24,7 +24,7 @@ O **Despapelize** é um sistema de gestão de processos administrativos com work
   * Tramitação manual: Envio, Devolução e Reatribuição com destino explícito (unidade, setor, servidor), e Conclusão como ação própria
   * Quadro Kanban com colunas (Aberto, Em Tramitação, Concluído, Arquivado) e transições de status por ação explícita
   * Upload e anexação de documentos (PDF, Word, imagens) aos processos, com armazenamento no próprio sistema
-  * ~~**Condicional ao Discovery Técnico:** Assinatura digital com certificado ICP-Brasil (e-CPF/e-CNPJ) com validade jurídica plena.~~ **REMOVIDO DO MVP — movido para a Fase 2** (decisão formalizada em 2026-07-27). O plano de contingência previsto neste item foi acionado: o MVP foi lançado sem assinatura digital, a interface não exibe o botão "Assinar" e os documentos tramitam sem assinatura. Critérios de aceite preservados no Épico 4 como backlog da Fase 2.
+  * ~~**Condicional ao Discovery Técnico:** Assinatura digital com certificado ICP-Brasil (e-CPF/e-CNPJ) com validade jurídica plena.~~ **REMOVIDO DO MVP — movido para a Fase 2** (decisão formalizada em 2026-07-27). O plano de contingência previsto neste item foi acionado: o MVP foi lançado sem assinatura digital, a interface não exibe o botão "Assinar" e os documentos tramitam sem assinatura. Critérios de aceite preservados no Épico 4 como backlog da Fase 2. **Épico 4 retomado na Fase 2 em 2026-11-09** (change `retomada-epico-assinatura`) — continua fora do MVP; ver o status no início do Épico 4.
   * Notificações internas (ícone no sistema) e por e-mail para eventos relevantes (novo processo recebido, processo concluído, prazo próximo)
   * Dashboard de KPIs para gestores: processos ativos, tempo médio de tramitação, processos parados, produtividade por unidade
   * Consulta pública de processos por número, assunto, tipo de processo ou data, sem necessidade de autenticação
@@ -555,41 +555,71 @@ O **Despapelize** é um sistema de gestão de processos administrativos com work
       * **Quando** clico sobre o nome do documento
       * **Então** o download do arquivo é iniciado automaticamente, e o sistema exibe a mensagem "Formato não permite visualização inline — o download será iniciado"
 
-### Épico 4: Assinatura Digital — FASE 2 (fora do MVP)
+### Épico 4: Assinatura Digital — FASE 2 (retomado)
 
-> **Status: movido para a Fase 2 — decisão formalizada em 2026-07-27.** O plano de
-> contingência abaixo foi acionado: o MVP foi lançado sem assinatura digital, a interface
-> não exibe o botão "Assinar" e os documentos tramitam sem assinatura. **Nada deste épico
-> está implementado** — não há capability correspondente em `openspec/specs/`, não há spec
-> Playwright, e `documentos_assinados` no perfil (US 1.5) é campo placeholder que retorna
-> vazio. As US 4.1 e 4.2 abaixo permanecem válidas como backlog da Fase 2; os requisitos
-> funcionais 16, 17, 18 e 41 e as exigências de MP 2.200-2/2001 e ICP-Brasil nos requisitos
-> não funcionais só passam a valer quando o épico for retomado.
+> **Status: RETOMADO — decisão formalizada em 2026-11-09** pela change
+> `retomada-epico-assinatura`, com base nas respostas da SETES de 2026-10-13 e na
+> devolutiva respondida, ambas transcritas em
+> `docs/fase2-assinatura/respostas-cliente.md`. **Aprovador da decisão (resposta A5):
+> Ademilton Leal Coutinho — Diretor Presidente.**
+>
+> **Caminho determinado: assinatura qualificada (ICP-Brasil)**, por força de **A1**
+> ("boa parte dos documentos sai da instituição"). A3 também o determinaria, mas os
+> documentos que vão a registro público ficam fora do Despapelize (ver recortes).
+>
+> **Nada deste épico está implementado** — não há capability correspondente em
+> `openspec/specs/`, não há spec Playwright, e `documentos_assinados` no perfil (US 1.5)
+> continua campo placeholder que retorna vazio. Retomar o épico **não** autoriza
+> implementar tudo de uma vez: cada change de assinatura tem bloqueios próprios,
+> nomeados em `openspec/config.yaml` (a primeira liberada é
+> `assinatura-verificacao-fundacao`, que implementa a US 4.2 para documentos assinados
+> fora do sistema). Os requisitos funcionais 16, 17, 18 e 41 e as exigências de
+> MP 2.200-2/2001 e ICP-Brasil nos requisitos não funcionais passam a valer.
+>
+> *Histórico:* movido para a Fase 2 em 2026-07-27, com o plano de contingência abaixo
+> acionado (MVP lançado sem assinatura digital).
+>
+> **Recortes de escopo decididos pela SETES** (respostas de 2026-10-13 e devolutiva):
+> - **Consulta pública** permanece sem exibir documentos ou assinaturas (**G1**).
+> - **Sem assinatura retroativa** — vale para documentos novos, daqui para frente
+>   (**H3**).
+> - **Documentos que vão a registro público** (atas, estatutos, regulamentos,
+>   políticas) são tratados **fora do Despapelize** (**A3** + devolutiva, Pergunta 2).
 
-**Premissa de Produto:** O usuário deve conseguir assinar documentos utilizando seu certificado digital ICP-Brasil (e-CPF/e-CNPJ), diretamente pelo navegador, sem necessidade de instalar software adicional no computador. **Decisão de produto:** O Épico 4 (Assinatura Digital) está condicionado à confirmação, durante a fase de Discovery Técnico, de que os certificados em uso pelo cliente são compatíveis com as APIs de assinatura disponíveis nos navegadores-alvo (Chrome, Firefox, Edge — versões estáveis mais recentes). **Plano de contingência:** Caso o Discovery Técnico identifique restrições impeditivas, o Épico 4 será movido para a Fase 2 do produto, e o MVP será lançado sem assinatura digital. Neste cenário, a interface não exibirá o botão "Assinar", e os documentos tramitarão sem assinatura digital até a Fase 2.
+**Premissa de Produto:** ~~O usuário deve conseguir assinar documentos utilizando seu certificado digital ICP-Brasil (e-CPF/e-CNPJ), diretamente pelo navegador, sem necessidade de instalar software adicional no computador.~~ **PREMISSA SUPERADA** — Discovery Técnico, 2026-07-27: nenhum navegador do mercado dá acesso a token ou smart card, e a limitação é permanente, não transitória (`docs/fase2-assinatura/estudo-tecnico.md` §1). **PREMISSA VIGENTE:** o usuário assina com certificado ICP-Brasil **em nuvem** (e-CPF), mantido por um Prestador de Serviço de Confiança (PSC) contratado pela SETES; a assinatura é **autorizada pelo signatário no aplicativo do PSC, no celular dele**, e a chave privada nunca chega ao servidor do Despapelize (`estudo-tecnico.md` §3). Não há instalação de software no computador nem token/smart card no fluxo.
+
+~~**Decisão de produto:** O Épico 4 (Assinatura Digital) está condicionado à confirmação, durante a fase de Discovery Técnico, de que os certificados em uso pelo cliente são compatíveis com as APIs de assinatura disponíveis nos navegadores-alvo (Chrome, Firefox, Edge — versões estáveis mais recentes). **Plano de contingência:** Caso o Discovery Técnico identifique restrições impeditivas, o Épico 4 será movido para a Fase 2 do produto, e o MVP será lançado sem assinatura digital. Neste cenário, a interface não exibirá o botão "Assinar", e os documentos tramitarão sem assinatura digital até a Fase 2.~~ **Plano de contingência acionado em 2026-07-27 e encerrado em 2026-11-09:** o Discovery Técnico identificou a restrição impeditiva, o épico foi movido para a Fase 2 e o MVP foi lançado sem assinatura digital — sem botão "Assinar", com documentos tramitando sem assinatura. Com a retomada (status acima), a Fase 2 segue sobre a premissa vigente.
 
 * **US 4.1:** Como Servidor, eu quero assinar digitalmente documentos de um processo usando meu certificado ICP-Brasil para conferir validade jurídica à minha manifestação.
+  * **Nota (change retomada-epico-assinatura, 2026-11-09):** só são assináveis os documentos **gerados pelo próprio sistema** a partir de um `ModeloDocumento`, em PDF; anexos enviados pelo usuário (PDF, DOC, DOCX, JPG, PNG) não são assináveis no Despapelize (**B1**, 2026-10-13).
+  * **Nota (change retomada-epico-assinatura, 2026-11-09):** toda assinatura é de **pessoa física**, em nome próprio (e-CPF); não há assinatura institucional por e-CNPJ (**B5**, 2026-10-13).
   * **Critérios de Aceitação:**
-    * *Cenário 1: Assinatura com certificado digital válido*
-      * **Dado** que um processo da minha unidade possui documentos pendentes de assinatura, eu possuo um certificado digital ICP-Brasil (e-CPF) válido e acessível ao navegador
-      * **Quando** seleciono um documento e aciono "Assinar", o sistema detecta o certificado digital disponível, insiro o PIN do certificado e confirmo
-      * **Então** o sistema aplica a assinatura digital ao documento, registra data/hora da assinatura, vincula ao meu usuário, e o documento aparece na seção "Documentos Assinados" do meu perfil e do processo
+    * *Cenário 1: Assinatura com certificado em nuvem válido*
+      * **Dado** que um processo sob minha responsabilidade possui documento gerado pelo sistema pendente de assinatura, e eu possuo certificado ICP-Brasil em nuvem (e-CPF) válido e vinculado ao meu CPF junto ao provedor contratado
+      * **Quando** seleciono o documento, aciono "Assinar" e **autorizo a operação no aplicativo do provedor, no meu celular**
+      * **Então** o sistema aplica a assinatura ao documento, registra data/hora, vincula ao meu usuário, e o documento passa a constar como assinado no processo e na seção "Documentos Assinados" do meu perfil
+      * **E** o sistema **em nenhum momento solicita, recebe, transporta ou armazena PIN, senha ou biometria do certificado** — a autorização ocorre integralmente entre o signatário e o provedor (DOC-ICP-17.01)
+      * **Nota (change retomada-epico-assinatura, 2026-11-09):** só se assina enquanto o processo estiver com o servidor; processo que já saiu da sua responsabilidade não pode ter documento assinado por ele (**B6**, 2026-10-13). *Texto anterior do cenário (certificado acessível ao navegador, com o código de acesso digitado no sistema) substituído — Portão 2, `docs/fase2-assinatura/estudo-tecnico.md` §4.*
     * *Cenário 2: Certificado expirado ou inválido*
       * **Dado** que estou tentando assinar um documento
       * **Quando** utilizo um certificado digital expirado ou revogado
       * **Então** o sistema rejeita a assinatura e exibe "Certificado digital inválido ou expirado. Utilize um certificado ICP-Brasil válido."
-    * *Cenário 3: PIN incorreto*
-      * **Dado** que estou tentando assinar um documento com certificado digital válido
-      * **Quando** insiro o PIN incorreto três vezes consecutivas
-      * **Então** a operação de assinatura é bloqueada por 30 minutos e recebo um e-mail de alerta de tentativas suspeitas
+    * *Cenário 3: Autorização não concedida pelo provedor*
+      * **Dado** que acionei "Assinar" e o sistema solicitou a autorização ao provedor
+      * **Quando** a autorização não é concedida — por recusa, expiração do prazo de resposta, ou bloqueio aplicado **pelo próprio provedor**
+      * **Então** o sistema exibe "Não foi possível obter a autorização de assinatura. Verifique o aplicativo do seu provedor de certificado e tente novamente.", a operação não é concluída, e o evento é registrado em `log_seguranca`
+      * **E** o sistema **não afirma o motivo da recusa nem aplica bloqueio próprio por tentativas** — a causa é conhecida apenas pelo provedor, e qualquer mensagem mais específica seria suposição
+      * **Nota (change retomada-epico-assinatura, 2026-11-09):** substitui o cenário "PIN incorreto" (três tentativas → bloqueio de 30 minutos), impossível no fluxo em nuvem: o sistema não coleta o PIN e o bloqueio é do provedor (`estudo-tecnico.md` §4).
     * *Cenário 4: Documento já assinado*
       * **Dado** que um documento já possui assinatura digital
       * **Quando** outro usuário tenta assinar o mesmo documento
       * **Então** o sistema aplica a assinatura adicional (coassinatura), mantendo o histórico de todas as assinaturas aplicadas
-      * *Cenário 5: Certificado digital não detectado*
-      * **Dado** que estou tentando assinar um documento
-      * **Quando** aciono "Assinar" e não há token/smart card conectado ao computador ou o navegador não detecta o certificado digital
-      * **Então** o sistema exibe "Certificado digital não detectado. Conecte o token/smart card ao computador e certifique-se de que o driver está instalado corretamente." e a operação de assinatura não é concluída
+    * *Cenário 5: Nenhum certificado vinculado ao usuário*
+      * **Dado** que aciono "Assinar" em um documento
+      * **Quando** não existe certificado em nuvem vinculado ao meu CPF junto ao provedor contratado
+      * **Então** o sistema exibe "Nenhum certificado digital encontrado para o seu CPF. Procure a área responsável para regularizar seu certificado." e a operação não é iniciada
+      * **E** a mensagem **não menciona token, smart card, driver ou instalação de software** — nada disso existe neste fluxo
+      * **Nota (change retomada-epico-assinatura, 2026-11-09):** substitui o cenário "Certificado digital não detectado" (token/smart card não conectado), que não existe no fluxo de certificado em nuvem (`estudo-tecnico.md` §4).
 
 * **US 4.2:** Como Usuário, eu quero verificar a validade de um documento assinado digitalmente para confirmar que seu conteúdo não foi alterado.
   * **Critérios de Aceitação:**
@@ -605,6 +635,7 @@ O **Despapelize** é um sistema de gestão de processos administrativos com work
       * **Dado** que um documento foi assinado com certificado válido à época, mas o certificado expirou desde então
       * **Quando** verifico a assinatura
       * **Então** o sistema exibe "Assinatura válida — documento íntegro. Certificado expirado em [data], mas válido na data da assinatura."
+      * **Nota (change retomada-epico-assinatura, 2026-11-09):** este cenário depende de **carimbo de tempo** de Autoridade de Carimbo do Tempo (ACT) — sem ele, a data da assinatura é auto-declarada e a afirmação não teria lastro. As respostas D5 ("evitar qualquer custo por uso") e E1 ("vale o custo por assinatura") de 2026-10-13 se contradiziam; a devolutiva (Pergunta 3) decidiu **pelo carimbo**. O cenário permanece no escopo, com alvo técnico PAdES AD-RT (`docs/fase2-assinatura/estudo-tecnico.md` §4).
 
 ### Épico 5: Notificações e Alertas
 
@@ -834,7 +865,7 @@ O **Despapelize** é um sistema de gestão de processos administrativos com work
     * Período de retenção de notificações lidas (padrão: 30 dias) — afeta US 5.1
     * Profundidade do histórico de senhas (padrão: 6 últimas senhas) — afeta US 1.7
     * Número máximo de tentativas de login antes do bloqueio (padrão: 3 tentativas) — afeta US 1.3
-    * Duração do bloqueio temporário por tentativas excedidas (padrão: 30 minutos) — afeta US 1.3 e US 4.1
+    * Duração do bloqueio temporário por tentativas excedidas (padrão: 30 minutos) — afeta US 1.3 *(deixou de afetar a US 4.1: na assinatura em nuvem o bloqueio por tentativas é do provedor — change retomada-epico-assinatura, 2026-11-09)*
     * Dias de antecedência para alerta de prazo (padrão: 2 dias corridos) — afeta US 5.2 e US 5.4
 
     * *Cenário 5: Configuração de tentativas de login com valor zero*
@@ -975,9 +1006,9 @@ O **Despapelize** é um sistema de gestão de processos administrativos com work
 13. O sistema deve permitir upload de documentos nos formatos PDF, DOC, DOCX, JPG e PNG com tamanho máximo de 20 MB por arquivo
 14. Documentos anexados devem ser armazenados no próprio sistema e vinculados ao processo
 15. O sistema deve permitir visualização inline (no navegador) de documentos PDF e imagens
-16. *(FASE 2 — Épico 4, fora do MVP)* O sistema deve permitir assinatura digital de documentos utilizando certificado ICP-Brasil (e-CPF/e-CNPJ)
-17. *(FASE 2 — Épico 4, fora do MVP)* O sistema deve verificar a validade do certificado digital (data de expiração, revogação) antes de aplicar a assinatura
-18. *(FASE 2 — Épico 4, fora do MVP)* O sistema deve permitir múltiplas assinaturas (coassinatura) no mesmo documento
+16. *(FASE 2 — Épico 4, retomado em 2026-11-09)* O sistema deve permitir assinatura digital de documentos utilizando certificado ICP-Brasil em nuvem (e-CPF) — sem e-CNPJ (**B5**) e apenas para documentos gerados pelo sistema a partir de `ModeloDocumento` (**B1**)
+17. *(FASE 2 — Épico 4, retomado em 2026-11-09)* O sistema deve verificar a validade do certificado digital (data de expiração, revogação) antes de aplicar a assinatura
+18. *(FASE 2 — Épico 4, retomado em 2026-11-09)* O sistema deve permitir múltiplas assinaturas (coassinatura) no mesmo documento — confirmado por **B3** ("comum na SETES")
 19. O sistema deve gerar notificações internas (ícone no menu) para eventos como recebimento de novo processo
 20. O sistema deve enviar e-mails de notificação para novo processo recebido e alerta de prazo próximo ao vencimento
 21. O dashboard de gestão deve exibir: total de processos ativos, tempo médio de tramitação, processos parados e produtividade por unidade
@@ -1001,18 +1032,18 @@ O **Despapelize** é um sistema de gestão de processos administrativos com work
 38. Dados pessoais de processos arquivados devem ser mantidos pelo prazo legal aplicável; após esse prazo, o sistema deve anonimizar ou excluir os dados pessoais automaticamente
 39. O sistema deve permitir que um mesmo usuário mantenha múltiplas sessões ativas simultaneamente em dispositivos diferentes, com expiração independente por inatividade (US 1.9)
 40. O sistema deve permitir ao Gestor visualizar um quadro Kanban consolidado com os processos de todas as unidades que gerencia, com filtro por unidade (US 2.8)
-41. *(FASE 2 — Épico 4, fora do MVP)* O sistema deve permitir a verificação de integridade e validade de documentos assinados digitalmente, exibindo signatário, data, autoridade certificadora e status da assinatura (US 4.2)
+41. *(FASE 2 — Épico 4, retomado em 2026-11-09)* O sistema deve permitir a verificação de integridade e validade de documentos assinados digitalmente, exibindo signatário, data, autoridade certificadora e status da assinatura (US 4.2)
 42. O sistema deve gerar notificação interna quando um processo da unidade do usuário é concluído (US 5.3)
 43. O sistema deve gerar notificação interna de alerta quando um processo da unidade do usuário está com prazo a vencer em 2 dias corridos ou menos (US 5.4)
 44. O sistema deve permitir ao Administrador gerenciar solicitações LGPD recebidas, processando pedidos de exclusão ou anonimização de dados pessoais (US 10.2)
 
 ## 6. Requisitos Não Funcionais
 
-* **Segurança:** Todas as senhas devem ser armazenadas com hash criptográfico e nunca em texto plano. A comunicação entre o navegador e o servidor deve ser criptografada (HTTPS). *(FASE 2 — Épico 4, fora do MVP)* As assinaturas digitais devem seguir os padrões e algoritmos criptográficos vigentes da ICP-Brasil (MP 2.200-2/2001 e normas correlatas). O histórico de tramitação deve ser imutável e à prova de adulteração. **Proteção contra Abuso:** A consulta pública deve implementar limite de requisições por endereço IP de no máximo 60 consultas por minuto. Ao exceder o limite, o sistema deve retornar a mensagem "Muitas consultas realizadas. Aguarde alguns instantes e tente novamente." e liberar o acesso automaticamente após 60 segundos. Este mecanismo visa prevenir scraping massivo sem prejudicar o uso legítimo do cidadão.
+* **Segurança:** Todas as senhas devem ser armazenadas com hash criptográfico e nunca em texto plano. A comunicação entre o navegador e o servidor deve ser criptografada (HTTPS). *(FASE 2 — Épico 4, retomado em 2026-11-09)* As assinaturas digitais devem seguir os padrões e algoritmos criptográficos vigentes da ICP-Brasil (MP 2.200-2/2001 e normas correlatas). O histórico de tramitação deve ser imutável e à prova de adulteração. **Proteção contra Abuso:** A consulta pública deve implementar limite de requisições por endereço IP de no máximo 60 consultas por minuto. Ao exceder o limite, o sistema deve retornar a mensagem "Muitas consultas realizadas. Aguarde alguns instantes e tente novamente." e liberar o acesso automaticamente após 60 segundos. Este mecanismo visa prevenir scraping massivo sem prejudicar o uso legítimo do cidadão.
 * **Disponibilidade:** O sistema deve estar disponível 24 horas por dia, 7 dias por semana, com tolerância a janelas de manutenção programada de até 2 horas mensais fora do horário comercial.
 * **Performance:** O quadro Kanban deve carregar em até 3 segundos para unidades com até 500 processos ativos. Para unidades com mais de 500 processos ativos, o sistema deve implementar paginação automática (50 cards por página) mantendo o tempo de carregamento abaixo de 3 segundos. A consulta pública deve retornar resultados paginados (20 resultados por página) em até 5 segundos. O upload de documentos de até 20 MB deve ser concluído em até 30 segundos em conexões de banda larga padrão.
 * **Usabilidade:** A interface deve ser responsiva, permitindo o uso por navegadores de desktop e dispositivos móveis. O sistema deve seguir os padrões visuais definidos pelo cliente nas telas de referência. As ações mais frequentes (despachar processo, anexar documento) devem ser acessíveis em no máximo dois cliques a partir da tela principal.
-* **Conformidade Legal:** O sistema deve estar em conformidade com a Lei Geral de Proteção de Dados (LGPD) no tratamento de dados pessoais de servidores, interessados e cidadãos. A infraestrutura opera em região única fora do território nacional (`us-central1`), o que configura transferência internacional de dados sob o art. 33 da Lei 13.709/2018; a base legal adotada e a autorização do cliente estão registradas em `docs/lgpd-transferencia-internacional-us-central1.md`. As garantias de proteção (controle de acesso, anonimização, retenção e purga) independem da região. *(FASE 2 — Épico 4, fora do MVP)* As assinaturas digitais devem atender aos requisitos da MP 2.200-2/2001 e normas da ICP-Brasil. Os registros de tramitação devem atender aos requisitos de auditoria.
+* **Conformidade Legal:** O sistema deve estar em conformidade com a Lei Geral de Proteção de Dados (LGPD) no tratamento de dados pessoais de servidores, interessados e cidadãos. A infraestrutura opera em região única fora do território nacional (`us-central1`), o que configura transferência internacional de dados sob o art. 33 da Lei 13.709/2018; a base legal adotada e a autorização do cliente estão registradas em `docs/lgpd-transferencia-internacional-us-central1.md`. As garantias de proteção (controle de acesso, anonimização, retenção e purga) independem da região. *(FASE 2 — Épico 4, retomado em 2026-11-09)* As assinaturas digitais devem atender aos requisitos da MP 2.200-2/2001 e normas da ICP-Brasil. Os registros de tramitação devem atender aos requisitos de auditoria.
 * **Escalabilidade:** A arquitetura deve suportar o crescimento gradual de usuários e processos sem degradação significativa, comportando no MVP até 500 usuários ativos e 10.000 processos simultâneos.
 * **Manutenibilidade:** A configuração de unidades, setores, tipos de processo e prazos de arquivamento deve ser dinâmica (via interface de administração), sem necessidade de intervenção no código-fonte.
 
@@ -1024,4 +1055,4 @@ As seguintes métricas serão acompanhadas após o lançamento do MVP para avali
 * **Redução do Tempo de Tramitação:** Redução de pelo menos 30% no tempo médio entre a criação e a conclusão de um processo, comparado ao método anterior (papel/e-mail), medido após 6 meses de operação
 * **Eliminação de Processos Perdidos:** Zero processos com status desconhecido ou localização ignorada após a implantação — todo processo deve estar localizável via consulta pública ou interna a qualquer momento
 * **Eficiência Operacional:** Redução de 50% no volume de consultas presenciais ou telefônicas sobre andamento de processos, uma vez que a consulta pública supre essa demanda
-* **Integridade Documental:** 100% dos documentos tramitados devem manter sua integridade comprovável por meio de assinatura digital, com zero incidentes de extravio ou adulteração documental
+* **Integridade Documental:** 100% dos documentos tramitados devem manter sua integridade comprovável por meio de assinatura digital, com zero incidentes de extravio ou adulteração documental *(métrica dependente do Épico 4; com o recorte **B1**, a comprovação por assinatura aplica-se aos documentos gerados pelo sistema — change retomada-epico-assinatura, 2026-11-09)*

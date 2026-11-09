@@ -1,9 +1,12 @@
 # Fase 2 — Assinatura Digital: dossiê de decisão
 
-> **Status: AGUARDANDO RESPOSTAS DO CLIENTE.**
-> O Épico 4 do PRD (Assinatura Digital) **continua fora de escopo**. Este dossiê é o
-> insumo da decisão de retomada — ele **não** retoma o épico e **não** autoriza
-> implementação.
+> **Status: ÉPICO 4 RETOMADO em 2026-11-09** (change `retomada-epico-assinatura`;
+> aprovador: Ademilton Leal Coutinho — Diretor Presidente). Caminho **qualificado
+> (ICP-Brasil em nuvem)**. Os dois portões abaixo foram abertos por aquela change —
+> mas a retomada **não** libera todas as changes: só
+> `assinatura-verificacao-fundacao` está liberada; as demais têm bloqueios nomeados
+> no bloco `context` de `openspec/config.yaml` e em `respostas-cliente.md`,
+> "Pendências".
 
 Diretório não publicado: `mkdocs.yml` aponta `docs_dir: docs/manual`, então nada aqui
 vai para o GitHub Pages.
@@ -24,9 +27,11 @@ todo o contexto necessário para gerar as changes.
 |---|---|---|
 | `README.md` | Este índice + o que fazer quando as respostas chegarem | — |
 | `questionario-cliente.md` | 33 perguntas em linguagem não técnica, enviadas à SETES | ✅ enviado em 2026-10-08 |
-| `questionario-fornecedores.md` | Perguntas técnicas aos PSC (público integrador, jargão esperado) | ⬜ **enviar só se o caminho for o qualificado** |
+| `questionario-fornecedores.md` | Perguntas técnicas aos PSC (público integrador, jargão esperado) | ⬜ **a enviar à Soluti** — o caminho é o qualificado |
 | `estudo-tecnico.md` | O estudo completo: normas, arquitetura, colisões com o código atual, infra GCP, fatiamento | ✅ consolidado |
-| `respostas-cliente.md` | Onde colar as respostas quando voltarem | ⬜ **vazio — aguardando** |
+| `respostas-cliente.md` | Respostas transcritas (33 + devolutiva), síntese e pendências | ✅ preenchido — 2026-10-13 e 2026-11-09 |
+| `devolutiva-cliente.md` | Devolutiva ao cliente: o que foi decidido, 4 perguntas pendentes, prazo | ✅ enviada em 2026-10-21; respondida |
+| `devolutiva-respondida.pdf` | PDF da devolutiva preenchido pelo cliente (registro do aprovador A5) | ✅ arquivado |
 
 As quatro perguntas aos fornecedores que mudam nossa arquitetura — e que valem ser
 comparadas antes de qualquer negociação comercial: **1.1** (modelo de autorização →
@@ -36,7 +41,11 @@ precisamos de Cloud NAT).
 
 ---
 
-## 🔴 Os dois portões que bloqueiam a implementação
+## Os dois portões que bloqueavam a implementação
+
+> ✅ **Ambos abertos pela change `retomada-epico-assinatura` (2026-11-09).** O texto
+> abaixo é preservado como registro do raciocínio; as citações de `config.yaml`,
+> `CLAUDE.md` e linhas do PRD descrevem o estado **anterior** à retomada.
 
 ### Portão 1 — Retomada formal do Épico 4
 
@@ -171,6 +180,8 @@ De `openspec/config.yaml`, seção `rules` — nenhuma é opcional:
 |---|---|
 | 2026-07-27 | Épico 4 movido para a Fase 2 — plano de contingência acionado |
 | 2026-10-08 | Estudo técnico realizado; questionário enviado à SETES |
-| — | ⬜ Respostas do cliente |
-| — | ⬜ Decisão de retomada do épico |
-| — | ⬜ Primeira change |
+| 2026-10-13 | Respostas do cliente (33 perguntas) — caminho qualificado; A5 sem nome |
+| 2026-10-21 | Devolutiva enviada (A5, registro público, carimbo, confirmações) |
+| 2026-11-09 | Devolutiva respondida registrada — A5: Ademilton Leal Coutinho (Diretor Presidente); registro público fora; carimbo sim |
+| 2026-11-09 | **Decisão de retomada do épico** — change `retomada-epico-assinatura` aplicada |
+| — | ⬜ Primeira change (`assinatura-verificacao-fundacao`) |

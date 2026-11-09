@@ -36,17 +36,29 @@ usuário `telefone`/`cargo`/`chefia_direta`/`setor_id`; catálogo de
 `ModeloDocumento` com lacunas preenchidas na abertura do processo
 (`modelos-de-documento`); "Meu Perfil" em abas (`perfil-em-abas`).
 
-**Assinatura digital ICP-Brasil (Épico 4 do PRD) está FORA DE ESCOPO** — movida para
-a Fase 2 em 2026-07-27. A aba "Documentos assinados" do perfil é placeholder vazio;
-não há capability, spec Playwright nem código de assinatura.
+**Assinatura digital ICP-Brasil (Épico 4 do PRD) foi RETOMADA na Fase 2** em
+2026-11-09 (change `retomada-epico-assinatura`), com aprovação de Ademilton Leal
+Coutinho, Diretor Presidente. Caminho **qualificado**: certificado ICP-Brasil **em
+nuvem**, autorizado pelo signatário no aplicativo do PSC — o sistema nunca vê PIN,
+senha ou biometria, e não há token/smart card no fluxo. Escopo recortado pelo cliente:
+só documentos gerados por `ModeloDocumento`, em PDF (B1); só pessoa física, sem e-CNPJ
+(B5); só assina quem está com o processo (B6); consulta pública sem assinaturas (G1);
+sem assinatura retroativa (H3); documentos de registro público fora do sistema.
+Carimbo de tempo: sim (alvo PAdES AD-RT).
 
-O estudo de viabilidade da Fase 2 está em **`docs/fase2-assinatura/`** (estudo
-técnico, questionário enviado ao cliente e o arquivo onde as respostas serão
-registradas). **Leia o `README.md` de lá antes de qualquer trabalho de assinatura** —
-ele documenta os dois portões que bloqueiam a implementação: a retomada formal do
-épico ainda não foi decidida, e três critérios de aceite do Épico 4 descrevem um
-fluxo tecnicamente impossível que precisa ser reescrito. O estudo **não** retoma o
-épico nem autoriza implementação.
+**Retomar não libera tudo.** Hoje só `assinatura-verificacao-fundacao` está liberada;
+`assinatura-qualificada-psc` e as que dependem dela continuam bloqueadas por pendências
+nomeadas (contratação da Soluti, tabela de prazos F2, ratificação de F1 pelo DPO, plano
+para quem não tiver certificado, política interna). A lista vinculante, por change,
+está no bloco `context` de `openspec/config.yaml`; `assinatura-avancada` (modelo misto)
+**não está planejada**. Nada de assinatura existe no produto ainda: a aba "Documentos
+assinados" do perfil é placeholder vazio; não há capability, spec Playwright nem código
+de assinatura. Nome da instituição em contrato e texto de tela: **INSTITUTO SETES**.
+
+O dossiê da Fase 2 está em **`docs/fase2-assinatura/`** (estudo técnico, questionários,
+respostas do cliente e devolutiva). **Leia o `README.md` de lá antes de qualquer
+trabalho de assinatura**, e o Épico 4 do PRD — os critérios de aceite da US 4.1 foram
+reescritos para o fluxo em nuvem (os originais descreviam um fluxo impossível).
 
 ## Documento mestre: `docs/PRD.md`
 

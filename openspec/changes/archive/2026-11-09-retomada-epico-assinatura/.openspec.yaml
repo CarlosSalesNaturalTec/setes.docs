@@ -1,0 +1,10 @@
+schema: spec-driven
+created: 2026-10-21
+# Nenhum comportamento do sistema muda: o change retoma formalmente o Épico 4 do PRD
+# (assinatura digital) alterando o documento mestre (docs/PRD.md), as regras do
+# processo de trabalho (openspec/config.yaml) e o arquivo de instruções do projeto
+# (CLAUDE.md). Nenhum código de aplicação, migration, endpoint ou tela é tocado, e
+# nenhuma capability em openspec/specs/ é criada ou alterada — ver design.md, D7.
+# A capability `assinatura-documentos` nascerá na primeira change de implementação
+# (assinatura-verificacao-fundacao), onde haverá comportamento a especificar.
+skip_specs: true
