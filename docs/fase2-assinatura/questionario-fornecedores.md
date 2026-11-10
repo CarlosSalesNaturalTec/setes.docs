@@ -12,7 +12,7 @@ cliente (`respostas-cliente.md`, 2026-10-13 e devolutiva de 2026-11-09) e
 | Envio | Para quem | Canal | Objetivo |
 |---|---|---|---|
 | **A — Comercial e contratual** | gerente de conta / comercial da Soluti | relacionamento do e-CNPJ existente, aberto por Compras/TI da INSTITUTO SETES | números para a Direção (custos, pendência 6) e caminho de contratação (D4) |
-| **B — Técnico de integração** | pré-venda técnica / time de integração | nós (fornecedor do Despapelize), com a SETES em cópia | fechar as perguntas que mudam a arquitetura e o cronograma |
+| **B — Técnico de integração** | pré-venda técnica / time de integração | INSTITUTO SETES, com o fornecedor do Despapelize em cópia (respostas técnicas direto a nós) | fechar as perguntas que mudam a arquitetura e o cronograma |
 
 **Os dois envios podem sair no mesmo dia.** Nenhum depende da resposta do outro.
 
@@ -269,7 +269,7 @@ Não são perguntas para a Soluti; ficam em `estudo-tecnico.md` §9:
 | Envio | Destinatário (nome / área) | Enviado por | Data | Respondeu? | Observações |
 |---|---|---|---|---|---|
 | A — Comercial | | Compras/TI INSTITUTO SETES | | ⬜ | |
-| B — Técnico | | fornecedor do Despapelize | | ⬜ | |
+| B — Técnico | | Compras/TI INSTITUTO SETES | | ⬜ | |
 
 ## Registro das respostas prioritárias
 

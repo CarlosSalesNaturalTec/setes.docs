@@ -1,0 +1,189 @@
+PARA:     Pré-venda técnica / Equipe de integração — Soluti
+DE:       INSTITUTO SETES (Compras / TI)
+CÓPIA:    Equipe de desenvolvimento do sistema Despapelize
+ASSUNTO:  INSTITUTO SETES — Perguntas técnicas para integrar assinatura em nuvem (e-CPF) ao sistema Despapelize
+
+------------------------------------------------------------------------
+
+Prezados,
+
+Somos a INSTITUTO SETES e já somos clientes da Soluti (temos nosso e-CNPJ
+com vocês). Estamos contratando a assinatura digital em nuvem para o
+Despapelize, nosso sistema interno de processos administrativos. A parte
+comercial segue em paralelo, com o gerente de conta.
+
+Este e-mail trata só da parte técnica da integração. O sistema foi
+desenvolvido por uma empresa contratada, que está em cópia e conduzirá a
+parte técnica. Pedimos, por favor, que as respostas técnicas sejam
+enviadas diretamente a ela, mantendo a instituição em cópia.
+
+
+O QUE PRECISAMOS FAZER
+
+- Assinar PDFs gerados pelo próprio sistema, com e-CPF EM NUVEM.
+- A assinatura é iniciada pelo navegador, SEM instalar nada no computador
+  do usuário.
+- Formato: PAdES, com carimbo de tempo (política AD-RT).
+- Cerca de 10 pessoas assinando. Muitos documentos terão mais de uma
+  pessoa assinando (coassinatura).
+- Centenas de assinaturas por ano.
+
+Como funciona o nosso sistema:
+- Servidor em Python (FastAPI), rodando no Google Cloud Run, nos EUA
+  (região us-central1). Tela em Next.js.
+- Nossa ideia é montar o PDF assinado do nosso lado (biblioteca pyHanko):
+  enviamos a vocês APENAS O RESUMO (hash) do documento, recebemos a
+  assinatura e a colocamos no PDF. O arquivo não sai da nossa
+  infraestrutura.
+
+Duas regras nossas que não podemos mudar:
+  1. Nunca guardamos a chave privada de ninguém.
+  2. Nunca pedimos o PIN/senha fixa do certificado. Se a nossa tela tiver
+     que pedir algum código, será apenas um código de uso único (OTP), no
+     modelo "Autorização com Credenciais do Titular" do DOC-ICP-17.01.
+
+
+O QUE MAIS NOS AJUDA SABER PRIMEIRO
+
+As perguntas 1 a 6 abaixo definem o nosso prazo e como vamos construir a
+tela e a infraestrutura. Se puderem responder essas antes, o resto pode vir
+depois.
+
+Também perguntamos: podemos receber a documentação da API antes do
+contrato? (pergunta 39)
+
+
+========================================================================
+PERGUNTAS PRIORITÁRIAS
+========================================================================
+
+ 1. Vocês exigem um certificado SSL ICP-Brasil para cadastrar o nosso
+    sistema (conforme DOC-ICP-17.01)? Ele é exigido também no ambiente de
+    testes, ou só no ambiente real?
+
+ 2. Quanto tempo leva (a) a emissão desse certificado e (b) a aprovação do
+    cadastro do nosso sistema do lado de vocês?
+
+ 3. Como a pessoa autoriza a assinatura? Vocês oferecem:
+    - código digitado na nossa tela ("Autorização com Credenciais do
+      Titular", campo password);
+    - redirecionamento para uma página de vocês (OAuth2);
+    - notificação no aplicativo do celular (push);
+    - mais de uma dessas opções?
+
+ 4. Cada autorização vale para UMA assinatura, ou vale por um período
+    (horas, dias) e permite várias? Há limite de assinaturas por
+    autorização?
+
+ 5. Vocês exigem que as chamadas venham de um IP fixo cadastrado
+    (allowlist)? Hoje nosso servidor NÃO tem IP fixo de saída.
+
+ 6. O serviço aceita receber só o hash do documento? E em que formato
+    devolvem a assinatura: RAW (PKCS#1 v1.5), CMS destacado ou PAdES
+    completo?
+
+
+========================================================================
+DEMAIS PERGUNTAS
+========================================================================
+
+Autorização
+ 7. Quais tipos de fator são aceitos: código OTP (TOTP/HOTP), biometria,
+    push, outro?
+ 8. Existe alguma opção que não dependa do celular (token OTP físico,
+    autenticador no computador)? Seria contingência para celular perdido.
+ 9. Suportam PKCE (RFC 7636)? É obrigatório?
+10. A resposta vem na mesma chamada, ou vocês avisam a conclusão depois
+    (webhook/callback)?
+11. Quanto tempo uma autorização fica esperando a pessoa responder? O que
+    acontece se ela não responder?
+12. Como identificamos a pessoa ao iniciar a autorização: CPF, e-mail,
+    outro?
+
+Assinatura
+13. O hash vai em hexadecimal ou base64?
+14. Quais algoritmos aceitam: SHA-256, SHA-384, SHA-512?
+15. Se oferecem PAdES pronto: atendem às políticas AD-RB e AD-RT do
+    DOC-ICP-15? Qual OID de política usam?
+16. Como obtemos a cadeia de certificados da pessoa, antes ou junto da
+    assinatura? Há um endpoint para consultar os certificados dela?
+17. É possível assinar vários hashes numa única chamada (lote)?
+18. Há limite de chamadas por sistema ou por pessoa? Quais os números?
+19. Coassinatura: pessoas diferentes assinam o mesmo PDF em sequência, cada
+    uma com sua autorização. Há alguma restrição ou recomendação?
+
+Cadastro do nosso sistema junto a vocês
+20. O certificado do sistema é usado na conexão (mTLS), como
+    client_id/client_secret, ou nos dois?
+21. Qual o tipo exato de certificado exigido (SSL A1 de servidor? e-CNPJ?
+    outro)? Quais Autoridades Certificadoras vocês aceitam?
+22. O certificado deve estar no nome da INSTITUTO SETES ou pode estar no
+    nome da empresa desenvolvedora?
+23. Qual a validade desse certificado e como se renova? Vocês avisam antes
+    de vencer?
+24. Qual versão do DOC-ICP-17.01 vocês seguem hoje? Podem nos enviar o
+    documento?
+25. O e-CNPJ que a instituição já tem com vocês pode servir como credencial
+    do sistema, ou precisa ser outro certificado? (Lembrando: o e-CNPJ não
+    será usado para assinar documentos.)
+
+Rede
+26. Quais endereços e portas precisamos liberar na saída do servidor,
+    incluindo carimbo de tempo, OCSP e LCR?
+27. Há restrição para chamadas vindas de fora do Brasil? Nosso servidor
+    fica nos EUA.
+28. Vocês têm ambiente de testes (sandbox)? Com certificados de teste? É
+    gratuito? O que muda em relação ao ambiente real? Podemos usá-lo ANTES
+    do contrato?
+
+Carimbo de tempo
+29. A mesma credencial do sistema serve para o carimbo de tempo, ou é outro
+    contrato e outra autenticação?
+30. Qual o limite de chamadas e a disponibilidade garantida (SLA) do
+    carimbo de tempo?
+31. Os serviços de OCSP e LCR das Autoridades que emitem os e-CPF e os
+    carimbos têm disponibilidade garantida? Por quanto tempo os registros
+    ficam disponíveis?
+
+Certificado de cada pessoa
+32. Como consultamos, pelo sistema, se o certificado de uma pessoa está
+    válido, vencido ou cancelado, antes de tentar assinar?
+33. O sistema aceita e-CPF em nuvem emitido por OUTRO fornecedor, que o
+    funcionário já tenha, ou só os da Soluti?
+34. Como se cancela a autorização dada ao nosso sistema, tanto pela pessoa
+    quanto pela instituição? Exemplo: o funcionário sai da instituição — o
+    certificado é dele, mas o vínculo com o sistema é da instituição.
+35. A pessoa pode ter o aplicativo autorizador em mais de um celular?
+
+Proteção de dados (LGPD)
+36. Quais dados vocês registram a cada autorização e assinatura (CPF, hash,
+    IP, horário, aparelho)?
+37. Por quanto tempo esses registros ficam guardados? A instituição pode
+    pedir uma cópia, por exemplo para usar como prova?
+
+Documentação e suporte
+38. Há SDK, coleção Postman ou exemplo em Python?
+39. A documentação da API é pública ou exige termo de confidencialidade
+    (NDA)? Podemos acessá-la ANTES do contrato?
+40. Qual a disponibilidade garantida (SLA) do serviço de assinatura? Há
+    página pública de status e histórico de incidentes?
+41. Há um canal de suporte técnico para integradores (não o suporte ao
+    usuário final)?
+42. Vocês conhecem integrações com pyHanko, ou casos em que só o hash é
+    enviado? Têm clientes nesse modelo?
+43. Há alguma mudança prevista nas normas da ICP-Brasil que afete
+    integrações nos próximos anos?
+
+
+Se for mais rápido, podemos marcar uma reunião técnica de 30 a 60 minutos,
+com a participação da equipe de desenvolvimento, para passar pelas
+perguntas prioritárias.
+
+Obrigado desde já.
+
+Atenciosamente,
+
+[Nome]
+[Cargo]
+INSTITUTO SETES
+[Telefone] | [E-mail]

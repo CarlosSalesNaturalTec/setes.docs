@@ -28,6 +28,7 @@ todo o contexto necessário para gerar as changes.
 | `README.md` | Este índice + o que fazer quando as respostas chegarem | — |
 | `questionario-cliente.md` | 33 perguntas em linguagem não técnica, enviadas à SETES | ✅ enviado em 2026-10-08 |
 | `questionario-fornecedores.md` | Perguntas à Soluti, em dois envios: **A** comercial/contratual (gerente de conta) e **B** técnico de integração | ⬜ revisado em 2026-11-10 com as respostas do cliente; **pronto para envio** |
+| `envio-soluti/*.txt` | Os dois e-mails à Soluti em linguagem simples (A comercial, B técnico — ambos enviados pela INSTITUTO SETES; perguntas renumeradas 1..N, mesmo conteúdo do questionário) + carta de contexto ao cliente | ⬜ prontos para envio |
 | `estudo-tecnico.md` | O estudo completo: normas, arquitetura, colisões com o código atual, infra GCP, fatiamento | ✅ consolidado |
 | `respostas-cliente.md` | Respostas transcritas (33 + devolutiva), síntese e pendências | ✅ preenchido — 2026-10-13 e 2026-11-09 |
 | `devolutiva-cliente.md` | Devolutiva ao cliente: o que foi decidido, 4 perguntas pendentes, prazo | ✅ enviada em 2026-10-21; respondida |
@@ -185,4 +186,5 @@ De `openspec/config.yaml`, seção `rules` — nenhuma é opcional:
 | 2026-11-09 | Devolutiva respondida registrada — A5: Ademilton Leal Coutinho (Diretor Presidente); registro público fora; carimbo sim |
 | 2026-11-09 | **Decisão de retomada do épico** — change `retomada-epico-assinatura` aplicada |
 | 2026-11-10 | Questionário à Soluti revisado e dividido em dois envios (comercial × técnico) |
+| 2026-11-10 | E-mails à Soluti e carta ao cliente redigidos em TXT (`envio-soluti/`); os dois envios partem da INSTITUTO SETES |
 | — | ⬜ Primeira change (`assinatura-verificacao-fundacao`) |

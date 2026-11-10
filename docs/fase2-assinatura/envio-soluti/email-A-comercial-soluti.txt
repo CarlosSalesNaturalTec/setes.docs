@@ -1,0 +1,137 @@
+PARA:     Gerente de conta / Comercial — Soluti
+DE:       INSTITUTO SETES (Compras / TI)
+CÓPIA:    Equipe de desenvolvimento do sistema Despapelize
+ASSUNTO:  INSTITUTO SETES — Cotação de assinatura digital em nuvem (e-CPF) para nosso sistema interno
+
+------------------------------------------------------------------------
+
+Prezados,
+
+Somos a INSTITUTO SETES e já somos clientes da Soluti (temos nosso e-CNPJ
+com vocês).
+
+Estamos implantando assinatura digital ICP-Brasil EM NUVEM no nosso sistema
+interno de processos administrativos, chamado Despapelize. O sistema foi
+desenvolvido por uma empresa contratada, que está em cópia e cuidará da
+parte técnica. Em paralelo a este e-mail, ela enviará as perguntas técnicas
+à equipe de integração de vocês.
+
+Este e-mail trata só da parte comercial e de contratação.
+
+
+COMO VAMOS USAR
+
+- Cerca de 10 pessoas vão assinar. Todas são pessoas físicas assinando em
+  nome próprio, com e-CPF. NÃO vamos assinar com o e-CNPJ da instituição.
+- Os documentos são de movimentação de pessoal, compras, contratação de
+  serviços e pagamentos. Todos gerados pelo próprio sistema, em PDF.
+- Volume estimado: algumas centenas de assinaturas por ano. Muitos
+  documentos terão mais de uma pessoa assinando.
+- Queremos carimbo de tempo em todas as assinaturas.
+- Vamos começar com um piloto em uma unidade e depois ampliar.
+
+
+NOSSAS PERGUNTAS
+
+A) Custos — o mais importante para levarmos à nossa Direção
+
+ 1. Considerando o uso descrito acima, qual seria o custo anual TOTAL
+    estimado? (certificados das pessoas + uso do serviço de assinatura +
+    carimbos de tempo + cadastro do nosso sistema junto a vocês)
+
+ 2. Quanto custa o e-CPF em nuvem comprado individualmente pela pessoa? E
+    quanto custaria um pacote de cerca de 10 certificados comprado pela
+    própria instituição?
+
+ 3. Vocês têm um modelo corporativo, em que a instituição compra e
+    administra os certificados dos funcionários? Nesse caso, o certificado
+    continua pertencendo à pessoa?
+
+ 4. Como é cobrado o certificado: por pessoa, por ano? Há desconto por
+    quantidade?
+
+ 5. Além do certificado, existe cobrança por assinatura feita (ou por uso
+    do serviço)? Há franquia, pacote de créditos ou uso ilimitado?
+
+ 6. Existe quantidade mínima ou valor mínimo para contratar?
+
+ 7. Podemos começar pequeno, só com o piloto, e ampliar depois sem precisar
+    renegociar o contrato?
+
+ 8. Há algum componente pago à parte para gerar o formato de assinatura em
+    PDF (vimos menções a "CESS" e "Bird ID Pro")? Nosso sistema montará o
+    PDF assinado por conta própria. Isso dispensa esse componente?
+
+ 9. Qual o prazo de vigência do contrato e como funciona o reajuste?
+
+
+B) Carimbo de tempo
+
+10. Vocês fornecem o carimbo de tempo, ou precisamos contratar com outra
+    empresa?
+
+11. Quanto custa cada carimbo? Há pacote ou franquia?
+
+12. Vocês oferecem algum serviço para manter os documentos verificáveis por
+    muitos anos (renovação periódica do carimbo)? Qual o preço e a
+    frequência?
+
+
+C) Certificado de cada pessoa
+
+13. Qual a validade do certificado (1, 3, 5 anos)?
+
+14. A emissão pode ser feita por videoconferência, ou a pessoa precisa ir
+    presencialmente?
+
+15. Como funciona a renovação? Precisa repetir a validação de identidade?
+
+16. Se a pessoa perder o celular, como ela volta a assinar e quanto tempo
+    isso leva?
+
+17. Existe um painel para a instituição acompanhar os certificados dos
+    funcionários (emitidos, perto de vencer, cancelados)? Esse painel
+    funciona também quando o certificado foi comprado pelo próprio
+    funcionário?
+
+
+D) Proteção de dados (LGPD)
+
+18. Nesse serviço, a Soluti atua como OPERADORA (trata os dados em nome da
+    instituição) ou como CONTROLADORA dos dados das pessoas que assinam?
+
+19. Existe um acordo de tratamento de dados (DPA) ou uma cláusula padrão de
+    LGPD para esse contrato? Podem nos enviar uma cópia antes, para análise
+    do nosso encarregado de dados?
+
+20. Em que país ficam os dados? Vocês usam outras empresas para tratá-los
+    (por exemplo, serviços de nuvem)?
+
+
+E) Como contratar
+
+21. A contratação pode ser feita pelo relacionamento que já temos (o do
+    e-CNPJ), ou é outro produto, com outro contato comercial? Se for outro,
+    quem devemos procurar?
+
+22. Quais documentos a instituição precisa apresentar? E quanto tempo leva,
+    depois de assinado o contrato, para liberarem o acesso (ambiente de
+    testes e ambiente real)?
+
+23. Quem assinará o contrato é a INSTITUTO SETES, representada pelo
+    Diretor Presidente, Sr. Ademilton Leal Coutinho. A empresa que
+    desenvolveu o sistema pode ser cadastrada como contato técnico, ou isso
+    exige procuração ou outro documento?
+
+
+O prazo é importante para nós: as perguntas 1, 2, 21 e 22 são as que mais
+nos ajudam se puderem ser respondidas primeiro.
+
+Ficamos à disposição para uma conversa, se for mais prático.
+
+Atenciosamente,
+
+[Nome]
+[Cargo]
+INSTITUTO SETES
+[Telefone] | [E-mail]

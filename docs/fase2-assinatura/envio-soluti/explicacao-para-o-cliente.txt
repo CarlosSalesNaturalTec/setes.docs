@@ -1,0 +1,128 @@
+PARA:     Ana Morais — Diretora de Serviços Compartilhados, INSTITUTO SETES
+DE:       Equipe de desenvolvimento do Despapelize
+ASSUNTO:  Assinatura digital — os dois e-mails para a Soluti, e o que esperar deles
+
+------------------------------------------------------------------------
+
+Ana,
+
+Com a aprovação do Sr. Ademilton para retomar a assinatura digital, o
+próximo passo é conversar com a Soluti, empresa que já fornece o e-CNPJ de
+vocês e que vai fornecer os certificados das pessoas que vão assinar.
+
+Preparamos DOIS e-mails, porque na Soluti quem responde sobre preço não é a
+mesma pessoa que responde sobre a parte técnica. OS DOIS SÃO ENVIADOS POR
+VOCÊS (INSTITUTO SETES), cada um ao seu destinatário, conosco em cópia.
+Eles podem sair no mesmo dia; um não depende do outro.
+
+
+------------------------------------------------------------------------
+E-MAIL 1 — COMERCIAL  (arquivo: email-A-comercial-soluti.txt)
+------------------------------------------------------------------------
+
+Quem envia:   VOCÊS (Compras ou TI da INSTITUTO SETES), a nós em cópia.
+Para quem:    o gerente de conta da Soluti — o mesmo contato do e-CNPJ.
+Por que vocês: é a instituição que contrata e paga. A Soluti responde mais
+               rápido a quem já é cliente.
+
+O que ele pergunta, em resumo:
+- Quanto custa tudo isso por ano.
+- Quanto custa se cada funcionário comprar o seu certificado, e quanto
+  custa se a instituição comprar um pacote para as ~10 pessoas.
+- Se há cobrança por assinatura feita (vocês disseram preferir evitar
+  custo por uso).
+- Quanto custa o carimbo de tempo (vocês decidiram que ele será usado).
+- Se dá para começar só com o piloto, em uma unidade.
+- Como funciona a emissão, a renovação e o que acontece se alguém perder
+  o celular.
+- Como a Soluti trata os dados pessoais (LGPD) e se há contrato padrão
+  para o encarregado de dados de vocês analisar.
+- Por onde contratar, quais documentos são necessários e quanto tempo
+  demora até liberarem o acesso.
+
+Antes de enviar, por favor:
+- Preencham a assinatura no final (nome, cargo, telefone, e-mail).
+- Confiram se o contato da Soluti é mesmo o do e-CNPJ.
+
+
+------------------------------------------------------------------------
+E-MAIL 2 — TÉCNICO  (arquivo: email-B-tecnico-soluti.txt)
+------------------------------------------------------------------------
+
+Quem envia:   VOCÊS (Compras ou TI da INSTITUTO SETES), a nós em cópia.
+Para quem:    a equipe técnica / de integração da Soluti. Se não tiverem
+              esse contato, o gerente de conta pode encaminhar.
+Por que vocês: o pedido parte de quem é cliente e contratante. As
+              perguntas são sobre como o sistema vai "conversar" com o
+              serviço da Soluti; o e-mail pede que a Soluti responda
+              direto a nós, com vocês em cópia. Vocês não precisam
+              responder nada nele.
+
+O que ele pergunta, em resumo:
+- Se a Soluti exige que o sistema tenha um certificado próprio para se
+  conectar a ela — e quanto tempo leva para obtê-lo. ESTE É O ITEM QUE MAIS
+  PODE ATRASAR O PROJETO (costuma levar semanas).
+- Como a pessoa vai autorizar a assinatura (pelo aplicativo no celular,
+  digitando um código etc.) e se precisa autorizar a cada documento ou
+  uma vez por período.
+- Se a Soluti exige um endereço fixo de internet do nosso servidor. Se
+  exigir, há um pequeno custo mensal a mais de infraestrutura.
+- Se existe um ambiente de testes, para começarmos antes do contrato.
+
+Antes de enviar, por favor preencham a assinatura no final.
+
+Ele também deixa claras duas garantias de segurança que o sistema dá:
+o sistema NUNCA guarda a chave do certificado de ninguém e NUNCA pede a
+senha/PIN do certificado. A autorização é sempre feita pela própria pessoa,
+no aplicativo da Soluti.
+
+
+------------------------------------------------------------------------
+O QUE VAMOS FAZER COM AS RESPOSTAS
+------------------------------------------------------------------------
+
+Do e-mail comercial:
+- Os valores voltam para a Direção decidir se mantém "cada funcionário
+  paga o seu certificado" ou se a instituição compra para todos. Com cerca
+  de 10 pessoas, comprar para todos pode custar pouco a mais e evita o
+  problema de alguém não ter certificado.
+- As respostas sobre LGPD vão para o encarregado de dados (DPO).
+
+Do e-mail técnico:
+- Definimos como será a tela de assinatura e se a infraestrutura precisa
+  de algum ajuste.
+- Ficamos sabendo o prazo real. Com isso, conseguimos dizer com mais
+  segurança o que cabe na meta de 11/2026.
+
+Enquanto as respostas não chegam, NÃO ficamos parados: já podemos começar
+a parte que não depende da Soluti — o sistema passar a VERIFICAR
+assinaturas de PDFs assinados fora dele. Ela não tem custo e não depende de
+contrato.
+
+
+------------------------------------------------------------------------
+O QUE AINDA PRECISAMOS DE VOCÊS (lembrete)
+------------------------------------------------------------------------
+
+Estes itens continuam em aberto e, junto com a contratação da Soluti,
+seguram as etapas seguintes da assinatura:
+
+1. Tabela de prazos de guarda dos documentos (Arquivo / Jurídico).
+2. Confirmação do encarregado de dados (DPO) sobre manter os documentos
+   assinados fora da anonimização da LGPD.
+3. Plano para quem não tiver certificado digital (RH / Direção) — as
+   respostas do e-mail comercial devem ajudar nesta decisão.
+4. Política interna / Termo de Uso da assinatura (RH / Jurídico).
+
+
+Resumo do que pedimos agora:
+  -> Enviar o E-MAIL 1 (comercial) ao gerente de conta da Soluti, conosco
+     em cópia.
+  -> Enviar o E-MAIL 2 (técnico) à equipe técnica da Soluti, também
+     conosco em cópia. Podem ser enviados no mesmo dia.
+
+Qualquer dúvida, estamos à disposição.
+
+Atenciosamente,
+
+Equipe de desenvolvimento — Despapelize
