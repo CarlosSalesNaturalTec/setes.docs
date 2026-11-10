@@ -78,6 +78,16 @@ class Settings(BaseSettings):
     # o limite é uma defesa real e não deve ser zerável de fora.
     dev_rate_limit_reset: bool = Field(default=False, alias="DEV_RATE_LIMIT_RESET")
 
+    # Dev/E2E only: soma uma âncora de confiança de TESTE (PEM em
+    # `DEV_TRUST_ANCHOR_PATH`) às âncoras ICP-Brasil versionadas, para que o
+    # Playwright verifique PDFs assinados por uma PKI descartável (change
+    # assinatura-verificacao-fundacao, D8). O caminho só é lido com a flag
+    # `true` — sem ela é ignorado mesmo se preenchido. Nunca setado em
+    # produção: uma âncora extra faria o sistema declarar "válida" uma
+    # assinatura que não é ICP-Brasil.
+    dev_trust_anchor_teste: bool = Field(default=False, alias="DEV_TRUST_ANCHOR_TESTE")
+    dev_trust_anchor_path: str = Field(default="", alias="DEV_TRUST_ANCHOR_PATH")
+
     # Cloud Storage (Épico 3, D4) — bucket `${project_id}-documentos`
     # (provisionado no bootstrap). Em produção, `documentos_storage_local` fica
     # `False` e o backend real (google-cloud-storage, ADC via SA do Cloud Run)

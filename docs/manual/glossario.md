@@ -21,6 +21,9 @@
 | **Auditoria** | Permissão concedida pelo Administrador que dá acesso amplo a processos e relatórios para fiscalização. |
 | **LGPD** | Lei de proteção de dados pessoais (Lei 13.709/2018); embasa os pedidos de exclusão/anonimização. |
 | **Protocolo LGPD** | Número gerado ao registrar uma solicitação LGPD; identifica o pedido até a resposta. |
+| **ICP-Brasil** | Infraestrutura de Chaves Públicas Brasileira, mantida pelo ITI. Uma assinatura com certificado ICP-Brasil é a assinatura eletrônica *qualificada*, a de maior valor jurídico no país. |
+| **Assinatura gov.br** | Assinatura eletrônica *avançada* feita com a conta gov.br. É íntegra e tem valor jurídico, mas não usa certificado ICP-Brasil — na verificação aparece como "não pertence à ICP-Brasil". |
+| **Carimbo de tempo** | Registro emitido por uma Autoridade de Carimbo do Tempo que comprova, de forma independente, a data e hora em que um documento foi assinado. |
 | **Anonimização** | Substituição irreversível dos dados pessoais do titular no processo (nome e CPF/CNPJ), preservando número, datas e histórico. |
 
 ---

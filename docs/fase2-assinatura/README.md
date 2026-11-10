@@ -3,10 +3,10 @@
 > **Status: ÉPICO 4 RETOMADO em 2026-11-09** (change `retomada-epico-assinatura`;
 > aprovador: Ademilton Leal Coutinho — Diretor Presidente). Caminho **qualificado
 > (ICP-Brasil em nuvem)**. Os dois portões abaixo foram abertos por aquela change —
-> mas a retomada **não** libera todas as changes: só
-> `assinatura-verificacao-fundacao` está liberada; as demais têm bloqueios nomeados
-> no bloco `context` de `openspec/config.yaml` e em `respostas-cliente.md`,
-> "Pendências".
+> mas a retomada **não** libera todas as changes: `assinatura-verificacao-fundacao`
+> já foi implementada e arquivada (2026-11-10 — capability `verificacao-assinatura`);
+> as demais têm bloqueios nomeados no bloco `context` de `openspec/config.yaml` e em
+> `respostas-cliente.md`, "Pendências".
 
 Diretório não publicado: `mkdocs.yml` aponta `docs_dir: docs/manual`, então nada aqui
 vai para o GitHub Pages.
@@ -184,4 +184,4 @@ De `openspec/config.yaml`, seção `rules` — nenhuma é opcional:
 | 2026-10-21 | Devolutiva enviada (A5, registro público, carimbo, confirmações) |
 | 2026-11-09 | Devolutiva respondida registrada — A5: Ademilton Leal Coutinho (Diretor Presidente); registro público fora; carimbo sim |
 | 2026-11-09 | **Decisão de retomada do épico** — change `retomada-epico-assinatura` aplicada |
-| — | ⬜ Primeira change (`assinatura-verificacao-fundacao`) |
+| 2026-11-10 | ✅ Primeira change implementada e arquivada: `assinatura-verificacao-fundacao` (verificação de PDFs assinados fora do sistema, US 4.2 / G3) — ⚠️ gate de conformidade manual contra o VALIDAR do ITI ainda pendente |

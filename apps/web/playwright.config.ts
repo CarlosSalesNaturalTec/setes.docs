@@ -8,6 +8,18 @@ const uvicornBin =
   process.platform === "win32"
     ? path.join(apiDir, ".venv", "Scripts", "uvicorn.exe")
     : path.join(apiDir, ".venv", "bin", "uvicorn");
+const pythonBin =
+  process.platform === "win32"
+    ? path.join(apiDir, ".venv", "Scripts", "python.exe")
+    : path.join(apiDir, ".venv", "bin", "python");
+
+// PKI descartável de teste (change assinatura-verificacao-fundacao, D8):
+// `scripts/pki_teste.py` grava a raiz de teste, a LCR e os PDFs assinados em
+// `e2e/.pki/` (gitignored) e serve a pasta por HTTP — a LCR dos certificados
+// de teste aponta para esse servidor. Sobe ANTES da API, que lê a raiz no
+// startup da primeira verificação.
+const PKI_DIR = path.join(__dirname, "e2e", ".pki");
+const PKI_PORTA = 8765;
 
 // Flags de dev/E2E (Settings.dev_email_inbox / dev_db_reset /
 // dev_rate_limit_reset, app/config.py) — nunca setadas no `.env` de
@@ -18,6 +30,9 @@ const API_ENV = {
   DEV_EMAIL_INBOX: "true",
   DEV_DB_RESET: "true",
   DEV_RATE_LIMIT_RESET: "true",
+  // Âncora de teste somada às ICP-Brasil — só com a flag (D8).
+  DEV_TRUST_ANCHOR_TESTE: "true",
+  DEV_TRUST_ANCHOR_PATH: path.join(PKI_DIR, "raiz-teste.pem"),
 };
 
 export default defineConfig({
@@ -59,6 +74,13 @@ export default defineConfig({
     },
   ],
   webServer: [
+    {
+      command: `${pythonBin} scripts/pki_teste.py --saida ${PKI_DIR} --porta ${PKI_PORTA}`,
+      cwd: apiDir,
+      url: `http://127.0.0.1:${PKI_PORTA}/raiz-teste.pem`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+    },
     {
       command: `${uvicornBin} app.main:app --port 8000`,
       cwd: apiDir,

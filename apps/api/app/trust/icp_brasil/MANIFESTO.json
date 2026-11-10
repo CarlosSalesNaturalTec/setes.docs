@@ -1,0 +1,95 @@
+{
+  "descricao": "Âncoras de confiança ICP-Brasil (AC Raiz vigentes) — change assinatura-verificacao-fundacao, design.md D5. Hash SHA-256 conferido a cada carregamento; divergência = conjunto inteiro descartado (falha fechada). Fora de propósito: AC Raiz do Governo Federal (gov.br) e raízes v1–v3 (expiradas).",
+  "ancoras": [
+    {
+      "arquivo": "ICP-Brasilv4.crt",
+      "ac": "Autoridade Certificadora Raiz Brasileira v4",
+      "versao": "v4",
+      "sha256": "857ff3bf31628979e479c5bc0bdf3e706bcc7bafb7ddf0c1134fc21f1cfab141",
+      "not_after": "2035-04-23T23:59:58+00:00",
+      "origem": "https://acraiz.icpbrasil.gov.br/credenciadas/RAIZ/ICP-Brasilv4.crt",
+      "baixado_em": "2026-11-10"
+    },
+    {
+      "arquivo": "ICP-Brasilv5.crt",
+      "ac": "Autoridade Certificadora Raiz Brasileira v5",
+      "versao": "v5",
+      "sha256": "5bd85f219695dabe6cf3d4bd713d9bd8e41b2323194022acf1acd658daef148a",
+      "not_after": "2029-03-02T23:59:38+00:00",
+      "origem": "https://acraiz.icpbrasil.gov.br/credenciadas/RAIZ/ICP-Brasilv5.crt",
+      "baixado_em": "2026-11-10"
+    },
+    {
+      "arquivo": "ICP-Brasilv6.crt",
+      "ac": "Autoridade Certificadora Raiz Brasileira v6",
+      "versao": "v6",
+      "sha256": "a91e45782e58755dffc6621cb05c2342db74398ffc6e930b0b3a23325a3bfdfd",
+      "not_after": "2038-12-28T12:00:03+00:00",
+      "origem": "https://acraiz.icpbrasil.gov.br/credenciadas/RAIZ/ICP-Brasilv6.crt",
+      "baixado_em": "2026-11-10"
+    },
+    {
+      "arquivo": "ICP-Brasilv7.crt",
+      "ac": "Autoridade Certificadora Raiz Brasileira v7",
+      "versao": "v7",
+      "sha256": "4fe1d8599fc00f0b61b12391c98d97af36bcada115bd894f8755e01e212bc4be",
+      "not_after": "2038-12-28T12:00:35+00:00",
+      "origem": "https://acraiz.icpbrasil.gov.br/credenciadas/RAIZ/ICP-Brasilv7.crt",
+      "baixado_em": "2026-11-10"
+    },
+    {
+      "arquivo": "ICP-Brasilv8.crt",
+      "ac": "Autoridade Certificadora Raiz Brasileira v8",
+      "versao": "v8",
+      "sha256": "011b0326af1a404723b1afac154b72fd69148523dbd1a4c4fa3325db4600e8b0",
+      "not_after": "2031-09-25T23:59:28+00:00",
+      "origem": "https://acraiz.icpbrasil.gov.br/credenciadas/RAIZ/ICP-Brasilv8.crt",
+      "baixado_em": "2026-11-10"
+    },
+    {
+      "arquivo": "ICP-Brasilv9.crt",
+      "ac": "Autoridade Certificadora Raiz Brasileira v9",
+      "versao": "v9",
+      "sha256": "ed1c7e2bf4455c8d4ac6dc5ea657be63e6da68480986956826a44be01d1bf99a",
+      "not_after": "2031-09-25T23:59:48+00:00",
+      "origem": "https://acraiz.icpbrasil.gov.br/credenciadas/RAIZ/ICP-Brasilv9.crt",
+      "baixado_em": "2026-11-10"
+    },
+    {
+      "arquivo": "ICP-Brasilv10.crt",
+      "ac": "Autoridade Certificadora Raiz Brasileira v10",
+      "versao": "v10",
+      "sha256": "3b3ef39649ba13e10a99bc042cfc112723d8e0503326174f15ab89941a0f33e0",
+      "not_after": "2032-07-01T12:00:59+00:00",
+      "origem": "https://acraiz.icpbrasil.gov.br/credenciadas/RAIZ/ICP-Brasilv10.crt",
+      "baixado_em": "2026-11-10"
+    },
+    {
+      "arquivo": "ICP-Brasilv11.crt",
+      "ac": "Autoridade Certificadora Raiz Brasileira v11",
+      "versao": "v11",
+      "sha256": "1437394beb7eb04180a94c480319f432dc27ca9d6ebc036b73f10e2a17a7d7d8",
+      "not_after": "2032-07-01T12:00:18+00:00",
+      "origem": "https://acraiz.icpbrasil.gov.br/credenciadas/RAIZ/ICP-Brasilv11.crt",
+      "baixado_em": "2026-11-10"
+    },
+    {
+      "arquivo": "ICP-Brasilv12.crt",
+      "ac": "Autoridade Certificadora Raiz Brasileira v12",
+      "versao": "v12",
+      "sha256": "ce6c66c73e41b12881ea8a9b8cb7efef9a482ea012c3cd3b843667e37a7a145c",
+      "not_after": "2037-10-22T12:00:24+00:00",
+      "origem": "https://acraiz.icpbrasil.gov.br/credenciadas/RAIZ/ICP-Brasilv12.crt",
+      "baixado_em": "2026-11-10"
+    },
+    {
+      "arquivo": "ICP-Brasilv13.crt",
+      "ac": "Autoridade Certificadora Raiz Brasileira v13",
+      "versao": "v13",
+      "sha256": "da54711b5816a2487903c62de28402dca2eea21ccc4e977f1d2645486d84d30c",
+      "not_after": "2045-02-14T13:59:25+00:00",
+      "origem": "https://acraiz.icpbrasil.gov.br/credenciadas/RAIZ/ICP-Brasilv13.crt",
+      "baixado_em": "2026-11-10"
+    }
+  ]
+}

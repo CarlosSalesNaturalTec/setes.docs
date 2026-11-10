@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 
 import { ApiError, api, type Schemas } from "@/lib/api";
 
+import { PainelVerificacaoAssinatura } from "./painel-verificacao-assinatura";
+
 type Documento = Schemas["DocumentoResponse"];
 type EventoHistorico = Schemas["EventoHistoricoResponse"];
 
@@ -11,6 +13,16 @@ type EventoHistorico = Schemas["EventoHistoricoResponse"];
 // (US 3.2 Cen.1); os demais (DOC/DOCX) disparam download automático (Cen.3).
 const MIME_INLINE = new Set(["application/pdf", "image/jpeg", "image/png"]);
 const AVISO_SEM_INLINE = "Formato não permite visualização inline — o download será iniciado";
+// Só PDF tem assinatura PAdES verificável (change assinatura-verificacao-fundacao).
+const MIME_VERIFICAVEL = "application/pdf";
+
+type ResultadoVerificacao = Schemas["ResultadoVerificacaoResponse"];
+interface VerificacaoAberta {
+  documentoId: string;
+  carregando: boolean;
+  resultado: ResultadoVerificacao | null;
+  erro: string | null;
+}
 
 function formatarTamanho(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -132,6 +144,9 @@ export function DocumentosSection({
   const [visualizando, setVisualizando] = useState<{ documento: Documento; url: string } | null>(
     null,
   );
+  // Resultado da verificação só neste estado local — nada vai para estado
+  // global nem para localStorage, e fechar o painel descarta (D4/D9).
+  const [verificacao, setVerificacao] = useState<VerificacaoAberta | null>(null);
 
   const carregar = useCallback(async () => {
     try {
@@ -198,6 +213,24 @@ export function DocumentosSection({
     setVisualizando(null);
   }
 
+  async function verificar(documento: Documento) {
+    setVerificacao({ documentoId: documento.id, carregando: true, resultado: null, erro: null });
+    try {
+      const resultado = await api.verificarAssinatura(processoId, documento.id);
+      setVerificacao((atual) =>
+        atual?.documentoId === documento.id ? { ...atual, carregando: false, resultado } : atual,
+      );
+    } catch (err) {
+      const erroMsg =
+        err instanceof ApiError ? err.detail : "Não foi possível verificar a assinatura.";
+      setVerificacao((atual) =>
+        atual?.documentoId === documento.id
+          ? { ...atual, carregando: false, erro: erroMsg }
+          : atual,
+      );
+    }
+  }
+
   async function confirmarRemocao() {
     if (!remocaoPendente) return;
     setErro(null);
@@ -242,35 +275,55 @@ export function DocumentosSection({
       ) : (
         <ul className="mt-2 divide-y text-sm">
           {documentos.map((doc) => (
-            <li key={doc.id} className="flex items-center justify-between gap-2 py-2">
-              <button
-                type="button"
-                onClick={() => void abrir(doc)}
-                className="truncate text-left text-navy-700 underline"
-              >
-                {doc.nome_exibicao}
-              </button>
-              <span className="shrink-0 text-xs text-gray-500">
-                {formatarTamanho(doc.tamanho_bytes)} · {doc.anexado_em.slice(0, 10)}
-              </span>
-              <div className="flex shrink-0 gap-2">
+            <li key={doc.id} className="py-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <button
                   type="button"
-                  onClick={() => void baixar(doc)}
-                  className="rounded border px-2 py-1 text-xs"
+                  onClick={() => void abrir(doc)}
+                  className="truncate text-left text-navy-700 underline"
                 >
-                  Baixar
+                  {doc.nome_exibicao}
                 </button>
-                {podeRemover && (
+                <span className="shrink-0 text-xs text-gray-500">
+                  {formatarTamanho(doc.tamanho_bytes)} · {doc.anexado_em.slice(0, 10)}
+                </span>
+                <div className="flex shrink-0 gap-2">
                   <button
                     type="button"
-                    onClick={() => setRemocaoPendente(doc)}
-                    className="rounded border px-2 py-1 text-xs text-red-600"
+                    onClick={() => void baixar(doc)}
+                    className="rounded border px-2 py-1 text-xs"
                   >
-                    Remover
+                    Baixar
                   </button>
-                )}
+                  {doc.tipo_conteudo === MIME_VERIFICAVEL && (
+                    <button
+                      type="button"
+                      onClick={() => void verificar(doc)}
+                      className="rounded border px-2 py-1 text-xs"
+                    >
+                      Verificar Assinatura
+                    </button>
+                  )}
+                  {podeRemover && (
+                    <button
+                      type="button"
+                      onClick={() => setRemocaoPendente(doc)}
+                      className="rounded border px-2 py-1 text-xs text-red-600"
+                    >
+                      Remover
+                    </button>
+                  )}
+                </div>
               </div>
+              {verificacao?.documentoId === doc.id && (
+                <PainelVerificacaoAssinatura
+                  nomeDocumento={doc.nome_exibicao}
+                  carregando={verificacao.carregando}
+                  resultado={verificacao.resultado}
+                  erro={verificacao.erro}
+                  onFechar={() => setVerificacao(null)}
+                />
+              )}
             </li>
           ))}
         </ul>

@@ -21,6 +21,9 @@ dependencies = [
     "slowapi>=0.1.9",
     "python-multipart>=0.0.9",
     "fpdf2>=2.7",
+    # Verificação de assinaturas PAdES (change assinatura-verificacao-fundacao, D3).
+    "pyhanko>=0.38",
+    "pyhanko-certvalidator>=0.33",
 ]
 
 [project.optional-dependencies]

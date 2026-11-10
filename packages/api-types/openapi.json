@@ -17,6 +17,104 @@
         "title": "AckResponse",
         "type": "object"
       },
+      "AssinaturaVerificada": {
+        "properties": {
+          "autoridade_carimbo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Autoridade Carimbo"
+          },
+          "autoridade_certificadora": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Autoridade Certificadora"
+          },
+          "certificado_expirado_em": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Certificado Expirado Em"
+          },
+          "data_assinatura": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Assinatura"
+          },
+          "mensagem": {
+            "title": "Mensagem",
+            "type": "string"
+          },
+          "ordem": {
+            "title": "Ordem",
+            "type": "integer"
+          },
+          "origem_data": {
+            "$ref": "#/components/schemas/OrigemDataAssinatura"
+          },
+          "signatario_cpf": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signatario Cpf"
+          },
+          "signatario_nome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signatario Nome"
+          },
+          "veredito": {
+            "$ref": "#/components/schemas/VereditoAssinatura"
+          }
+        },
+        "required": [
+          "ordem",
+          "veredito",
+          "mensagem",
+          "signatario_nome",
+          "signatario_cpf",
+          "autoridade_certificadora",
+          "data_assinatura",
+          "origem_data"
+        ],
+        "title": "AssinaturaVerificada",
+        "type": "object"
+      },
       "AtualizarMeuPerfilRequest": {
         "description": "US 1.5 — auto-serviço do próprio nome (task 2.1) e dos dados funcionais\nde contato. `setor_id` é aceito porque Setor não é fronteira de permissão\n(design.md Non-Goals) e continua validado contra a unidade do usuário (D2);\ne-mail, perfil e unidade seguem sob gestão exclusiva do Administrador.",
         "properties": {
@@ -1936,6 +2034,15 @@
         "title": "NotificacaoResponse",
         "type": "object"
       },
+      "OrigemDataAssinatura": {
+        "description": "De onde vem a data/hora exibida (D6): carimbo de tempo verificado ou\ndata declarada pelo próprio signatário (sem prova).",
+        "enum": [
+          "carimbo",
+          "declarada"
+        ],
+        "title": "OrigemDataAssinatura",
+        "type": "string"
+      },
       "PesquisaPublicaResponse": {
         "properties": {
           "items": {
@@ -2491,6 +2598,72 @@
         "title": "RelatorioAuditoriaResponse",
         "type": "object"
       },
+      "ResultadoVerificacaoResponse": {
+        "description": "Resultado efêmero (D4): devolvido só nesta resposta, nunca persistido.",
+        "properties": {
+          "assinaturas": {
+            "items": {
+              "$ref": "#/components/schemas/AssinaturaVerificada"
+            },
+            "title": "Assinaturas",
+            "type": "array"
+          },
+          "aviso_veredito_oficial": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aviso Veredito Oficial"
+          },
+          "documento_id": {
+            "title": "Documento Id",
+            "type": "string"
+          },
+          "mensagem_resumo": {
+            "title": "Mensagem Resumo",
+            "type": "string"
+          },
+          "resumo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VereditoAssinatura"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "situacao": {
+            "$ref": "#/components/schemas/SituacaoVerificacao"
+          },
+          "url_verificador_oficial": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url Verificador Oficial"
+          }
+        },
+        "required": [
+          "documento_id",
+          "situacao",
+          "resumo",
+          "mensagem_resumo",
+          "assinaturas",
+          "aviso_veredito_oficial",
+          "url_verificador_oficial"
+        ],
+        "title": "ResultadoVerificacaoResponse",
+        "type": "object"
+      },
       "SetorResponse": {
         "description": "Setor — segundo nível da estrutura organizacional (D1).",
         "properties": {
@@ -2649,6 +2822,16 @@
         ],
         "title": "SistemaConfigResponse",
         "type": "object"
+      },
+      "SituacaoVerificacao": {
+        "description": "Situação do DOCUMENTO como um todo (D2).",
+        "enum": [
+          "assinado",
+          "sem_assinatura",
+          "ilegivel"
+        ],
+        "title": "SituacaoVerificacao",
+        "type": "string"
       },
       "SolicitacaoLgpdCriadaResponse": {
         "properties": {
@@ -3093,6 +3276,18 @@
         ],
         "title": "ValidationError",
         "type": "object"
+      },
+      "VereditoAssinatura": {
+        "description": "Veredito de UMA assinatura (D2). A ordem de gravidade para o resumo do\ndocumento é `invalida > inconclusiva > fora_icp_brasil >\nalterada_apos_assinatura > valida`.",
+        "enum": [
+          "valida",
+          "alterada_apos_assinatura",
+          "fora_icp_brasil",
+          "inconclusiva",
+          "invalida"
+        ],
+        "title": "VereditoAssinatura",
+        "type": "string"
       }
     }
   },
@@ -5965,6 +6160,76 @@
           }
         },
         "summary": "Baixar Documento",
+        "tags": [
+          "documentos"
+        ]
+      }
+    },
+    "/processos/{processo_id}/documentos/{documento_id}/verificacao": {
+      "get": {
+        "description": "US 4.2 — \"Verificar Assinatura\" (change assinatura-verificacao-fundacao).\n\nMesmo prólogo de `/conteudo` (D1): quem pode ler o documento pode\nverificá-lo (G2), inclusive auditor; negativa grava `acesso_negado`.\nSó PDF — a checagem vem ANTES de abrir o storage. Leitura pura e efêmera\n(D4): nada é gravado, nenhum evento de tramitação.",
+        "operationId": "verificar_assinatura_processos__processo_id__documentos__documento_id__verificacao_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "processo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Processo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "documento_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Documento Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultadoVerificacaoResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Verificar Assinatura",
         "tags": [
           "documentos"
         ]

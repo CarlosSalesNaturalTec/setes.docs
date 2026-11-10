@@ -15,7 +15,7 @@ import uuid
 from typing import Annotated
 from urllib.parse import quote
 
-from fastapi import APIRouter, Depends, File, Request, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
@@ -28,9 +28,11 @@ from app.routers.processos import (
     _exigir_leitura_ao_processo,
 )
 from app.schemas.documento import DocumentoResponse, DocumentosListResponse, GerarDocumentoRequest
+from app.schemas.verificacao_assinatura import ResultadoVerificacaoResponse
 from app.security.autorizacao import get_current_user
 from app.services import documento as documento_service
 from app.services import modelo_documento as modelo_documento_service
+from app.services import verificacao_assinatura as verificacao_service
 from app.services.storage import get_storage
 
 router = APIRouter(prefix="/processos/{processo_id}/documentos", tags=["documentos"])
@@ -180,6 +182,40 @@ def baixar_documento(
         stream,
         media_type=documento.tipo_conteudo,
         headers={"Content-Disposition": _content_disposition("attachment", documento.nome_exibicao)},
+    )
+
+
+@router.get("/{documento_id}/verificacao", response_model=ResultadoVerificacaoResponse)
+def verificar_assinatura(
+    processo_id: uuid.UUID,
+    documento_id: uuid.UUID,
+    request: Request,
+    usuario: Annotated[Usuario, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> ResultadoVerificacaoResponse:
+    """US 4.2 — "Verificar Assinatura" (change assinatura-verificacao-fundacao).
+
+    Mesmo prólogo de `/conteudo` (D1): quem pode ler o documento pode
+    verificá-lo (G2), inclusive auditor; negativa grava `acesso_negado`.
+    Só PDF — a checagem vem ANTES de abrir o storage. Leitura pura e efêmera
+    (D4): nada é gravado, nenhum evento de tramitação."""
+    processo = _carregar_processo(db, processo_id)
+    _exigir_leitura_ao_processo(db, usuario=usuario, processo=processo, request=request)
+    documento = documento_service.obter_visivel(
+        db, processo_id=processo.id, documento_id=documento_id
+    )
+    if documento.tipo_conteudo != "application/pdf":
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=verificacao_service.MSG_VERIFICACAO_SOMENTE_PDF,
+        )
+    with get_storage(settings).abrir(documento.objeto_chave) as stream:
+        conteudo = stream.read()
+    return verificacao_service.verificar_pdf(
+        conteudo,
+        documento_id=str(documento.id),
+        ancoras=verificacao_service.ancoras_para(settings),
     )
 
 
