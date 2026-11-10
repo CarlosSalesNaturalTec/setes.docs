@@ -44,7 +44,6 @@ context: |
   Retomar o épico NÃO libera todas as changes. Bloqueios por change (cada um aponta
   para docs/fase2-assinatura/respostas-cliente.md, "Pendências"; ao arquivar uma
   change de assinatura, retire daqui a linha dela):
-    - assinatura-verificacao-fundacao: LIBERADA (pode ser proposta e implementada).
     - assinatura-qualificada-psc: BLOQUEADA até (a) contratação da Soluti concluída
       com credencial/certificado SSL da instituição emitidos (D4, pendência 8);
       (b) tabela de prazos de guarda recebida (F2, pendência 5); (c) F1 ratificada
@@ -59,9 +58,13 @@ context: |
       não decisão do cliente: com B4 ≈ 10 signatários (devolutiva) o modelo misto não
       economiza certificados e exigiria um segundo caminho de assinatura no código.
       Não proponha sem nova decisão da SETES.
-  Enquanto nenhuma change de assinatura for arquivada, nada disso existe no produto:
-  sem capability em openspec/specs/, sem spec Playwright, e `documentos_assinados` no
-  perfil é placeholder vazio.
+  Arquivada: assinatura-verificacao-fundacao (2026-11-10) — capability
+  `verificacao-assinatura` (verificar assinaturas de PDFs anexados, US 4.2/G3; âncoras
+  ICP-Brasil em apps/api/app/trust/icp_brasil/, flag dev DEV_TRUST_ANCHOR_TESTE, spec
+  Playwright 20). Seu gate de conformidade manual (PDFs reais × VALIDAR do ITI,
+  conformidade.md da change arquivada) segue PENDENTE — fazer antes de divulgar a
+  funcionalidade. ASSINAR documentos ainda não existe: `documentos_assinados` no
+  perfil continua placeholder vazio.
   Nome da instituição para contrato e texto exibido ao usuário: INSTITUTO SETES
   (devolutiva, 4c).
 

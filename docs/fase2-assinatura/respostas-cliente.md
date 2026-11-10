@@ -324,7 +324,8 @@ SETES comprar qualquer coisa.
    └─ reescreve US 4.1 Cen.1/3/5 (impossíveis)
    ✅ nome de A5 recebido na devolutiva — aplicado em 2026-11-09
         ▼
-1. assinatura-verificacao-fundacao     G3 ✅   ← única fatia que cabe em 11/2026
+1. assinatura-verificacao-fundacao     G3 ✅   ✅ implementada e arquivada em 2026-11-10
+   └─ ⚠️ gate de conformidade manual (PDFs reais × VALIDAR do ITI) pendente
         ▼
 2. assinatura-qualificada-psc          C1 ✅ D1 ✅ D4 ✅   ⛔ espera procurement
    └─ inclui regime de retenção: F1 ✅ F2 ⚠️ F3 ✅ (bucket SEM is_locked)

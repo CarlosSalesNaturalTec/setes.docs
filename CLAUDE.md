@@ -46,14 +46,19 @@ só documentos gerados por `ModeloDocumento`, em PDF (B1); só pessoa física, s
 sem assinatura retroativa (H3); documentos de registro público fora do sistema.
 Carimbo de tempo: sim (alvo PAdES AD-RT).
 
-**Retomar não libera tudo.** Hoje só `assinatura-verificacao-fundacao` está liberada;
-`assinatura-qualificada-psc` e as que dependem dela continuam bloqueadas por pendências
+**Retomar não libera tudo.** `assinatura-verificacao-fundacao` foi implementada e
+arquivada (2026-11-10); `assinatura-qualificada-psc` e as que dependem dela continuam bloqueadas por pendências
 nomeadas (contratação da Soluti, tabela de prazos F2, ratificação de F1 pelo DPO, plano
 para quem não tiver certificado, política interna). A lista vinculante, por change,
 está no bloco `context` de `openspec/config.yaml`; `assinatura-avancada` (modelo misto)
-**não está planejada**. Nada de assinatura existe no produto ainda: a aba "Documentos
-assinados" do perfil é placeholder vazio; não há capability, spec Playwright nem código
-de assinatura. Nome da instituição em contrato e texto de tela: **INSTITUTO SETES**.
+**não está planejada**. Do épico, só a **verificação** existe no produto: capability
+`verificacao-assinatura` — "Verificar Assinatura" em PDFs do processo, validação local
+com pyHanko contra as âncoras ICP-Brasil de `apps/api/app/trust/icp_brasil/` (hash
+fixado no `MANIFESTO.json`), resultado efêmero sem persistência, PKI de teste em
+`apps/api/scripts/pki_teste.py` aceita só com `DEV_TRUST_ANCHOR_TESTE=true` (dev/E2E,
+nunca em produção). Seu gate de conformidade manual contra o VALIDAR do ITI está
+pendente. **Assinar** ainda não existe: a aba "Documentos assinados" do perfil é
+placeholder vazio. Nome da instituição em contrato e texto de tela: **INSTITUTO SETES**.
 
 O dossiê da Fase 2 está em **`docs/fase2-assinatura/`** (estudo técnico, questionários,
 respostas do cliente e devolutiva). **Leia o `README.md` de lá antes de qualquer

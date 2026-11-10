@@ -2,10 +2,12 @@
 
 Para evitar expectativa equivocada, estes itens **não existem** no sistema hoje:
 
-- **Assinatura digital de documentos (ICP-Brasil).** Foi movida para uma fase
-  seguinte do produto. A aba "Documentos assinados" de
-  [Meu Perfil](comum/meu-perfil.md) apenas informa isso, e não há nenhuma ação
-  de assinar ou verificar assinatura em processos ou documentos.
+- **Assinar documentos digitalmente (ICP-Brasil).** Está em desenvolvimento
+  na Fase 2 e ainda não existe: não há ação de assinar em processos ou
+  documentos, e a aba "Documentos assinados" de
+  [Meu Perfil](comum/meu-perfil.md) apenas informa isso. Já é possível, porém,
+  [verificar a assinatura](servidor/documentos.md#verificar-a-assinatura-digital-de-um-pdf)
+  de PDFs que chegam assinados de fora.
 - **Roteiro ou tramitação automática por tipo de processo.** O destino de cada
   movimentação é sempre escolhido pelo servidor no momento da ação.
 - **Tela de configuração dos parâmetros operacionais** (veja

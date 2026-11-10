@@ -381,6 +381,13 @@ export const api = {
     getBlob(`/processos/${processoId}/documentos/${documentoId}/conteudo`),
   baixarDocumento: (processoId: string, documentoId: string) =>
     getBlob(`/processos/${processoId}/documentos/${documentoId}/download`),
+  // US 4.2 — "Verificar Assinatura" (change assinatura-verificacao-fundacao,
+  // D1/D4): leitura efêmera; o resultado não vai para estado global nem storage.
+  verificarAssinatura: (processoId: string, documentoId: string) =>
+    get<Schemas["ResultadoVerificacaoResponse"]>(
+      `/processos/${processoId}/documentos/${documentoId}/verificacao`,
+      { auth: true },
+    ),
   removerDocumento: (processoId: string, documentoId: string) =>
     del<Schemas["DocumentoResponse"]>(`/processos/${processoId}/documentos/${documentoId}`, {
       auth: true,

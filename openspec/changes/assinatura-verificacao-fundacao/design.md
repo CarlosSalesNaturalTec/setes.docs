@@ -124,16 +124,31 @@ mapeamento de `PdfSignatureStatus` para D2 usa `intact`/`valid` (integridade),
 `coverage`/`modification_level` (cobertura).
 
 Distinguir `fora_icp_brasil` exige saber se a falha de confiança é *ausência de
-caminho* (sem âncora) e não *revogação* ou *rede*: a validação roda primeiro com
-`revocation_mode="soft-fail"` para classificar a cadeia, e só para cadeias ICP-Brasil
-roda em `hard-fail`. Cada classe de erro do certvalidator tem teste próprio
-(tarefa 3.x) — é o ponto de maior risco desta change.
+caminho* (sem âncora) e não *revogação* ou *rede*. **Revisado na implementação:** não
+são necessárias duas passadas — a subindicação ETSI que o pyHanko devolve em
+`trust_problem_indic` já separa os casos numa única validação em `hard-fail`:
+`NO_CERTIFICATE_CHAIN_FOUND` (sem âncora → `fora_icp_brasil`), `REVOKED_NO_POE` /
+`revoked` (→ `invalida`), `OUT_OF_BOUNDS_NO_POE` (expirado → regra de D6) e
+`CERTIFICATE_CHAIN_GENERAL_FAILURE` (revogação indisponível → `inconclusiva`). Cada
+classe tem teste próprio (`tests/test_verificacao_assinatura_servico.py`) — é o ponto
+de maior risco desta change.
+
+**Coassinatura não é alteração posterior.** Coassinar acrescenta uma revisão, então a
+1ª assinatura de um PDF com duas nunca cobre `ENTIRE_FILE`. Uma assinatura que não
+cobre o arquivo só vira `alterada_apos_assinatura` quando é a última, quando a última
+não cobre o fim do arquivo, ou quando o que veio depois dela passa de preenchimento de
+formulário/assinatura (`ModificationLevel > FORM_FILLING`: anotações, páginas).
+
+**Logs (D4):** o pyHanko e o certvalidator logam, com traceback, o CN do certificado
+— que na ICP-Brasil é `NOME:CPF` — a cada falha de validação. Os dois loggers são
+silenciados no módulo do serviço; um teste garante que nenhum log contém nome ou CPF.
 
 **Orçamento de rede:** timeout por requisição de LCR/OCSP de 5 s e teto total de
-15 s por verificação; estourou → `inconclusiva`. LCR baixada fica em cache **em
-memória do processo** até seu `next_update` (dado público, não pessoal — não conflita
-com D4); o cache é perdido no scale-to-zero, o que só custa latência. OCSP é preferido
-quando o certificado anuncia AIA OCSP; LCR é o fallback.
+15 s por verificação; estourou → `inconclusiva`. LCR/OCSP baixados ficam em cache **em
+memória do processo** (dado público, não pessoal — não conflita com D4) por meio de um
+conjunto de *fetchers* do certvalidator compartilhado entre requisições e recriado a
+cada **1 h** — um cache eterno prenderia a instância num veredito "inconclusiva" depois
+do `next_update` da LCR. O cache é perdido no scale-to-zero, o que só custa latência.
 
 **Leitura do arquivo:** pyHanko precisa de stream com seek; o objeto (≤ 20 MB) é lido
 inteiro para `BytesIO`. Aceitável com o limite de upload atual.
@@ -224,9 +239,12 @@ validado. O Playwright gera (no `global-setup.ts`) uma PKI descartável, liga a 
 aponta o caminho para a raiz de teste e anexa PDFs assinados com ela. Sem flag, a
 mesma raiz cai em `fora_icp_brasil`.
 
-A revogação no E2E usa LCR gerada junto com a PKI e servida por um servidor HTTP
-estático em porta local, subido pelo `global-setup` (o ponto de distribuição da LCR
-nos certificados de teste aponta para ele). No pytest, o `ValidationContext` recebe LCRs/OCSP
+A PKI de teste vive em `apps/api/scripts/pki_teste.py`, usado de dois jeitos: o
+pytest importa (tudo em memória) e o Playwright o sobe como **primeiro `webServer`**,
+antes da API — ele grava raiz, LCR e PDFs em `apps/web/e2e/.pki/` (gitignored) e serve
+a pasta por HTTP local, para onde aponta o ponto de distribuição da LCR dos
+certificados de teste. Os testes de endpoint do pytest fazem o mesmo com um servidor
+HTTP em porta aleatória, exercitando o mesmo caminho de busca online de produção. No pytest, o `ValidationContext` recebe LCRs/OCSP
 pré-carregados (`crls=`, `ocsps=`) e `allow_fetching=False` — nada sai para a rede.
 
 *Alternativa:* endpoint `/internal/dev/trust-anchor` para injetar a âncora em runtime

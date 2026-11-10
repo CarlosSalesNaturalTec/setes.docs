@@ -862,6 +862,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/processos/{processo_id}/documentos/{documento_id}/verificacao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Verificar Assinatura
+         * @description US 4.2 — "Verificar Assinatura" (change assinatura-verificacao-fundacao).
+         *
+         *     Mesmo prólogo de `/conteudo` (D1): quem pode ler o documento pode
+         *     verificá-lo (G2), inclusive auditor; negativa grava `acesso_negado`.
+         *     Só PDF — a checagem vem ANTES de abrir o storage. Leitura pura e efêmera
+         *     (D4): nada é gravado, nenhum evento de tramitação.
+         */
+        get: operations["verificar_assinatura_processos__processo_id__documentos__documento_id__verificacao_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/processos/{processo_id}/enviar": {
         parameters: {
             query?: never;
@@ -1456,6 +1481,27 @@ export interface components {
              * @example acked
              */
             status: string;
+        };
+        /** AssinaturaVerificada */
+        AssinaturaVerificada: {
+            /** Autoridade Carimbo */
+            autoridade_carimbo?: string | null;
+            /** Autoridade Certificadora */
+            autoridade_certificadora: string | null;
+            /** Certificado Expirado Em */
+            certificado_expirado_em?: string | null;
+            /** Data Assinatura */
+            data_assinatura: string | null;
+            /** Mensagem */
+            mensagem: string;
+            /** Ordem */
+            ordem: number;
+            origem_data: components["schemas"]["OrigemDataAssinatura"];
+            /** Signatario Cpf */
+            signatario_cpf: string | null;
+            /** Signatario Nome */
+            signatario_nome: string | null;
+            veredito: components["schemas"]["VereditoAssinatura"];
         };
         /**
          * AtualizarMeuPerfilRequest
@@ -2165,6 +2211,13 @@ export interface components {
             /** Unidade Origem Nome */
             unidade_origem_nome: string | null;
         };
+        /**
+         * OrigemDataAssinatura
+         * @description De onde vem a data/hora exibida (D6): carimbo de tempo verificado ou
+         *     data declarada pelo próprio signatário (sem prova).
+         * @enum {string}
+         */
+        OrigemDataAssinatura: "carimbo" | "declarada";
         /** PesquisaPublicaResponse */
         PesquisaPublicaResponse: {
             /** Items */
@@ -2394,6 +2447,24 @@ export interface components {
             total_processos: number;
         };
         /**
+         * ResultadoVerificacaoResponse
+         * @description Resultado efêmero (D4): devolvido só nesta resposta, nunca persistido.
+         */
+        ResultadoVerificacaoResponse: {
+            /** Assinaturas */
+            assinaturas: components["schemas"]["AssinaturaVerificada"][];
+            /** Aviso Veredito Oficial */
+            aviso_veredito_oficial: string | null;
+            /** Documento Id */
+            documento_id: string;
+            /** Mensagem Resumo */
+            mensagem_resumo: string;
+            resumo: components["schemas"]["VereditoAssinatura"] | null;
+            situacao: components["schemas"]["SituacaoVerificacao"];
+            /** Url Verificador Oficial */
+            url_verificador_oficial: string | null;
+        };
+        /**
          * SetorResponse
          * @description Setor — segundo nível da estrutura organizacional (D1).
          */
@@ -2463,6 +2534,12 @@ export interface components {
              */
             prazo_arquivamento_dias: number;
         };
+        /**
+         * SituacaoVerificacao
+         * @description Situação do DOCUMENTO como um todo (D2).
+         * @enum {string}
+         */
+        SituacaoVerificacao: "assinado" | "sem_assinatura" | "ilegivel";
         /** SolicitacaoLgpdCriadaResponse */
         SolicitacaoLgpdCriadaResponse: {
             /** Protocolo */
@@ -2626,6 +2703,14 @@ export interface components {
             /** Error Type */
             type: string;
         };
+        /**
+         * VereditoAssinatura
+         * @description Veredito de UMA assinatura (D2). A ordem de gravidade para o resumo do
+         *     documento é `invalida > inconclusiva > fora_icp_brasil >
+         *     alterada_apos_assinatura > valida`.
+         * @enum {string}
+         */
+        VereditoAssinatura: "valida" | "alterada_apos_assinatura" | "fora_icp_brasil" | "inconclusiva" | "invalida";
     };
     responses: never;
     parameters: never;
@@ -4153,6 +4238,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verificar_assinatura_processos__processo_id__documentos__documento_id__verificacao_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                processo_id: string;
+                documento_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultadoVerificacaoResponse"];
                 };
             };
             /** @description Validation Error */

@@ -39,3 +39,6 @@ tfplan*.out
 .env.*
 !.env.example
 
+
+# PKI descartável gerada pelo Playwright (change assinatura-verificacao-fundacao)
+apps/web/e2e/.pki/
