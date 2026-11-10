@@ -117,16 +117,19 @@
   vai para estado global nem `localStorage`. **Aceite**: Vitest em
   `documentos-section.test.tsx` cobre botão ausente em DOCX/PNG, os seis vereditos
   renderizados com a mensagem da API, o link do ITI e o descarte ao fechar.
-- [ ] 5.3 Conferir o painel no layout mobile existente. **Aceite**: o spec mobile da
-  tarefa 6.2 passa sem rolagem horizontal.
+- [x] 5.3 Conferir o painel no layout mobile existente. **Aceite**: o spec mobile da
+  tarefa 6.2 passa sem rolagem horizontal. **Feito:** o spec 20 redimensiona para
+  390×844 com o painel aberto e afirma `scrollWidth <= clientWidth`.
 
 ## 6. E2E Playwright (obrigatório — documentos é fluxo crítico)
 
-- [ ] 6.1 Em `apps/web/e2e/global-setup.ts` (ou helper), gerar a PKI e os PDFs de
+- [x] 6.1 Em `apps/web/e2e/global-setup.ts` (ou helper), gerar a PKI e os PDFs de
   teste, subir o servidor HTTP estático da LCR, e em `playwright.config.ts` ligar
   `DEV_TRUST_ANCHOR_TESTE=true` + `DEV_TRUST_ANCHOR_PATH` na API (D8). **Aceite**: a
-  suíte existente continua verde com a mudança.
-- [ ] 6.2 Novo `apps/web/e2e/20-verificacao-assinatura.spec.ts`: Servidor anexa PDF
+  suíte existente continua verde com a mudança. **Feito:** como primeiro `webServer`
+  do `playwright.config.ts` (precisa existir antes de a API subir), não no
+  `global-setup` — ver design.md D8. Suíte chromium 23/23 verde.
+- [x] 6.2 Novo `apps/web/e2e/20-verificacao-assinatura.spec.ts`: Servidor anexa PDF
   assinado válido → "Assinatura válida — documento íntegro" com nome, CPF, AC e link
   do ITI; PDF adulterado → mensagem de INVÁLIDA com alerta; PDF sem assinatura →
   "Este documento não contém assinatura digital."; DOCX sem botão; Servidor de outra
