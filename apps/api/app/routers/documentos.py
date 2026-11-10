@@ -207,7 +207,7 @@ def verificar_assinatura(
     )
     if documento.tipo_conteudo != "application/pdf":
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=verificacao_service.MSG_VERIFICACAO_SOMENTE_PDF,
         )
     with get_storage(settings).abrir(documento.objeto_chave) as stream:
