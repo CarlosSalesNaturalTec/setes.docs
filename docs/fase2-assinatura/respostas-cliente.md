@@ -360,7 +360,7 @@ SETES comprar qualquer coisa.
 | 5 | **Tabela de prazos de guarda** (F2) | Arquivo / Jurídico | `retention_policy` do bucket | ⚠️ pendente |
 | 6 | Plano para quem não tiver certificado (D2) | RH / Direção | change 2 | ⚠️ pendente |
 | 7 | Política interna + Termo de Uso (H4) | RH / Jurídico | change 2 | ⚠️ pendente |
-| 8 | Questionário técnico enviado à **SOLUTI** | Compras / TI | arquitetura (frontend e infra) | ⚠️ pendente (ação nossa) |
+| 8 | Questionário enviado à **SOLUTI** (Envio A comercial + Envio B técnico) | Compras / TI (A) · nós (B) | arquitetura (frontend e infra), cronograma, custos | ⚠️ revisado em 2026-11-10, pronto; envio pendente |
 | 9 | Confirmar se "até 5 pessoas" (B4) é estável | Direção | decide se `assinatura-avancada` existe | ✅ ~10 pessoas; recomendação mantida (ver nota da devolutiva) |
 | 10 | Confirmar nome da instituição (SETES × ISETES) | Direção | textos de usuário e contrato | ✅ INSTITUTO SETES |
 
